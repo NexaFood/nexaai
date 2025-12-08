@@ -544,18 +544,26 @@ def signup(request):
             is_staff=False
         )
         
-        # Auto-login after signup
-        from django.contrib.auth import login
-        from models.auth_backend import MongoDBAuthBackend
-        
-        backend = MongoDBAuthBackend()
-        authenticated_user = backend.authenticate(request, username=username, password=password)
-        
-        if authenticated_user:
-            login(request, authenticated_user, backend='models.auth_backend.MongoDBAuthBackend')
-            return HttpResponse('<script>window.location.href="/";</script>')
-        else:
-            return HttpResponse('<div class="rounded-md bg-green-50 p-4 mb-4"><p class="text-sm text-green-800">Account created! <a href="/login/" class="font-medium underline">Click here to login</a></p></div>')
+        # Show success message and redirect to login
+        success_html = '''
+        <div class="rounded-md bg-green-50 p-4 mb-4">
+            <div class="flex">
+                <div class="flex-shrink-0">
+                    <svg class="h-5 w-5 text-green-400" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                    </svg>
+                </div>
+                <div class="ml-3">
+                    <h3 class="text-sm font-medium text-green-800">Account created successfully!</h3>
+                    <div class="mt-2 text-sm text-green-700">
+                        <p>Your account has been created. <a href="/login/" class="font-medium underline hover:text-green-600">Click here to login</a></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <script>setTimeout(function() { window.location.href = "/login/"; }, 2000);</script>
+        '''
+        return HttpResponse(success_html)
     
     except Exception as e:
         return HttpResponse(f'<div class="rounded-md bg-red-50 p-4 mb-4"><p class="text-sm text-red-800">Failed to create account: {str(e)}</p></div>')
