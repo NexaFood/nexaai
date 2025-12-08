@@ -89,8 +89,8 @@ class MongoUser:
         """Check if password matches."""
         return check_password(raw_password, self._password)
     
-    def save(self):
-        """Save user to MongoDB."""
+    def save(self, update_fields=None, **kwargs):
+        """Save user to MongoDB. Accepts Django kwargs but ignores them."""
         if hasattr(self, '_id'):
             # Update existing
             db.users.update_one(
