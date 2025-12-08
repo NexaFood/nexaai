@@ -337,3 +337,54 @@ def api_model_delete(request, model_id):
     response = HttpResponse(status=200)
     response['HX-Redirect'] = '/history'
     return response
+
+
+@login_required
+@require_http_methods(["GET"])
+def api_model_status(request, model_id):
+    """
+    HTMX endpoint to check single model status.
+    Checks Meshy.ai API if still processing.
+    Returns updated model card HTML.
+    """
+    model = get_object_or_404(Model3D, id=model_id, user=request.user)
+    
+    # If still processing, check Meshy.ai for updates
+    if model.status == 'processing':
+        try:
+            job = GenerationJob.objects.filter(model=model).first()
+            if job and job.meshy_task_id:
+                meshy_client = MeshyClient()
+                status_response = meshy_client.get_task_status(job.meshy_task_id)
+                
+                # Update job status
+                job.meshy_status = status_response.get('status', 'unknown')
+                job.meshy_response = status_response
+                job.save()
+                
+                # Check if completed
+                if status_response.get('status') == 'SUCCEEDED':
+                    model.status = 'completed'
+                    model.glb_url = status_response.get('model_urls', {}).get('glb')
+                    model.obj_url = status_response.get('model_urls', {}).get('obj')
+                    model.thumbnail_url = status_response.get('thumbnail_url')
+                    model.save()
+                    
+                    # Notify owner
+                    try:
+                        notify_owner(
+                            title="3D Model Generation Completed",
+                            content=f"Model '{model.prompt[:50]}' is ready!"
+                        )
+                    except Exception as e:
+                        logger.warning(f"Failed to send notification: {e}")
+                
+                elif status_response.get('status') in ['FAILED', 'EXPIRED']:
+                    model.status = 'failed'
+                    model.save()
+        
+        except Exception as e:
+            logger.error(f"Failed to check model status: {e}")
+    
+    # Return updated model card
+    return render(request, 'partials/model_card.html', {'model': model})

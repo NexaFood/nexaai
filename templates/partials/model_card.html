@@ -1,5 +1,11 @@
 <!-- Model Card Partial - Used in history grid -->
-<div class="bg-white rounded-xl shadow-lg overflow-hidden card-hover" data-status="{{ model.status }}">
+<div class="bg-white rounded-xl shadow-lg overflow-hidden card-hover" 
+     data-status="{{ model.status }}"
+     {% if model.status == 'processing' %}
+     hx-get="/api/models/{{ model.id }}/status"
+     hx-trigger="every 5s"
+     hx-swap="outerHTML"
+     {% endif %}>
     <!-- Thumbnail -->
     <div class="relative h-48 bg-gradient-to-br from-purple-400 to-blue-500">
         {% if model.thumbnail_url %}
