@@ -98,18 +98,19 @@ def api_generate(request):
         if not prompt:
             return HttpResponse('Prompt is required', status=400)
         
-        # Map quality to polygon count and mode
+        # Map quality to polygon count
+        # NOTE: Meshy API uses 'preview' mode for initial generation.
+        # 'refine' mode requires a preview_task_id and is a separate 2-step process.
+        # Quality is controlled by target_polycount parameter.
         quality_map = {
-            'preview': {'polycount': 10000, 'mode': 'preview'},
-            'standard': {'polycount': 30000, 'mode': 'refine'},
-            'high': {'polycount': 60000, 'mode': 'refine'},
-            'ultra': {'polycount': 100000, 'mode': 'refine'},
+            'preview': 10000,
+            'standard': 30000,
+            'high': 60000,
+            'ultra': 100000,
         }
-        quality_config = quality_map.get(quality, {'polycount': 30000, 'mode': 'preview'})
-        polygon_count = quality_config['polycount']
-        meshy_mode = quality_config['mode']
+        polygon_count = quality_map.get(quality, 30000)
         
-        logger.info(f"Generation request: quality={quality}, polycount={polygon_count}, mode={meshy_mode}")
+        logger.info(f"Generation request: quality={quality}, polycount={polygon_count}")
         
         # Analyze design and get recommendations
         if use_analysis:
@@ -170,8 +171,7 @@ def api_generate(request):
                 result = meshy_client.create_text_to_3d_task(
                     prompt=part['refined_prompt'],
                     art_style='realistic',
-                    target_polycount=polygon_count,
-                    mode=meshy_mode
+                    target_polycount=polygon_count
                 )
                 task_id = result.get('result')
                 
