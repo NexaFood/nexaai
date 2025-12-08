@@ -69,24 +69,39 @@
             <!-- Quality Selection -->
             <div>
                 <label for="quality" class="block text-sm font-bold text-gray-700 mb-2">
-                    Quality
+                    Quality Level
                 </label>
                 <div class="grid grid-cols-2 gap-4">
                     <label class="flex items-center p-4 border-2 border-gray-300 rounded-lg cursor-pointer hover:border-purple-500 transition">
                         <input type="radio" name="quality" value="preview" class="mr-3" checked>
                         <div>
-                            <div class="font-bold">Preview (Fast)</div>
-                            <div class="text-sm text-gray-500">~2 minutes</div>
+                            <div class="font-bold">Preview</div>
+                            <div class="text-xs text-gray-500">10k polygons • 2-3 min</div>
                         </div>
                     </label>
                     <label class="flex items-center p-4 border-2 border-gray-300 rounded-lg cursor-pointer hover:border-purple-500 transition">
-                        <input type="radio" name="quality" value="refine" class="mr-3">
+                        <input type="radio" name="quality" value="standard" class="mr-3">
                         <div>
-                            <div class="font-bold">High Quality</div>
-                            <div class="text-sm text-gray-500">~5 minutes</div>
+                            <div class="font-bold">Standard</div>
+                            <div class="text-xs text-gray-500">30k polygons • 5-7 min</div>
+                        </div>
+                    </label>
+                    <label class="flex items-center p-4 border-2 border-gray-300 rounded-lg cursor-pointer hover:border-purple-500 transition">
+                        <input type="radio" name="quality" value="high" class="mr-3">
+                        <div>
+                            <div class="font-bold">High</div>
+                            <div class="text-xs text-gray-500">60k polygons • 10-15 min</div>
+                        </div>
+                    </label>
+                    <label class="flex items-center p-4 border-2 border-gray-300 rounded-lg cursor-pointer hover:border-purple-500 transition">
+                        <input type="radio" name="quality" value="ultra" class="mr-3">
+                        <div>
+                            <div class="font-bold">Ultra</div>
+                            <div class="text-xs text-gray-500">100k polygons • 15-20 min</div>
                         </div>
                     </label>
                 </div>
+                <p class="text-sm text-gray-500 mt-2">Higher quality = more detail but longer generation time</p>
             </div>
             
             <!-- Submit Button -->

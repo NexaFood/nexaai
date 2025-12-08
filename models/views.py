@@ -83,7 +83,13 @@ def api_generate(request):
         meshy_client = MeshyClient()
         
         # Determine polygon count based on quality
-        polygon_count = 30000 if quality == 'refine' else 10000
+        quality_map = {
+            'preview': 10000,
+            'standard': 30000,
+            'high': 60000,
+            'ultra': 100000
+        }
+        polygon_count = quality_map.get(quality, 10000)  # Default to preview
         
         # Start generation task
         task_response = meshy_client.create_text_to_3d_task(
