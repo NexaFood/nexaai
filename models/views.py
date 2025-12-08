@@ -493,3 +493,69 @@ def api_printer_delete(request, printer_id):
         return HttpResponse('Printer not found', status=404)
     
     return HttpResponse('Printer deleted successfully')
+
+
+# Authentication Views
+
+def signup(request):
+    """User signup page."""
+    if request.method == 'GET':
+        return render(request, 'registration/signup.html')
+    
+    # POST - Handle signup
+    username = request.POST.get('username', '').strip()
+    email = request.POST.get('email', '').strip()
+    password = request.POST.get('password', '')
+    password2 = request.POST.get('password2', '')
+    
+    # Validation
+    errors = []
+    
+    if not username:
+        errors.append('Username is required')
+    elif len(username) < 3:
+        errors.append('Username must be at least 3 characters')
+    elif db.users.find_one({'username': username}):
+        errors.append('Username already exists')
+    
+    if not password:
+        errors.append('Password is required')
+    elif len(password) < 8:
+        errors.append('Password must be at least 8 characters')
+    elif password != password2:
+        errors.append('Passwords do not match')
+    
+    if errors:
+        error_html = '<div class="rounded-md bg-red-50 p-4 mb-4"><div class="flex"><div class="flex-shrink-0"><svg class="h-5 w-5 text-red-400" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/></svg></div><div class="ml-3"><h3 class="text-sm font-medium text-red-800">Errors:</h3><ul class="mt-2 text-sm text-red-700 list-disc list-inside">'
+        for error in errors:
+            error_html += f'<li>{error}</li>'
+        error_html += '</ul></div></div></div>'
+        
+        return HttpResponse(error_html + render_to_string('registration/signup.html', request=request))
+    
+    # Create user
+    try:
+        from models.auth_backend import create_user
+        user = create_user(
+            username=username,
+            email=email,
+            password=password,
+            is_superuser=False,
+            is_staff=False
+        )
+        
+        # Auto-login after signup
+        from django.contrib.auth import login
+        from models.auth_backend import MongoDBAuthBackend
+        
+        backend = MongoDBAuthBackend()
+        authenticated_user = backend.authenticate(request, username=username, password=password)
+        
+        if authenticated_user:
+            login(request, authenticated_user, backend='models.auth_backend.MongoDBAuthBackend')
+            return HttpResponse('<script>window.location.href="/";</script>')
+        else:
+            return HttpResponse('<div class="rounded-md bg-green-50 p-4 mb-4"><p class="text-sm text-green-800">Account created! <a href="/login/" class="font-medium underline">Click here to login</a></p></div>')
+    
+    except Exception as e:
+        return HttpResponse(f'<div class="rounded-md bg-red-50 p-4 mb-4"><p class="text-sm text-red-800">Failed to create account: {str(e)}</p></div>')

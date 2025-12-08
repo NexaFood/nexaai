@@ -49,9 +49,13 @@ class MongoDB:
             self.printers.create_index([("status", ASCENDING)])
             
             # Print jobs collection indexes
-            self.print_jobs.create_index([("user_id", ASCENDING), ("created_at", DESCENDING)])
-            self.print_jobs.create_index([("printer_id", ASCENDING), ("status", ASCENDING)])
-            self.print_jobs.create_index([("status", ASCENDING)])
+            self.print_jobs.create_index([('user_id', ASCENDING), ('created_at', DESCENDING)])
+            self.print_jobs.create_index([('printer_id', ASCENDING), ('status', ASCENDING)])
+            self.print_jobs.create_index([('status', ASCENDING)])
+            
+            # Users collection indexes
+            self.users.create_index([('username', ASCENDING)], unique=True)
+            self.users.create_index([('email', ASCENDING)])
             
             logger.info("MongoDB indexes created successfully")
         except Exception as e:
@@ -76,6 +80,11 @@ class MongoDB:
     def generation_jobs(self):
         """Generation jobs collection."""
         return self._db.generation_jobs
+    
+    @property
+    def users(self):
+        """Users collection."""
+        return self._db.users
     
     def close(self):
         """Close MongoDB connection."""
