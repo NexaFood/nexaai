@@ -41,6 +41,7 @@ MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'models.middleware.SessionUserMiddleware',  # MUST be after AuthenticationMiddleware
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'django_htmx.middleware.HtmxMiddleware',
@@ -78,10 +79,8 @@ DATABASES = {
 MONGO_URI = os.getenv('MONGO_URI', 'mongodb://localhost:27017/')
 MONGO_DB_NAME = os.getenv('MONGO_DB_NAME', 'nexaai')
 
-# Authentication Backends - Use MongoDB for user storage
-AUTHENTICATION_BACKENDS = [
-    'models.auth_backend.MongoDBAuthBackend',
-]
+# Authentication Backends - Not used, we use session-based auth
+# AUTHENTICATION_BACKENDS defaults to ['django.contrib.auth.backends.ModelBackend']
 
 # Password validation
 AUTH_PASSWORD_VALIDATORS = [
@@ -124,8 +123,8 @@ LOGIN_URL = '/login/'
 LOGIN_REDIRECT_URL = '/generate/'
 LOGOUT_REDIRECT_URL = '/'
 
-# Session serializer - use custom serializer to support string user IDs from MongoDB
-SESSION_SERIALIZER = 'models.session_serializer.MongoSessionSerializer'
+# Session serializer - use default JSON serializer
+# SESSION_SERIALIZER defaults to 'django.contrib.sessions.serializers.JSONSerializer'
 
 # REST Framework configuration
 REST_FRAMEWORK = {

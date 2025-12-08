@@ -5,6 +5,20 @@ Server-side rendering with HTMX for dynamic updates.
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse, JsonResponse, StreamingHttpResponse
+from functools import wraps
+
+# Custom decorator for session-based authentication
+def session_login_required(view_func):
+    """
+    Decorator that checks if user is logged in via session.
+    Redirects to login page if not authenticated.
+    """
+    @wraps(view_func)
+    def wrapper(request, *args, **kwargs):
+        if 'user' not in request.session:
+            return redirect('/login/')
+        return view_func(request, *args, **kwargs)
+    return wrapper
 from django.utils import timezone
 from django.views.decorators.http import require_http_methods
 from django.template.loader import render_to_string
@@ -39,19 +53,19 @@ def home(request):
 # 3D MODEL GENERATION VIEWS
 # ============================================================================
 
-@login_required
+@session_login_required
 def generate(request):
     """Model generation page."""
     return render(request, 'generate.html')
 
 
-@login_required
+@session_login_required
 def history(request):
     """Model history page."""
     return render(request, 'history.html')
 
 
-@login_required
+@session_login_required
 def viewer(request, model_id):
     """3D model viewer page."""
     model = db.models.find_one({'_id': to_object_id(model_id), 'user_id': str(request.user.id)})
@@ -67,7 +81,7 @@ def viewer(request, model_id):
 # 3D MODEL HTMX API ENDPOINTS
 # ============================================================================
 
-@login_required
+@session_login_required
 @require_http_methods(["POST"])
 def api_generate(request):
     """
@@ -142,7 +156,7 @@ def api_generate(request):
         return HttpResponse(f'Error: {e}', status=500)
 
 
-@login_required
+@session_login_required
 @require_http_methods(["POST"])
 def api_refine_prompt(request):
     """
@@ -162,7 +176,7 @@ def api_refine_prompt(request):
         return HttpResponse(prompt, status=200)  # Return original on error
 
 
-@login_required
+@session_login_required
 @require_http_methods(["GET"])
 def api_models_list(request):
     """
@@ -205,7 +219,7 @@ def api_models_list(request):
     return HttpResponse(html)
 
 
-@login_required
+@session_login_required
 @require_http_methods(["GET"])
 def api_model_status(request, model_id):
     """
@@ -272,7 +286,7 @@ def api_model_status(request, model_id):
     return HttpResponse(render_to_string('partials/model_card.html', {'model': model}))
 
 
-@login_required
+@session_login_required
 @require_http_methods(["DELETE", "POST"])
 def api_model_delete(request, model_id):
     """
@@ -289,7 +303,7 @@ def api_model_delete(request, model_id):
     return HttpResponse('Model deleted successfully')
 
 
-@login_required
+@session_login_required
 @require_http_methods(["GET"])
 def proxy_glb(request, model_id):
     """
@@ -327,13 +341,13 @@ def proxy_glb(request, model_id):
 # PRINTER MANAGEMENT VIEWS
 # ============================================================================
 
-@login_required
+@session_login_required
 def printers(request):
     """Printer management page."""
     return render(request, 'printers.html')
 
 
-@login_required
+@session_login_required
 def printer_add(request):
     """Add new printer page."""
     if request.method == 'POST':
@@ -367,7 +381,7 @@ def printer_add(request):
     return render(request, 'printer_form.html')
 
 
-@login_required
+@session_login_required
 def printer_edit(request, printer_id):
     """Edit printer page."""
     printer = db.printers.find_one({'_id': to_object_id(printer_id), 'user_id': str(request.user.id)})
@@ -415,7 +429,7 @@ def printer_edit(request, printer_id):
 # PRINTER HTMX API ENDPOINTS
 # ============================================================================
 
-@login_required
+@session_login_required
 @require_http_methods(["GET"])
 def api_printers_list(request):
     """
@@ -453,7 +467,7 @@ def api_printers_list(request):
     return HttpResponse(html)
 
 
-@login_required
+@session_login_required
 @require_http_methods(["POST"])
 def api_printer_change_mode(request, printer_id):
     """
@@ -481,7 +495,7 @@ def api_printer_change_mode(request, printer_id):
     return HttpResponse(f'Mode changed to {mode_display}')
 
 
-@login_required
+@session_login_required
 @require_http_methods(["DELETE", "POST"])
 def api_printer_delete(request, printer_id):
     """
@@ -570,7 +584,7 @@ def signup(request):
 
 
 def login_view(request):
-    """Custom login view for MongoDB authentication."""
+    """Session-based login view for MongoDB authentication."""
     if request.method == 'GET':
         # If already logged in, redirect to home
         if request.user.is_authenticated:
@@ -578,7 +592,7 @@ def login_view(request):
         return render(request, 'registration/login.html')
     
     # POST - Handle login
-    from django.contrib.auth import authenticate, login
+    from django.contrib.auth.hashers import check_password
     
     username = request.POST.get('username', '').strip().lower()  # Convert to lowercase
     password = request.POST.get('password', '')
@@ -591,12 +605,29 @@ def login_view(request):
         }
         return render(request, 'registration/login.html', context)
     
-    # Authenticate user
-    user = authenticate(request, username=username, password=password)
+    # Find user in MongoDB
+    user = db.users.find_one({'username': username})
     
-    if user is not None:
-        # Login successful
-        login(request, user)
+    if user and check_password(password, user['password']):
+        # Login successful - store user data in session
+        user_session_data = {
+            '_id': str(user['_id']),
+            'username': user['username'],
+            'email': user.get('email', ''),
+            'first_name': user.get('first_name', ''),
+            'last_name': user.get('last_name', ''),
+            'is_active': user.get('is_active', True),
+            'is_staff': user.get('is_staff', False),
+            'is_superuser': user.get('is_superuser', False),
+        }
+        
+        request.session['user'] = user_session_data
+        
+        # Update last_login
+        db.users.update_one(
+            {'_id': user['_id']},
+            {'$set': {'last_login': datetime.utcnow()}}
+        )
         
         # Redirect to next page or home
         next_url = request.GET.get('next', '/')
