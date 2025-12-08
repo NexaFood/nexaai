@@ -13,7 +13,7 @@ class Model3DSchema:
     def create(user_id, prompt, **kwargs):
         """Create a new 3D model document."""
         return {
-            'user_id': user_id,
+            'user_id': str(user_id),  # Store as string for MongoDB users
             'prompt': prompt,
             'refined_prompt': kwargs.get('refined_prompt'),
             'art_style': kwargs.get('art_style'),
@@ -45,7 +45,7 @@ class PrinterSchema:
     def create(user_id, name, printer_type, model, build_volume_x, build_volume_y, build_volume_z, **kwargs):
         """Create a new printer document."""
         doc = {
-            'user_id': user_id,
+            'user_id': str(user_id),  # Store as string for MongoDB users
             'name': name,
             'printer_type': printer_type,  # 'prusa' or 'snapmaker'
             'model': model,
@@ -85,7 +85,7 @@ class PrintJobSchema:
     def create(user_id, model_id, printer_id, **kwargs):
         """Create a new print job document."""
         return {
-            'user_id': user_id,
+            'user_id': str(user_id),  # Store as string for MongoDB users
             'model_id': ObjectId(model_id) if isinstance(model_id, str) else model_id,
             'printer_id': ObjectId(printer_id) if isinstance(printer_id, str) else printer_id,
             'status': kwargs.get('status', 'queued'),  # queued, printing, completed, failed, cancelled

@@ -54,7 +54,7 @@ def history(request):
 @login_required
 def viewer(request, model_id):
     """3D model viewer page."""
-    model = db.models.find_one({'_id': to_object_id(model_id), 'user_id': request.user.id})
+    model = db.models.find_one({'_id': to_object_id(model_id), 'user_id': str(request.user.id)})
     
     if not model:
         return HttpResponse('Model not found', status=404)
@@ -92,7 +92,7 @@ def api_generate(request):
         
         # Create model document
         model_doc = Model3DSchema.create(
-            user_id=request.user.id,
+            user_id=str(request.user.id),
             prompt=prompt,
             quality=quality,
             polygon_count=polygon_count,
@@ -172,7 +172,7 @@ def api_models_list(request):
     filter_status = request.GET.get('status', 'all')
     
     # Build query
-    query = {'user_id': request.user.id}
+    query = {'user_id': str(request.user.id)}
     if filter_status != 'all':
         query['status'] = filter_status
     
@@ -212,7 +212,7 @@ def api_model_status(request, model_id):
     HTMX endpoint to check model generation status.
     Returns updated model card HTML.
     """
-    model = db.models.find_one({'_id': to_object_id(model_id), 'user_id': request.user.id})
+    model = db.models.find_one({'_id': to_object_id(model_id), 'user_id': str(request.user.id)})
     
     if not model:
         return HttpResponse('Model not found', status=404)
@@ -278,7 +278,7 @@ def api_model_delete(request, model_id):
     """
     HTMX endpoint to delete model.
     """
-    result = db.models.delete_one({'_id': to_object_id(model_id), 'user_id': request.user.id})
+    result = db.models.delete_one({'_id': to_object_id(model_id), 'user_id': str(request.user.id)})
     
     if result.deleted_count == 0:
         return HttpResponse('Model not found', status=404)
@@ -296,7 +296,7 @@ def proxy_glb(request, model_id):
     Proxy endpoint to serve GLB files from Meshy.ai.
     Bypasses CORS restrictions.
     """
-    model = db.models.find_one({'_id': to_object_id(model_id), 'user_id': request.user.id})
+    model = db.models.find_one({'_id': to_object_id(model_id), 'user_id': str(request.user.id)})
     
     if not model or not model.get('glb_url'):
         return HttpResponse('GLB file not found', status=404)
@@ -340,7 +340,7 @@ def printer_add(request):
         try:
             # Create printer document
             printer_doc = PrinterSchema.create(
-                user_id=request.user.id,
+                user_id=str(request.user.id),
                 name=request.POST.get('name'),
                 printer_type=request.POST.get('printer_type'),
                 model=request.POST.get('model'),
@@ -370,7 +370,7 @@ def printer_add(request):
 @login_required
 def printer_edit(request, printer_id):
     """Edit printer page."""
-    printer = db.printers.find_one({'_id': to_object_id(printer_id), 'user_id': request.user.id})
+    printer = db.printers.find_one({'_id': to_object_id(printer_id), 'user_id': str(request.user.id)})
     
     if not printer:
         return HttpResponse('Printer not found', status=404)
@@ -422,7 +422,7 @@ def api_printers_list(request):
     HTMX endpoint to list printers.
     Returns HTML grid of printer cards.
     """
-    printers = list(db.printers.find({'user_id': request.user.id}).sort('name', 1))
+    printers = list(db.printers.find({'user_id': str(request.user.id)}).sort('name', 1))
     
     if not printers:
         return HttpResponse('''
@@ -459,7 +459,7 @@ def api_printer_change_mode(request, printer_id):
     """
     HTMX endpoint to change Snapmaker mode.
     """
-    printer = db.printers.find_one({'_id': to_object_id(printer_id), 'user_id': request.user.id})
+    printer = db.printers.find_one({'_id': to_object_id(printer_id), 'user_id': str(request.user.id)})
     
     if not printer:
         return HttpResponse('Printer not found', status=404)
@@ -487,7 +487,7 @@ def api_printer_delete(request, printer_id):
     """
     HTMX endpoint to delete printer.
     """
-    result = db.printers.delete_one({'_id': to_object_id(printer_id), 'user_id': request.user.id})
+    result = db.printers.delete_one({'_id': to_object_id(printer_id), 'user_id': str(request.user.id)})
     
     if result.deleted_count == 0:
         return HttpResponse('Printer not found', status=404)

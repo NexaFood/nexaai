@@ -78,6 +78,11 @@ DATABASES = {
 MONGO_URI = os.getenv('MONGO_URI', 'mongodb://localhost:27017/')
 MONGO_DB_NAME = os.getenv('MONGO_DB_NAME', 'nexaai')
 
+# Authentication Backends - Use MongoDB for user storage
+AUTHENTICATION_BACKENDS = [
+    'models.auth_backend.MongoDBAuthBackend',
+]
+
 # Password validation
 AUTH_PASSWORD_VALIDATORS = [
     {
