@@ -394,3 +394,35 @@ def api_model_status(request, model_id):
     
     # Return updated model card
     return render(request, 'partials/model_card.html', {'model': model})
+
+
+@login_required
+@require_http_methods(["GET"])
+def proxy_glb(request, model_id):
+    """
+    Proxy endpoint to serve GLB files from Meshy.ai.
+    Bypasses CORS restrictions by downloading server-side.
+    """
+    model = get_object_or_404(Model3D, id=model_id, user=request.user)
+    
+    if not model.glb_url:
+        return HttpResponse("GLB file not available", status=404)
+    
+    try:
+        import requests
+        # Download GLB file from Meshy.ai
+        response = requests.get(model.glb_url, stream=True, timeout=30)
+        response.raise_for_status()
+        
+        # Return as Django response with correct content type
+        django_response = HttpResponse(
+            response.content,
+            content_type='model/gltf-binary'
+        )
+        django_response['Content-Disposition'] = f'inline; filename="model_{model_id}.glb"'
+        django_response['Access-Control-Allow-Origin'] = '*'
+        return django_response
+    
+    except Exception as e:
+        logger.error(f"Failed to proxy GLB file: {e}")
+        return HttpResponse(f"Failed to load model: {str(e)}", status=500)

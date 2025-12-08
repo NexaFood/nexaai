@@ -18,5 +18,6 @@ urlpatterns = [
     path('api/refine-prompt', views.api_refine_prompt, name='api-refine-prompt'),
     path('api/models', views.api_models_list, name='api-models-list'),
     path('api/models/<int:model_id>/status', views.api_model_status, name='api-model-status'),
+    path('api/models/<int:model_id>/glb', views.proxy_glb, name='proxy-glb'),
     path('api/models/<int:model_id>', views.api_model_delete, name='api-model-delete'),
 ]

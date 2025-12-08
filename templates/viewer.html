@@ -177,10 +177,10 @@
         controls.enableDamping = true;
         controls.dampingFactor = 0.05;
         
-        // Load model
-        const modelUrl = "{{ model.glb_url }}";
-        console.log('Loading model from:', modelUrl);
-        if (modelUrl && modelUrl !== '') {
+        // Load model via proxy to avoid CORS issues
+        const modelUrl = "/api/models/{{ model.id }}/glb";
+        console.log('Loading model from proxy:', modelUrl);
+        if (modelUrl) {
             const loader = new GLTFLoader();
             loader.load(
                 modelUrl,
