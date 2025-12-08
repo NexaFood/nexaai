@@ -17,6 +17,9 @@ class MockPKField:
     def __init__(self):
         self.name = 'id'
         self.attname = 'id'
+        # Tell Django this is a string field, not an integer
+        self.rel = None
+        self.related_model = None
     
     def value_to_string(self, obj):
         """Return string representation of pk value."""
@@ -25,6 +28,19 @@ class MockPKField:
     def get_prep_value(self, value):
         """Prepare value for database."""
         return str(value) if value else None
+    
+    def to_python(self, value):
+        """Convert value to Python string."""
+        return str(value) if value is not None else None
+    
+    def get_internal_type(self):
+        """Tell Django this is a CharField, not an IntegerField."""
+        return 'CharField'
+    
+    def validate(self, value, model_instance):
+        """Validate that value is a string."""
+        # Accept any string value (MongoDB ObjectId)
+        pass
 
 
 class MongoUserMeta:
