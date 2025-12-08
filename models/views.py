@@ -120,7 +120,12 @@ def api_generate(request):
         # Start Meshy.ai generation
         try:
             meshy_client = MeshyClient()
-            task_id = meshy_client.create_text_to_3d(prompt, polygon_count)
+            result = meshy_client.create_text_to_3d_task(
+                prompt=prompt,
+                art_style='realistic',
+                target_polycount=polygon_count
+            )
+            task_id = result.get('result')  # Extract task ID from response
             
             # Create generation job
             job_doc = GenerationJobSchema.create(
