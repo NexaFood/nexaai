@@ -33,7 +33,7 @@ class MeshyClient:
             'Content-Type': 'application/json'
         }
     
-    def create_text_to_3d_task(self, prompt, art_style='realistic', target_polycount=30000):
+    def create_text_to_3d_task(self, prompt, art_style='realistic', target_polycount=30000, mode='preview'):
         """
         Create a new text-to-3D generation task.
         
@@ -41,6 +41,7 @@ class MeshyClient:
             prompt: Text description of the 3D model
             art_style: Art style (realistic, cartoon, low-poly, etc.)
             target_polycount: Target polygon count
+            mode: Generation mode ('preview' for fast/cheap, 'refine' for high quality)
         
         Returns:
             dict: Task creation response with task ID
@@ -48,14 +49,14 @@ class MeshyClient:
         url = f"{self.base_url}/v2/text-to-3d"
         
         payload = {
-            'mode': 'preview',
+            'mode': mode,
             'prompt': prompt,
             'art_style': art_style,
             'target_polycount': target_polycount,
             'enable_pbr': True
         }
         
-        logger.info(f"Creating Meshy task for prompt: {prompt[:100]}")
+        logger.info(f"Creating Meshy task: mode={mode}, polycount={target_polycount}, prompt={prompt[:100]}...")
         
         try:
             response = requests.post(url, json=payload, headers=self.headers, timeout=30)
