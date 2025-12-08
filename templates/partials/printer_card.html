@@ -1,0 +1,74 @@
+<!-- Printer Card Partial -->
+<div class="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow">
+    <!-- Header with Status -->
+    <div class="bg-gradient-to-r from-purple-500 to-blue-500 p-6 text-white">
+        <div class="flex justify-between items-start mb-2">
+            <h3 class="font-bold text-xl">{{ printer.name }}</h3>
+            <span class="px-3 py-1 rounded-full text-xs font-bold
+                {% if printer.status == 'idle' %}bg-green-500
+                {% elif printer.status == 'printing' %}bg-blue-500
+                {% elif printer.status == 'offline' %}bg-gray-500
+                {% else %}bg-red-500{% endif %}">
+                {{ printer.get_status_display }}
+            </span>
+        </div>
+        <p class="text-sm opacity-90">{{ printer.model }}</p>
+    </div>
+
+    <!-- Details -->
+    <div class="p-6 space-y-4">
+        <!-- Printer Type & Mode -->
+        <div>
+            <p class="text-sm text-gray-500 mb-1">Type</p>
+            <p class="font-semibold">
+                {{ printer.get_printer_type_display }}
+                {% if printer.printer_type == 'snapmaker' and printer.current_mode %}
+                    <span class="text-sm text-purple-600">({{ printer.get_current_mode_display }})</span>
+                {% endif %}
+            </p>
+        </div>
+
+        <!-- Build Volume -->
+        <div>
+            <p class="text-sm text-gray-500 mb-1">Build Volume</p>
+            <p class="font-semibold">{{ printer.build_volume_x }} × {{ printer.build_volume_y }} × {{ printer.build_volume_z }} mm</p>
+        </div>
+
+        <!-- IP Address -->
+        {% if printer.ip_address %}
+        <div>
+            <p class="text-sm text-gray-500 mb-1">IP Address</p>
+            <p class="font-mono text-sm">{{ printer.ip_address }}</p>
+        </div>
+        {% endif %}
+
+        <!-- Serial Number -->
+        {% if printer.serial_number %}
+        <div>
+            <p class="text-sm text-gray-500 mb-1">Serial Number</p>
+            <p class="font-mono text-sm">{{ printer.serial_number }}</p>
+        </div>
+        {% endif %}
+
+        <!-- Actions -->
+        <div class="pt-4 border-t border-gray-200 flex space-x-2">
+            <a href="/printers/edit/{{ printer.id }}" class="flex-1 bg-purple-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-purple-700 transition text-center text-sm">
+                Edit
+            </a>
+            {% if printer.printer_type == 'snapmaker' %}
+            <button 
+                onclick="showModeChangeModal({{ printer.id }}, '{{ printer.current_mode }}')"
+                class="flex-1 bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-700 transition text-sm"
+            >
+                Change Mode
+            </button>
+            {% endif %}
+            <button 
+                onclick="deletePrinter({{ printer.id }}, '{{ printer.name }}')"
+                class="bg-red-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-red-700 transition text-sm"
+            >
+                Delete
+            </button>
+        </div>
+    </div>
+</div>

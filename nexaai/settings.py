@@ -66,11 +66,17 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'nexaai.wsgi.application'
 
-# Database - SQLite
+# Database - MongoDB via djongo5
+MONGO_URI = os.getenv('MONGO_URI', 'mongodb://localhost:27017/')
+MONGO_DB_NAME = os.getenv('MONGO_DB_NAME', 'nexaai')
+
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'djongo',
+        'CLIENT': {
+            'host': MONGO_URI,
+        },
+        'NAME': MONGO_DB_NAME,
     }
 }
 

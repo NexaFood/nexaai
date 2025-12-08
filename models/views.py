@@ -10,7 +10,7 @@ from django.utils import timezone
 from django.views.decorators.http import require_http_methods
 from django.template.loader import render_to_string
 
-from models.models import User, Model3D, GenerationJob
+from models.models import User, Model3D, GenerationJob, Printer, PrintJob
 from services.meshy_client import MeshyClient
 from services.prompt_refinement import refine_prompt_with_llm
 from services.notifications import notify_owner
@@ -426,3 +426,154 @@ def proxy_glb(request, model_id):
     except Exception as e:
         logger.error(f"Failed to proxy GLB file: {e}")
         return HttpResponse(f"Failed to load model: {str(e)}", status=500)
+
+
+# ============================================================================
+# PRINTER MANAGEMENT VIEWS
+# ============================================================================
+
+@login_required
+def printers(request):
+    """Printer management page."""
+    return render(request, 'printers.html')
+
+
+@login_required
+def printer_add(request):
+    """Add new printer page."""
+    if request.method == 'POST':
+        try:
+            from models.models import Printer
+            
+            # Create printer
+            printer = Printer.objects.create(
+                user=request.user,
+                name=request.POST.get('name'),
+                printer_type=request.POST.get('printer_type'),
+                model=request.POST.get('model'),
+                serial_number=request.POST.get('serial_number') or None,
+                ip_address=request.POST.get('ip_address') or None,
+                build_volume_x=int(request.POST.get('build_volume_x')),
+                build_volume_y=int(request.POST.get('build_volume_y')),
+                build_volume_z=int(request.POST.get('build_volume_z')),
+                status=request.POST.get('status', 'idle'),
+                current_mode=request.POST.get('current_mode') if request.POST.get('printer_type') == 'snapmaker' else None,
+            )
+            
+            return redirect('/printers')
+        
+        except Exception as e:
+            logger.error(f"Failed to create printer: {e}")
+            return render(request, 'printer_form.html', {
+                'error': str(e)
+            })
+    
+    return render(request, 'printer_form.html')
+
+
+@login_required
+def printer_edit(request, printer_id):
+    """Edit printer page."""
+    from models.models import Printer
+    printer = get_object_or_404(Printer, id=printer_id, user=request.user)
+    
+    if request.method == 'POST':
+        try:
+            # Update printer
+            printer.name = request.POST.get('name')
+            printer.printer_type = request.POST.get('printer_type')
+            printer.model = request.POST.get('model')
+            printer.serial_number = request.POST.get('serial_number') or None
+            printer.ip_address = request.POST.get('ip_address') or None
+            printer.build_volume_x = int(request.POST.get('build_volume_x'))
+            printer.build_volume_y = int(request.POST.get('build_volume_y'))
+            printer.build_volume_z = int(request.POST.get('build_volume_z'))
+            printer.status = request.POST.get('status')
+            printer.current_mode = request.POST.get('current_mode') if printer.printer_type == 'snapmaker' else None
+            printer.save()
+            
+            return redirect('/printers')
+        
+        except Exception as e:
+            logger.error(f"Failed to update printer: {e}")
+            return render(request, 'printer_form.html', {
+                'printer': printer,
+                'error': str(e)
+            })
+    
+    return render(request, 'printer_form.html', {'printer': printer})
+
+
+# ============================================================================
+# PRINTER HTMX API ENDPOINTS
+# ============================================================================
+
+@login_required
+@require_http_methods(["GET"])
+def api_printers_list(request):
+    """
+    HTMX endpoint to list printers.
+    Returns HTML grid of printer cards.
+    """
+    from models.models import Printer
+    
+    printers = Printer.objects.filter(user=request.user).order_by('name')
+    
+    if not printers:
+        return HttpResponse('''
+            <div class="text-center py-12">
+                <svg class="w-24 h-24 mx-auto text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path>
+                </svg>
+                <h3 class="text-xl font-bold text-gray-700 mb-2">No Printers Yet</h3>
+                <p class="text-gray-500 mb-6">Add your first 3D printer or CNC machine to get started</p>
+                <a href="/printers/add" class="inline-block bg-purple-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-purple-700 transition">
+                    Add Your First Printer
+                </a>
+            </div>
+        ''')
+    
+    # Render printer cards
+    html = '<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">'
+    for printer in printers:
+        html += render_to_string('partials/printer_card.html', {'printer': printer})
+    html += '</div>'
+    
+    return HttpResponse(html)
+
+
+@login_required
+@require_http_methods(["POST"])
+def api_printer_change_mode(request, printer_id):
+    """
+    HTMX endpoint to change Snapmaker mode.
+    """
+    from models.models import Printer
+    
+    printer = get_object_or_404(Printer, id=printer_id, user=request.user)
+    
+    if printer.printer_type != 'snapmaker':
+        return HttpResponse('Only Snapmaker printers support mode changing', status=400)
+    
+    new_mode = request.POST.get('mode')
+    if new_mode not in ['3d_print', 'cnc', 'laser']:
+        return HttpResponse('Invalid mode', status=400)
+    
+    printer.current_mode = new_mode
+    printer.save()
+    
+    return HttpResponse(f'Mode changed to {printer.get_current_mode_display()}')
+
+
+@login_required
+@require_http_methods(["DELETE", "POST"])
+def api_printer_delete(request, printer_id):
+    """
+    HTMX endpoint to delete printer.
+    """
+    from models.models import Printer
+    
+    printer = get_object_or_404(Printer, id=printer_id, user=request.user)
+    printer.delete()
+    
+    return HttpResponse('Printer deleted successfully')
