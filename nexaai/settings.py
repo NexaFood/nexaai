@@ -66,19 +66,17 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'nexaai.wsgi.application'
 
-# Database - MongoDB via djongo5
-MONGO_URI = os.getenv('MONGO_URI', 'mongodb://localhost:27017/')
-MONGO_DB_NAME = os.getenv('MONGO_DB_NAME', 'nexaai')
-
+# Database - SQLite for Django auth/sessions
 DATABASES = {
     'default': {
-        'ENGINE': 'djongo',
-        'CLIENT': {
-            'host': MONGO_URI,
-        },
-        'NAME': MONGO_DB_NAME,
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
+
+# MongoDB Configuration (accessed via PyMongo directly)
+MONGO_URI = os.getenv('MONGO_URI', 'mongodb://localhost:27017/')
+MONGO_DB_NAME = os.getenv('MONGO_DB_NAME', 'nexaai')
 
 # Password validation
 AUTH_PASSWORD_VALIDATORS = [

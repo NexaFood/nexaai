@@ -1,232 +1,206 @@
 """
-Django template views for Manufacturing Orchestrator.
-Replaces REST API with server-side rendering using HTMX.
+Django views for NexaAI using PyMongo for MongoDB operations.
+Server-side rendering with HTMX for dynamic updates.
 """
-from django.shortcuts import render, redirect, get_object_or_404
+from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth import login, logout
-from django.http import HttpResponse, JsonResponse
+from django.http import HttpResponse, JsonResponse, StreamingHttpResponse
 from django.utils import timezone
 from django.views.decorators.http import require_http_methods
 from django.template.loader import render_to_string
+from bson import ObjectId
+from datetime import datetime
+import logging
+import requests
 
-from models.models import User, Model3D, GenerationJob, Printer, PrintJob
+from models.mongodb import db, to_object_id, doc_to_dict, docs_to_list
+from models.schemas import (
+    Model3DSchema, PrinterSchema, PrintJobSchema, GenerationJobSchema,
+    get_display_name, PRINTER_TYPE_DISPLAY, PRINTER_STATUS_DISPLAY,
+    SNAPMAKER_MODE_DISPLAY, MODEL_STATUS_DISPLAY
+)
 from services.meshy_client import MeshyClient
 from services.prompt_refinement import refine_prompt_with_llm
 from services.notifications import notify_owner
 
-import logging
-
 logger = logging.getLogger(__name__)
 
+
+# ============================================================================
+# BASIC VIEWS
+# ============================================================================
 
 def home(request):
     """Landing page."""
     return render(request, 'home.html')
 
 
+# ============================================================================
+# 3D MODEL GENERATION VIEWS
+# ============================================================================
+
 @login_required
 def generate(request):
     """Model generation page."""
-    # Pre-fill prompt from query parameter if provided
-    initial_prompt = request.GET.get('prompt', '')
-    return render(request, 'generate.html', {
-        'initial_prompt': initial_prompt
-    })
+    return render(request, 'generate.html')
 
 
 @login_required
 def history(request):
-    """Model history/gallery page."""
+    """Model history page."""
     return render(request, 'history.html')
 
 
 @login_required
 def viewer(request, model_id):
     """3D model viewer page."""
-    model = get_object_or_404(Model3D, id=model_id, user=request.user)
-    return render(request, 'viewer.html', {
-        'model': model
-    })
+    model = db.models.find_one({'_id': to_object_id(model_id), 'user_id': request.user.id})
+    
+    if not model:
+        return HttpResponse('Model not found', status=404)
+    
+    model = doc_to_dict(model)
+    return render(request, 'viewer.html', {'model': model})
 
 
-# HTMX API Endpoints
+# ============================================================================
+# 3D MODEL HTMX API ENDPOINTS
+# ============================================================================
 
 @login_required
 @require_http_methods(["POST"])
 def api_generate(request):
     """
-    HTMX endpoint to start model generation.
-    Returns HTML fragment with generation status.
+    HTMX endpoint to generate 3D model.
+    Creates model and starts Meshy.ai generation job.
     """
-    prompt = request.POST.get('prompt', '').strip()
-    art_style = request.POST.get('art_style', '')
-    quality = request.POST.get('quality', 'preview')
-    
-    if not prompt:
-        return HttpResponse(
-            '<div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">Please enter a prompt</div>',
-            status=400
-        )
-    
     try:
-        # Create model instance
-        model = Model3D.objects.create(
-            user=request.user,
-            prompt=prompt,
-            art_style=art_style if art_style else None,
-            quality=quality,
-            status='pending'
-        )
+        prompt = request.POST.get('prompt', '').strip()
+        quality = request.POST.get('quality', 'preview')
         
-        # Initialize Meshy client
-        meshy_client = MeshyClient()
+        if not prompt:
+            return HttpResponse('Prompt is required', status=400)
         
-        # Determine polygon count based on quality
+        # Map quality to polygon count
         quality_map = {
             'preview': 10000,
             'standard': 30000,
             'high': 60000,
-            'ultra': 100000
+            'ultra': 100000,
         }
-        polygon_count = quality_map.get(quality, 10000)  # Default to preview
+        polygon_count = quality_map.get(quality, 30000)
         
-        # Start generation task
-        task_response = meshy_client.create_text_to_3d_task(
+        # Create model document
+        model_doc = Model3DSchema.create(
+            user_id=request.user.id,
             prompt=prompt,
-            art_style=art_style if art_style else None,
-            target_polycount=polygon_count
+            quality=quality,
+            polygon_count=polygon_count,
+            status='processing'
         )
         
-        # Create generation job
-        GenerationJob.objects.create(
-            model=model,
-            meshy_task_id=task_response['result'],
-            meshy_status='pending',
-            meshy_response=task_response
-        )
+        # Insert into MongoDB
+        result = db.models.insert_one(model_doc)
+        model_id = result.inserted_id
         
-        # Update model status
-        model.status = 'processing'
-        model.save()
+        # Start Meshy.ai generation
+        try:
+            meshy_client = MeshyClient()
+            task_id = meshy_client.create_text_to_3d(prompt, polygon_count)
+            
+            # Create generation job
+            job_doc = GenerationJobSchema.create(
+                model_id=model_id,
+                meshy_task_id=task_id,
+                meshy_status='PENDING'
+            )
+            db.generation_jobs.insert_one(job_doc)
+            
+            logger.info(f"Started generation for model {model_id}, task {task_id}")
+            
+        except Exception as e:
+            logger.error(f"Failed to start Meshy generation: {e}")
+            db.models.update_one(
+                {'_id': model_id},
+                Model3DSchema.update({'status': 'failed', 'error_message': str(e)})
+            )
+            return HttpResponse(f'Failed to start generation: {e}', status=500)
         
         # Notify owner
         try:
             notify_owner(
                 title="New 3D Model Generation Started",
-                content=f"User {request.user.username} started generating: {prompt[:100]}"
+                content=f"Prompt: {prompt}\nQuality: {quality}"
             )
         except Exception as e:
-            logger.warning(f"Failed to send owner notification: {e}")
+            logger.warning(f"Failed to send notification: {e}")
         
-        # Return success HTML fragment
-        html = f'''
-        <div class="bg-green-100 border border-green-400 text-green-700 px-6 py-4 rounded-lg mb-4">
-            <h3 class="font-bold text-lg mb-2">✓ Generation Started!</h3>
-            <p class="mb-3">Your 3D model is being generated. This usually takes 2-5 minutes.</p>
-            <div class="flex space-x-3">
-                <a href="/history" class="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 transition">
-                    View in History
-                </a>
-                <button 
-                    hx-get="/api/models/{model.id}/status" 
-                    hx-target="#generation-result" 
-                    hx-swap="innerHTML"
-                    hx-trigger="every 5s"
-                    class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition"
-                >
-                    Check Status
-                </button>
-            </div>
-        </div>
-        '''
-        return HttpResponse(html)
+        return HttpResponse('Generation started! Check the History page to see progress.')
     
     except Exception as e:
-        logger.error(f"Failed to create generation task: {e}")
-        return HttpResponse(
-            f'<div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">Failed to start generation: {str(e)}</div>',
-            status=500
-        )
+        logger.error(f"Generation failed: {e}")
+        return HttpResponse(f'Error: {e}', status=500)
 
 
 @login_required
 @require_http_methods(["POST"])
 def api_refine_prompt(request):
     """
-    HTMX endpoint to refine prompt with LLM.
-    Returns updated textarea with refined prompt.
+    HTMX endpoint to refine prompt using LLM.
     """
-    prompt = request.POST.get('prompt', '').strip()
-    
-    if not prompt:
-        return HttpResponse(
-            '<textarea id="prompt" name="prompt" rows="4" required class="w-full px-4 py-3 border border-red-300 rounded-lg" placeholder="Please enter a prompt first"></textarea>',
-            status=400
-        )
-    
     try:
-        # Refine prompt using LLM
-        result = refine_prompt_with_llm(prompt)
-        refined_prompt = result.get('refined_prompt', prompt)
+        prompt = request.POST.get('prompt', '').strip()
         
-        # Return updated textarea
-        html = f'''
-        <textarea 
-            id="prompt" 
-            name="prompt" 
-            rows="4" 
-            required
-            class="w-full px-4 py-3 border border-green-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-        >{refined_prompt}</textarea>
-        <p class="text-sm text-green-600 mt-2">✓ Prompt refined with AI suggestions</p>
-        '''
-        return HttpResponse(html)
+        if not prompt:
+            return HttpResponse('Prompt is required', status=400)
+        
+        refined = refine_prompt_with_llm(prompt)
+        return HttpResponse(refined)
     
     except Exception as e:
-        logger.error(f"Failed to refine prompt: {e}")
-        return HttpResponse(
-            f'<textarea id="prompt" name="prompt" rows="4" required class="w-full px-4 py-3 border border-red-300 rounded-lg">{prompt}</textarea><p class="text-sm text-red-600 mt-2">Failed to refine prompt: {str(e)}</p>',
-            status=500
-        )
+        logger.error(f"Prompt refinement failed: {e}")
+        return HttpResponse(prompt, status=200)  # Return original on error
 
 
 @login_required
 @require_http_methods(["GET"])
 def api_models_list(request):
     """
-    HTMX endpoint to list models.
+    HTMX endpoint to list user's 3D models.
     Returns HTML grid of model cards.
     """
-    status_filter = request.GET.get('status', 'all')
+    filter_status = request.GET.get('status', 'all')
     
-    # Get user's models
-    models = Model3D.objects.filter(user=request.user).order_by('-created_at')
+    # Build query
+    query = {'user_id': request.user.id}
+    if filter_status != 'all':
+        query['status'] = filter_status
     
-    # Apply status filter
-    if status_filter and status_filter != 'all':
-        models = models.filter(status=status_filter)
+    # Fetch models
+    models = list(db.models.find(query).sort('created_at', -1))
+    
+    if not models:
+        return HttpResponse('''
+            <div class="text-center py-12">
+                <svg class="w-24 h-24 mx-auto text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
+                </svg>
+                <h3 class="text-xl font-bold text-gray-700 mb-2">No Models Yet</h3>
+                <p class="text-gray-500 mb-6">Generate your first 3D model to get started</p>
+                <a href="/generate/" class="inline-block bg-purple-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-purple-700 transition">
+                    Generate Your First Model
+                </a>
+            </div>
+        ''')
     
     # Render model cards
-    if models.exists():
-        html = '<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">'
-        for model in models:
-            card_html = render_to_string('partials/model_card.html', {'model': model})
-            html += card_html
-        html += '</div>'
-    else:
-        html = '''
-        <div class="text-center py-16">
-            <svg class="w-24 h-24 mx-auto text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"></path>
-            </svg>
-            <h3 class="text-xl font-bold text-gray-600 mb-2">No models found</h3>
-            <p class="text-gray-500 mb-6">Start generating your first 3D model!</p>
-            <a href="/generate" class="bg-purple-600 text-white px-8 py-3 rounded-lg font-bold hover:bg-purple-700 transition inline-block">
-                Generate Model
-            </a>
-        </div>
-        '''
+    html = '<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">'
+    for model in models:
+        model = doc_to_dict(model)
+        # Add display names
+        model['status_display'] = get_display_name(model['status'], MODEL_STATUS_DISPLAY)
+        html += render_to_string('partials/model_card.html', {'model': model})
+    html += '</div>'
     
     return HttpResponse(html)
 
@@ -236,164 +210,83 @@ def api_models_list(request):
 def api_model_status(request, model_id):
     """
     HTMX endpoint to check model generation status.
-    Returns updated model card or status message.
-    """
-    model = get_object_or_404(Model3D, id=model_id, user=request.user)
-    
-    if model.status == 'completed':
-        # Return updated model card
-        return HttpResponse(render_to_string('partials/model_card.html', {'model': model}))
-    
-    if model.status == 'failed':
-        return HttpResponse(
-            f'<div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">Generation failed: {model.error_message}</div>',
-            status=400
-        )
-    
-    try:
-        # Get generation job
-        job = model.generation_job
-        
-        # Check status with Meshy
-        meshy_client = MeshyClient()
-        task_status = meshy_client.get_task_status(job.meshy_task_id)
-        
-        # Update job
-        job.meshy_status = task_status['status']
-        job.meshy_response = task_status
-        job.progress = task_status.get('progress', 0)
-        job.last_checked_at = timezone.now()
-        job.save()
-        
-        # Update model if completed
-        if task_status['status'] == 'SUCCEEDED':
-            model.status = 'completed'
-            model.completed_at = timezone.now()
-            
-            # Store file URLs
-            model.glb_url = task_status.get('model_urls', {}).get('glb')
-            model.obj_url = task_status.get('model_urls', {}).get('obj')
-            model.fbx_url = task_status.get('model_urls', {}).get('fbx')
-            model.usdz_url = task_status.get('model_urls', {}).get('usdz')
-            model.thumbnail_url = task_status.get('thumbnail_url')
-            
-            model.save()
-            
-            # Notify owner
-            try:
-                notify_owner(
-                    title="3D Model Generation Completed",
-                    content=f"Model '{model.prompt[:100]}' completed successfully"
-                )
-            except Exception as e:
-                logger.warning(f"Failed to send owner notification: {e}")
-            
-            # Return updated model card
-            return HttpResponse(render_to_string('partials/model_card.html', {'model': model}))
-        
-        elif task_status['status'] == 'FAILED':
-            model.status = 'failed'
-            model.error_message = task_status.get('error', 'Unknown error')
-            model.save()
-            
-            # Notify owner
-            try:
-                notify_owner(
-                    title="3D Model Generation Failed",
-                    content=f"Model '{model.prompt[:100]}' failed: {model.error_message}"
-                )
-            except Exception as e:
-                logger.warning(f"Failed to send owner notification: {e}")
-            
-            return HttpResponse(render_to_string('partials/model_card.html', {'model': model}))
-        
-        else:
-            # Still processing - return progress indicator
-            progress = job.progress
-            html = f'''
-            <div class="bg-blue-50 border border-blue-200 rounded-lg p-6">
-                <h3 class="font-bold text-lg mb-2">Generating...</h3>
-                <div class="w-full bg-gray-200 rounded-full h-4 mb-2">
-                    <div class="bg-blue-600 h-4 rounded-full transition-all duration-500" style="width: {progress}%"></div>
-                </div>
-                <p class="text-sm text-gray-600">{progress}% complete</p>
-            </div>
-            '''
-            return HttpResponse(html)
-    
-    except Exception as e:
-        logger.error(f"Failed to check generation status: {e}")
-        return HttpResponse(
-            f'<div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">Failed to check status: {str(e)}</div>',
-            status=500
-        )
-
-
-@login_required
-@require_http_methods(["DELETE"])
-def api_model_delete(request, model_id):
-    """
-    HTMX endpoint to delete a model.
-    Returns redirect to history page.
-    """
-    model = get_object_or_404(Model3D, id=model_id, user=request.user)
-    model.delete()
-    
-    # Return HX-Redirect header to redirect to history
-    response = HttpResponse(status=200)
-    response['HX-Redirect'] = '/history'
-    return response
-
-
-@login_required
-@require_http_methods(["GET"])
-def api_model_status(request, model_id):
-    """
-    HTMX endpoint to check single model status.
-    Checks Meshy.ai API if still processing.
     Returns updated model card HTML.
     """
-    model = get_object_or_404(Model3D, id=model_id, user=request.user)
+    model = db.models.find_one({'_id': to_object_id(model_id), 'user_id': request.user.id})
     
-    # If still processing, check Meshy.ai for updates
-    if model.status == 'processing':
-        try:
-            job = GenerationJob.objects.filter(model=model).first()
-            if job and job.meshy_task_id:
+    if not model:
+        return HttpResponse('Model not found', status=404)
+    
+    # Check if still processing
+    if model['status'] == 'processing':
+        # Check Meshy.ai status
+        job = db.generation_jobs.find_one({'model_id': model['_id']})
+        if job:
+            try:
                 meshy_client = MeshyClient()
-                status_response = meshy_client.get_task_status(job.meshy_task_id)
+                status_data = meshy_client.get_task_status(job['meshy_task_id'])
                 
-                # Update job status
-                job.meshy_status = status_response.get('status', 'unknown')
-                job.meshy_response = status_response
-                job.save()
+                # Update job
+                db.generation_jobs.update_one(
+                    {'_id': job['_id']},
+                    GenerationJobSchema.update({
+                        'meshy_status': status_data.get('status'),
+                        'meshy_response': status_data,
+                        'progress': status_data.get('progress', 0),
+                        'last_checked_at': datetime.utcnow()
+                    })
+                )
                 
-                # Check if completed
-                if status_response.get('status') == 'SUCCEEDED':
-                    model.status = 'completed'
-                    model.glb_url = status_response.get('model_urls', {}).get('glb')
-                    model.obj_url = status_response.get('model_urls', {}).get('obj')
-                    model.thumbnail_url = status_response.get('thumbnail_url')
-                    model.save()
-                    
-                    # Notify owner
-                    try:
-                        notify_owner(
-                            title="3D Model Generation Completed",
-                            content=f"Model '{model.prompt[:50]}' is ready!"
-                        )
-                    except Exception as e:
-                        logger.warning(f"Failed to send notification: {e}")
+                # Update model if completed
+                if status_data.get('status') == 'SUCCEEDED':
+                    db.models.update_one(
+                        {'_id': model['_id']},
+                        Model3DSchema.update({
+                            'status': 'completed',
+                            'glb_url': status_data.get('model_urls', {}).get('glb'),
+                            'obj_url': status_data.get('model_urls', {}).get('obj'),
+                            'fbx_url': status_data.get('model_urls', {}).get('fbx'),
+                            'usdz_url': status_data.get('model_urls', {}).get('usdz'),
+                            'thumbnail_url': status_data.get('thumbnail_url'),
+                            'completed_at': datetime.utcnow()
+                        })
+                    )
+                    model = db.models.find_one({'_id': model['_id']})
                 
-                elif status_response.get('status') in ['FAILED', 'EXPIRED']:
-                    model.status = 'failed'
-                    model.save()
-        
-        except Exception as e:
-            logger.error(f"Failed to check model status: {e}")
+                elif status_data.get('status') == 'FAILED':
+                    db.models.update_one(
+                        {'_id': model['_id']},
+                        Model3DSchema.update({
+                            'status': 'failed',
+                            'error_message': status_data.get('error', 'Generation failed')
+                        })
+                    )
+                    model = db.models.find_one({'_id': model['_id']})
+            
+            except Exception as e:
+                logger.error(f"Failed to check status: {e}")
     
-    # Return updated model card
-    return render(request, 'partials/model_card.html', {'model': model})
+    # Return updated card
+    model = doc_to_dict(model)
+    model['status_display'] = get_display_name(model['status'], MODEL_STATUS_DISPLAY)
+    return HttpResponse(render_to_string('partials/model_card.html', {'model': model}))
+
+
+@login_required
+@require_http_methods(["DELETE", "POST"])
+def api_model_delete(request, model_id):
+    """
+    HTMX endpoint to delete model.
+    """
+    result = db.models.delete_one({'_id': to_object_id(model_id), 'user_id': request.user.id})
+    
+    if result.deleted_count == 0:
+        return HttpResponse('Model not found', status=404)
+    
+    # Also delete generation job
+    db.generation_jobs.delete_one({'model_id': to_object_id(model_id)})
+    
+    return HttpResponse('Model deleted successfully')
 
 
 @login_required
@@ -401,31 +294,33 @@ def api_model_status(request, model_id):
 def proxy_glb(request, model_id):
     """
     Proxy endpoint to serve GLB files from Meshy.ai.
-    Bypasses CORS restrictions by downloading server-side.
+    Bypasses CORS restrictions.
     """
-    model = get_object_or_404(Model3D, id=model_id, user=request.user)
+    model = db.models.find_one({'_id': to_object_id(model_id), 'user_id': request.user.id})
     
-    if not model.glb_url:
-        return HttpResponse("GLB file not available", status=404)
+    if not model or not model.get('glb_url'):
+        return HttpResponse('GLB file not found', status=404)
     
     try:
-        import requests
-        # Download GLB file from Meshy.ai
-        response = requests.get(model.glb_url, stream=True, timeout=30)
+        # Download from Meshy.ai
+        response = requests.get(model['glb_url'], stream=True)
         response.raise_for_status()
         
-        # Return as Django response with correct content type
-        django_response = HttpResponse(
-            response.content,
-            content_type='model/gltf-binary'
-        )
-        django_response['Content-Disposition'] = f'inline; filename="model_{model_id}.glb"'
-        django_response['Access-Control-Allow-Origin'] = '*'
-        return django_response
+        # Stream to client
+        def file_iterator():
+            for chunk in response.iter_content(chunk_size=8192):
+                yield chunk
+        
+        streaming_response = StreamingHttpResponse(file_iterator(), content_type='model/gltf-binary')
+        streaming_response['Access-Control-Allow-Origin'] = '*'
+        streaming_response['Content-Disposition'] = f'inline; filename="model_{model_id}.glb"'
+        
+        return streaming_response
     
     except Exception as e:
-        logger.error(f"Failed to proxy GLB file: {e}")
-        return HttpResponse(f"Failed to load model: {str(e)}", status=500)
+        logger.error(f"Failed to proxy GLB: {e}")
+        return HttpResponse(f'Failed to load model: {e}', status=500)
+
 
 
 # ============================================================================
@@ -443,22 +338,23 @@ def printer_add(request):
     """Add new printer page."""
     if request.method == 'POST':
         try:
-            from models.models import Printer
-            
-            # Create printer
-            printer = Printer.objects.create(
-                user=request.user,
+            # Create printer document
+            printer_doc = PrinterSchema.create(
+                user_id=request.user.id,
                 name=request.POST.get('name'),
                 printer_type=request.POST.get('printer_type'),
                 model=request.POST.get('model'),
-                serial_number=request.POST.get('serial_number') or None,
-                ip_address=request.POST.get('ip_address') or None,
                 build_volume_x=int(request.POST.get('build_volume_x')),
                 build_volume_y=int(request.POST.get('build_volume_y')),
                 build_volume_z=int(request.POST.get('build_volume_z')),
+                serial_number=request.POST.get('serial_number') or None,
+                ip_address=request.POST.get('ip_address') or None,
                 status=request.POST.get('status', 'idle'),
                 current_mode=request.POST.get('current_mode') if request.POST.get('printer_type') == 'snapmaker' else None,
             )
+            
+            # Insert into MongoDB
+            db.printers.insert_one(printer_doc)
             
             return redirect('/printers')
         
@@ -474,33 +370,44 @@ def printer_add(request):
 @login_required
 def printer_edit(request, printer_id):
     """Edit printer page."""
-    from models.models import Printer
-    printer = get_object_or_404(Printer, id=printer_id, user=request.user)
+    printer = db.printers.find_one({'_id': to_object_id(printer_id), 'user_id': request.user.id})
+    
+    if not printer:
+        return HttpResponse('Printer not found', status=404)
     
     if request.method == 'POST':
         try:
-            # Update printer
-            printer.name = request.POST.get('name')
-            printer.printer_type = request.POST.get('printer_type')
-            printer.model = request.POST.get('model')
-            printer.serial_number = request.POST.get('serial_number') or None
-            printer.ip_address = request.POST.get('ip_address') or None
-            printer.build_volume_x = int(request.POST.get('build_volume_x'))
-            printer.build_volume_y = int(request.POST.get('build_volume_y'))
-            printer.build_volume_z = int(request.POST.get('build_volume_z'))
-            printer.status = request.POST.get('status')
-            printer.current_mode = request.POST.get('current_mode') if printer.printer_type == 'snapmaker' else None
-            printer.save()
+            # Prepare updates
+            updates = {
+                'name': request.POST.get('name'),
+                'printer_type': request.POST.get('printer_type'),
+                'model': request.POST.get('model'),
+                'serial_number': request.POST.get('serial_number') or None,
+                'ip_address': request.POST.get('ip_address') or None,
+                'build_volume_x': int(request.POST.get('build_volume_x')),
+                'build_volume_y': int(request.POST.get('build_volume_y')),
+                'build_volume_z': int(request.POST.get('build_volume_z')),
+                'status': request.POST.get('status'),
+                'current_mode': request.POST.get('current_mode') if request.POST.get('printer_type') == 'snapmaker' else None,
+            }
+            
+            # Update in MongoDB
+            db.printers.update_one(
+                {'_id': printer['_id']},
+                PrinterSchema.update(updates)
+            )
             
             return redirect('/printers')
         
         except Exception as e:
             logger.error(f"Failed to update printer: {e}")
+            printer = doc_to_dict(printer)
             return render(request, 'printer_form.html', {
                 'printer': printer,
                 'error': str(e)
             })
     
+    printer = doc_to_dict(printer)
     return render(request, 'printer_form.html', {'printer': printer})
 
 
@@ -515,9 +422,7 @@ def api_printers_list(request):
     HTMX endpoint to list printers.
     Returns HTML grid of printer cards.
     """
-    from models.models import Printer
-    
-    printers = Printer.objects.filter(user=request.user).order_by('name')
+    printers = list(db.printers.find({'user_id': request.user.id}).sort('name', 1))
     
     if not printers:
         return HttpResponse('''
@@ -536,6 +441,12 @@ def api_printers_list(request):
     # Render printer cards
     html = '<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">'
     for printer in printers:
+        printer = doc_to_dict(printer)
+        # Add display names
+        printer['printer_type_display'] = get_display_name(printer['printer_type'], PRINTER_TYPE_DISPLAY)
+        printer['status_display'] = get_display_name(printer['status'], PRINTER_STATUS_DISPLAY)
+        if printer.get('current_mode'):
+            printer['current_mode_display'] = get_display_name(printer['current_mode'], SNAPMAKER_MODE_DISPLAY)
         html += render_to_string('partials/printer_card.html', {'printer': printer})
     html += '</div>'
     
@@ -548,21 +459,26 @@ def api_printer_change_mode(request, printer_id):
     """
     HTMX endpoint to change Snapmaker mode.
     """
-    from models.models import Printer
+    printer = db.printers.find_one({'_id': to_object_id(printer_id), 'user_id': request.user.id})
     
-    printer = get_object_or_404(Printer, id=printer_id, user=request.user)
+    if not printer:
+        return HttpResponse('Printer not found', status=404)
     
-    if printer.printer_type != 'snapmaker':
+    if printer['printer_type'] != 'snapmaker':
         return HttpResponse('Only Snapmaker printers support mode changing', status=400)
     
     new_mode = request.POST.get('mode')
     if new_mode not in ['3d_print', 'cnc', 'laser']:
         return HttpResponse('Invalid mode', status=400)
     
-    printer.current_mode = new_mode
-    printer.save()
+    # Update mode
+    db.printers.update_one(
+        {'_id': printer['_id']},
+        PrinterSchema.update({'current_mode': new_mode})
+    )
     
-    return HttpResponse(f'Mode changed to {printer.get_current_mode_display()}')
+    mode_display = get_display_name(new_mode, SNAPMAKER_MODE_DISPLAY)
+    return HttpResponse(f'Mode changed to {mode_display}')
 
 
 @login_required
@@ -571,9 +487,9 @@ def api_printer_delete(request, printer_id):
     """
     HTMX endpoint to delete printer.
     """
-    from models.models import Printer
+    result = db.printers.delete_one({'_id': to_object_id(printer_id), 'user_id': request.user.id})
     
-    printer = get_object_or_404(Printer, id=printer_id, user=request.user)
-    printer.delete()
+    if result.deleted_count == 0:
+        return HttpResponse('Printer not found', status=404)
     
     return HttpResponse('Printer deleted successfully')

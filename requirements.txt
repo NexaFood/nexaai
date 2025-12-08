@@ -1,6 +1,5 @@
 Django==5.0.1
-djongo5==1.0.1
-pymongo>=4.0
+pymongo==4.10.1
 djangorestframework==3.14.0
 django-cors-headers==4.3.1
 django-htmx==1.17.2
