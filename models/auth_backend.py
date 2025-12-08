@@ -12,6 +12,16 @@ import logging
 logger = logging.getLogger(__name__)
 
 
+class MongoUserMeta:
+    """Mock _meta class for Django compatibility."""
+    def __init__(self):
+        self.app_label = 'models'
+        self.model_name = 'mongouser'
+        self.verbose_name = 'user'
+        self.verbose_name_plural = 'users'
+        self.pk = type('pk', (), {'name': 'id'})()
+
+
 class MongoUser:
     """
     Custom user class that mimics Django's User model.
@@ -21,11 +31,13 @@ class MongoUser:
     # Django requires these class attributes
     pk = None
     backend = None
+    _meta = MongoUserMeta()  # Mock Django model metadata
     
     def __init__(self, user_doc):
         self._doc = user_doc
         self.id = str(user_doc['_id'])
         self.pk = self.id  # Django uses pk as primary key
+        self._meta = MongoUserMeta()  # Instance-level _meta
         self.username = user_doc['username']
         self.email = user_doc.get('email', '')
         self.first_name = user_doc.get('first_name', '')
