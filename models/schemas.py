@@ -22,6 +22,7 @@ class Model3DSchema:
             'status': kwargs.get('status', 'pending'),
             'error_message': None,
             'glb_url': None,
+            'glb_file_path': None,  # Local path to downloaded GLB file
             'obj_url': None,
             'fbx_url': None,
             'usdz_url': None,
@@ -115,6 +116,8 @@ class GenerationJobSchema:
         return {
             'model_id': ObjectId(model_id) if isinstance(model_id, str) else model_id,
             'meshy_task_id': meshy_task_id,
+            'stage': kwargs.get('stage', 'preview'),  # 'preview' or 'refine'
+            'preview_task_id': kwargs.get('preview_task_id'),  # Original preview task ID
             'meshy_status': kwargs.get('meshy_status', 'PENDING'),
             'meshy_response': kwargs.get('meshy_response', {}),
             'progress': kwargs.get('progress', 0),  # 0-100
