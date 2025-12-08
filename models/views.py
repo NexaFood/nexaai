@@ -567,3 +567,64 @@ def signup(request):
     
     except Exception as e:
         return HttpResponse(f'<div class="rounded-md bg-red-50 p-4 mb-4"><p class="text-sm text-red-800">Failed to create account: {str(e)}</p></div>')
+
+
+def login_view(request):
+    """Custom login view for MongoDB authentication."""
+    if request.method == 'GET':
+        # If already logged in, redirect to home
+        if request.user.is_authenticated:
+            return redirect('/')
+        return render(request, 'registration/login.html')
+    
+    # POST - Handle login
+    from django.contrib.auth import authenticate, login
+    
+    username = request.POST.get('username', '').strip().lower()  # Convert to lowercase
+    password = request.POST.get('password', '')
+    
+    # Validation
+    if not username or not password:
+        error_html = '''
+        <div class="rounded-md bg-red-50 p-4 mb-4">
+            <div class="flex">
+                <div class="flex-shrink-0">
+                    <svg class="h-5 w-5 text-red-400" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
+                    </svg>
+                </div>
+                <div class="ml-3">
+                    <h3 class="text-sm font-medium text-red-800">Username and password are required</h3>
+                </div>
+            </div>
+        </div>
+        '''
+        return HttpResponse(error_html + render_to_string('registration/login.html', request=request))
+    
+    # Authenticate user
+    user = authenticate(request, username=username, password=password)
+    
+    if user is not None:
+        # Login successful
+        login(request, user)
+        
+        # Redirect to next page or home
+        next_url = request.GET.get('next', '/')
+        return redirect(next_url)
+    else:
+        # Login failed
+        error_html = '''
+        <div class="rounded-md bg-red-50 p-4 mb-4">
+            <div class="flex">
+                <div class="flex-shrink-0">
+                    <svg class="h-5 w-5 text-red-400" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
+                    </svg>
+                </div>
+                <div class="ml-3">
+                    <h3 class="text-sm font-medium text-red-800">Invalid username or password</h3>
+                </div>
+            </div>
+        </div>
+        '''
+        return HttpResponse(error_html + render_to_string('registration/login.html', request=request))

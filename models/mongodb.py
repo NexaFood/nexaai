@@ -54,7 +54,12 @@ class MongoDB:
             self.print_jobs.create_index([('status', ASCENDING)])
             
             # Users collection indexes
-            self.users.create_index([('username', ASCENDING)], unique=True)
+            # Case-insensitive unique index on username
+            self.users.create_index(
+                [('username', ASCENDING)], 
+                unique=True,
+                collation={'locale': 'en', 'strength': 2}
+            )
             self.users.create_index([('email', ASCENDING)])
             
             logger.info("MongoDB indexes created successfully")
