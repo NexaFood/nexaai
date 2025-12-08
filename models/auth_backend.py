@@ -18,9 +18,14 @@ class MongoUser:
     Stores data in MongoDB instead of SQLite.
     """
     
+    # Django requires these class attributes
+    pk = None
+    backend = None
+    
     def __init__(self, user_doc):
         self._doc = user_doc
         self.id = str(user_doc['_id'])
+        self.pk = self.id  # Django uses pk as primary key
         self.username = user_doc['username']
         self.email = user_doc.get('email', '')
         self.first_name = user_doc.get('first_name', '')
@@ -31,6 +36,7 @@ class MongoUser:
         self.date_joined = user_doc.get('date_joined')
         self.last_login = user_doc.get('last_login')
         self._password = user_doc.get('password')
+        self.backend = 'models.auth_backend.MongoDBAuthBackend'
     
     def __str__(self):
         return self.username
