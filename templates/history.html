@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+
+{% block title %}Model History - NexaAI{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto">
+    <div class="flex items-center justify-between mb-8">
+        <div>
+            <h1 class="text-4xl font-bold mb-2">Model History</h1>
+            <p class="text-gray-600">Browse and manage your generated 3D models</p>
+        </div>
+        <a href="/generate" class="bg-purple-600 text-white px-6 py-3 rounded-lg font-bold hover:bg-purple-700 transition flex items-center space-x-2">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+            </svg>
+            <span>New Model</span>
+        </a>
+    </div>
+    
+    <!-- Filter Tabs -->
+    <div class="bg-white rounded-xl shadow-lg p-2 mb-8 flex space-x-2">
+        <button 
+            hx-get="/api/models?status=all" 
+            hx-target="#models-grid" 
+            hx-swap="innerHTML"
+            class="px-6 py-2 rounded-lg font-semibold bg-purple-600 text-white"
+        >
+            All Models
+        </button>
+        <button 
+            hx-get="/api/models?status=completed" 
+            hx-target="#models-grid" 
+            hx-swap="innerHTML"
+            class="px-6 py-2 rounded-lg font-semibold text-gray-700 hover:bg-gray-100"
+        >
+            Completed
+        </button>
+        <button 
+            hx-get="/api/models?status=processing" 
+            hx-target="#models-grid" 
+            hx-swap="innerHTML"
+            class="px-6 py-2 rounded-lg font-semibold text-gray-700 hover:bg-gray-100"
+        >
+            Processing
+        </button>
+        <button 
+            hx-get="/api/models?status=failed" 
+            hx-target="#models-grid" 
+            hx-swap="innerHTML"
+            class="px-6 py-2 rounded-lg font-semibold text-gray-700 hover:bg-gray-100"
+        >
+            Failed
+        </button>
+    </div>
+    
+    <!-- Models Grid -->
+    <div id="models-grid" hx-get="/api/models" hx-trigger="load" hx-swap="innerHTML">
+        <!-- Loading state -->
+        <div class="text-center py-16">
+            <div class="spinner mx-auto mb-4"></div>
+            <p class="text-gray-600">Loading models...</p>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    // Auto-refresh processing models every 10 seconds
+    setInterval(function() {
+        const processingCards = document.querySelectorAll('[data-status="processing"]');
+        processingCards.forEach(function(card) {
+            htmx.trigger(card, 'refresh');
+        });
+    }, 10000);
+</script>
+{% endblock %}

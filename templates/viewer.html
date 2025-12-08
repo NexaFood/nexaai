@@ -1,0 +1,232 @@
+{% extends "base.html" %}
+
+{% block title %}View Model - NexaAI{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto">
+    <!-- Header -->
+    <div class="mb-6">
+        <div class="flex items-center justify-between">
+            <div>
+                <a href="/history" class="text-purple-600 hover:text-purple-700 mb-2 inline-flex items-center">
+                    <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                    </svg>
+                    Back to History
+                </a>
+                <h1 class="text-4xl font-bold">{{ model.prompt|truncatewords:10 }}</h1>
+            </div>
+            <div class="flex space-x-3">
+                {% if model.glb_url %}
+                <a href="{{ model.glb_url }}" download class="bg-green-600 text-white px-6 py-3 rounded-lg font-bold hover:bg-green-700 transition flex items-center space-x-2">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+                    </svg>
+                    <span>Download GLB</span>
+                </a>
+                {% endif %}
+                {% if model.obj_url %}
+                <a href="{{ model.obj_url }}" download class="bg-blue-600 text-white px-6 py-3 rounded-lg font-bold hover:bg-blue-700 transition flex items-center space-x-2">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+                    </svg>
+                    <span>Download OBJ</span>
+                </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- 3D Viewer -->
+        <div class="lg:col-span-2">
+            <div class="bg-white rounded-2xl shadow-lg overflow-hidden">
+                <div id="viewer-container" class="relative" style="height: 600px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                    <div id="loading-overlay" class="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 z-10">
+                        <div class="text-center text-white">
+                            <div class="spinner mx-auto mb-4"></div>
+                            <p class="text-lg">Loading 3D model...</p>
+                        </div>
+                    </div>
+                    <canvas id="viewer-canvas" class="w-full h-full"></canvas>
+                </div>
+                <div class="p-4 bg-gray-50 border-t border-gray-200">
+                    <div class="flex items-center justify-between text-sm text-gray-600">
+                        <span>🖱️ Left click + drag to rotate</span>
+                        <span>🖱️ Right click + drag to pan</span>
+                        <span>🖱️ Scroll to zoom</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Model Info -->
+        <div class="space-y-6">
+            <!-- Details Card -->
+            <div class="bg-white rounded-xl shadow-lg p-6">
+                <h2 class="text-xl font-bold mb-4">Model Details</h2>
+                <div class="space-y-3">
+                    <div>
+                        <div class="text-sm text-gray-500">Status</div>
+                        <div class="font-semibold">
+                            {% if model.status == 'completed' %}
+                                <span class="text-green-600">✓ Completed</span>
+                            {% elif model.status == 'processing' %}
+                                <span class="text-blue-600">⏳ Processing</span>
+                            {% elif model.status == 'failed' %}
+                                <span class="text-red-600">✗ Failed</span>
+                            {% else %}
+                                <span class="text-gray-600">{{ model.status }}</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div>
+                        <div class="text-sm text-gray-500">Created</div>
+                        <div class="font-semibold">{{ model.created_at|date:"M d, Y H:i" }}</div>
+                    </div>
+                    {% if model.art_style %}
+                    <div>
+                        <div class="text-sm text-gray-500">Art Style</div>
+                        <div class="font-semibold capitalize">{{ model.art_style }}</div>
+                    </div>
+                    {% endif %}
+                    <div>
+                        <div class="text-sm text-gray-500">Quality</div>
+                        <div class="font-semibold capitalize">{{ model.quality|default:"Preview" }}</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Prompt Card -->
+            <div class="bg-white rounded-xl shadow-lg p-6">
+                <h2 class="text-xl font-bold mb-4">Original Prompt</h2>
+                <p class="text-gray-700 leading-relaxed">{{ model.prompt }}</p>
+            </div>
+            
+            <!-- Actions Card -->
+            <div class="bg-white rounded-xl shadow-lg p-6">
+                <h2 class="text-xl font-bold mb-4">Actions</h2>
+                <div class="space-y-3">
+                    <a href="/generate?prompt={{ model.prompt|urlencode }}" class="block w-full bg-purple-600 text-white px-4 py-3 rounded-lg font-semibold hover:bg-purple-700 transition text-center">
+                        Regenerate
+                    </a>
+                    <button 
+                        hx-delete="/api/models/{{ model.id }}" 
+                        hx-confirm="Are you sure you want to delete this model?"
+                        hx-target="body"
+                        class="block w-full bg-red-600 text-white px-4 py-3 rounded-lg font-semibold hover:bg-red-700 transition text-center"
+                    >
+                        Delete Model
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    // Three.js 3D Viewer
+    let scene, camera, renderer, controls, model;
+    
+    function initViewer() {
+        const container = document.getElementById('viewer-container');
+        const canvas = document.getElementById('viewer-canvas');
+        const loadingOverlay = document.getElementById('loading-overlay');
+        
+        // Scene
+        scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x1a1a2e);
+        
+        // Camera
+        camera = new THREE.PerspectiveCamera(
+            75,
+            container.clientWidth / container.clientHeight,
+            0.1,
+            1000
+        );
+        camera.position.set(0, 0, 5);
+        
+        // Renderer
+        renderer = new THREE.WebGLRenderer({ 
+            canvas: canvas,
+            antialias: true 
+        });
+        renderer.setSize(container.clientWidth, container.clientHeight);
+        renderer.setPixelRatio(window.devicePixelRatio);
+        
+        // Lights
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+        scene.add(ambientLight);
+        
+        const directionalLight1 = new THREE.DirectionalLight(0xffffff, 0.8);
+        directionalLight1.position.set(5, 5, 5);
+        scene.add(directionalLight1);
+        
+        const directionalLight2 = new THREE.DirectionalLight(0xffffff, 0.4);
+        directionalLight2.position.set(-5, -5, -5);
+        scene.add(directionalLight2);
+        
+        // Controls
+        controls = new THREE.OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        controls.dampingFactor = 0.05;
+        
+        // Load model
+        const modelUrl = "{{ model.glb_url }}";
+        if (modelUrl) {
+            const loader = new THREE.GLTFLoader();
+            loader.load(
+                modelUrl,
+                function(gltf) {
+                    model = gltf.scene;
+                    
+                    // Center and scale model
+                    const box = new THREE.Box3().setFromObject(model);
+                    const center = box.getCenter(new THREE.Vector3());
+                    const size = box.getSize(new THREE.Vector3());
+                    const maxDim = Math.max(size.x, size.y, size.z);
+                    const scale = 3 / maxDim;
+                    
+                    model.scale.multiplyScalar(scale);
+                    model.position.sub(center.multiplyScalar(scale));
+                    
+                    scene.add(model);
+                    loadingOverlay.style.display = 'none';
+                },
+                function(xhr) {
+                    const percent = (xhr.loaded / xhr.total * 100).toFixed(0);
+                    console.log(percent + '% loaded');
+                },
+                function(error) {
+                    console.error('Error loading model:', error);
+                    loadingOverlay.innerHTML = '<div class="text-center text-white"><p class="text-lg">Failed to load model</p></div>';
+                }
+            );
+        }
+        
+        // Animation loop
+        function animate() {
+            requestAnimationFrame(animate);
+            controls.update();
+            renderer.render(scene, camera);
+        }
+        animate();
+        
+        // Handle window resize
+        window.addEventListener('resize', function() {
+            camera.aspect = container.clientWidth / container.clientHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(container.clientWidth, container.clientHeight);
+        });
+    }
+    
+    // Initialize viewer when page loads
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initViewer);
+    } else {
+        initViewer();
+    }
+</script>
+{% endblock %}

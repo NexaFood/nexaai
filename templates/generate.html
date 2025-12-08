@@ -1,0 +1,161 @@
+{% extends "base.html" %}
+
+{% block title %}Generate 3D Model - NexaAI{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto">
+    <h1 class="text-4xl font-bold mb-2">Generate 3D Model</h1>
+    <p class="text-gray-600 mb-8">Describe your 3D model and let AI bring it to life</p>
+    
+    <!-- Generation Form -->
+    <div class="bg-white rounded-2xl shadow-lg p-8 mb-8">
+        <form hx-post="/api/generate" hx-target="#generation-result" hx-swap="innerHTML" class="space-y-6">
+            {% csrf_token %}
+            
+            <!-- Prompt Input -->
+            <div>
+                <label for="prompt" class="block text-sm font-bold text-gray-700 mb-2">
+                    Model Description
+                </label>
+                <textarea 
+                    id="prompt" 
+                    name="prompt" 
+                    rows="4" 
+                    required
+                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    placeholder="Describe your 3D model in detail... (e.g., 'A modern coffee mug with geometric patterns')"
+                ></textarea>
+                <p class="text-sm text-gray-500 mt-2">Be specific about shape, style, materials, and details for best results.</p>
+            </div>
+            
+            <!-- Refine Prompt Button -->
+            <div class="flex items-center space-x-4">
+                <button 
+                    type="button"
+                    hx-post="/api/refine-prompt"
+                    hx-include="[name='prompt']"
+                    hx-target="#prompt"
+                    hx-swap="outerHTML"
+                    class="bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600 transition flex items-center space-x-2"
+                >
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
+                    </svg>
+                    <span>Refine with AI</span>
+                    <span class="htmx-indicator spinner"></span>
+                </button>
+                <p class="text-sm text-gray-500">Let AI improve your prompt for better results</p>
+            </div>
+            
+            <!-- Art Style Selection -->
+            <div>
+                <label for="art_style" class="block text-sm font-bold text-gray-700 mb-2">
+                    Art Style (Optional)
+                </label>
+                <select 
+                    id="art_style" 
+                    name="art_style"
+                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                >
+                    <option value="">Auto (Recommended)</option>
+                    <option value="realistic">Realistic</option>
+                    <option value="cartoon">Cartoon</option>
+                    <option value="low-poly">Low Poly</option>
+                    <option value="sculpture">Sculpture</option>
+                    <option value="voxel">Voxel</option>
+                </select>
+            </div>
+            
+            <!-- Quality Selection -->
+            <div>
+                <label for="quality" class="block text-sm font-bold text-gray-700 mb-2">
+                    Quality
+                </label>
+                <div class="grid grid-cols-2 gap-4">
+                    <label class="flex items-center p-4 border-2 border-gray-300 rounded-lg cursor-pointer hover:border-purple-500 transition">
+                        <input type="radio" name="quality" value="preview" class="mr-3" checked>
+                        <div>
+                            <div class="font-bold">Preview (Fast)</div>
+                            <div class="text-sm text-gray-500">~2 minutes</div>
+                        </div>
+                    </label>
+                    <label class="flex items-center p-4 border-2 border-gray-300 rounded-lg cursor-pointer hover:border-purple-500 transition">
+                        <input type="radio" name="quality" value="refine" class="mr-3">
+                        <div>
+                            <div class="font-bold">High Quality</div>
+                            <div class="text-sm text-gray-500">~5 minutes</div>
+                        </div>
+                    </label>
+                </div>
+            </div>
+            
+            <!-- Submit Button -->
+            <div>
+                <button 
+                    type="submit"
+                    class="w-full bg-purple-600 text-white px-8 py-4 rounded-lg font-bold text-lg hover:bg-purple-700 transition flex items-center justify-center space-x-2"
+                >
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                    </svg>
+                    <span>Generate 3D Model</span>
+                    <span class="htmx-indicator spinner"></span>
+                </button>
+            </div>
+        </form>
+    </div>
+    
+    <!-- Generation Result -->
+    <div id="generation-result">
+        <!-- Results will appear here via HTMX -->
+    </div>
+    
+    <!-- Tips -->
+    <div class="bg-blue-50 border border-blue-200 rounded-xl p-6">
+        <h3 class="text-lg font-bold text-blue-900 mb-3">💡 Tips for Better Results</h3>
+        <ul class="space-y-2 text-blue-800">
+            <li class="flex items-start">
+                <svg class="w-5 h-5 mr-2 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                </svg>
+                <span>Be specific about shape, size, and proportions</span>
+            </li>
+            <li class="flex items-start">
+                <svg class="w-5 h-5 mr-2 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                </svg>
+                <span>Mention materials and textures (wood, metal, plastic, etc.)</span>
+            </li>
+            <li class="flex items-start">
+                <svg class="w-5 h-5 mr-2 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                </svg>
+                <span>Include style references (modern, vintage, minimalist, etc.)</span>
+            </li>
+            <li class="flex items-start">
+                <svg class="w-5 h-5 mr-2 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                </svg>
+                <span>Use the "Refine with AI" button to improve your prompt</span>
+            </li>
+            <li class="flex items-start">
+                <svg class="w-5 h-5 mr-2 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                </svg>
+                <span>Start with Preview quality, then refine if needed</span>
+            </li>
+        </ul>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    // Auto-scroll to results when generation completes
+    document.body.addEventListener('htmx:afterSwap', function(event) {
+        if (event.detail.target.id === 'generation-result') {
+            event.detail.target.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+    });
+</script>
+{% endblock %}
