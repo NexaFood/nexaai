@@ -85,12 +85,15 @@ def viewer(request, model_id):
 @require_http_methods(["POST"])
 def api_generate(request):
     """
-    HTMX endpoint to generate 3D model.
-    Creates model and starts Meshy.ai generation job.
+    HTMX endpoint to generate 3D model with AI-powered design analysis.
+    Analyzes the design, splits into parts, and recommends manufacturing methods.
     """
     try:
+        from services.design_analyzer import DesignAnalyzer
+        
         prompt = request.POST.get('prompt', '').strip()
         quality = request.POST.get('quality', 'preview')
+        use_analysis = request.POST.get('use_analysis', 'true').lower() == 'true'
         
         if not prompt:
             return HttpResponse('Prompt is required', status=400)
@@ -104,57 +107,114 @@ def api_generate(request):
         }
         polygon_count = quality_map.get(quality, 30000)
         
-        # Create model document
-        model_doc = Model3DSchema.create(
-            user_id=str(request.user.id),
-            prompt=prompt,
-            quality=quality,
-            polygon_count=polygon_count,
-            status='processing'
-        )
+        # Analyze design and get recommendations
+        if use_analysis:
+            analyzer = DesignAnalyzer()
+            analysis = analyzer.analyze_and_refine(prompt)
+            logger.info(f"Design analysis complete: {len(analysis.get('parts', []))} parts")
+        else:
+            # Simple mode - just refine the prompt
+            analyzer = DesignAnalyzer()
+            refined_prompt = analyzer.refine_prompt_simple(prompt)
+            analysis = {
+                "original_prompt": prompt,
+                "analysis": "Simple refinement",
+                "parts": [{
+                    "name": "Main Component",
+                    "description": "Primary design component",
+                    "refined_prompt": refined_prompt,
+                    "manufacturing_method": "3d_print",
+                    "reasoning": "Default manufacturing method",
+                    "material_suggestion": "PLA",
+                    "estimated_dimensions": "TBD",
+                    "complexity": "medium"
+                }],
+                "assembly_notes": "Single part design"
+            }
         
-        # Insert into MongoDB
-        result = db.models.insert_one(model_doc)
-        model_id = result.inserted_id
+        # Generate 3D models for each part
+        generated_parts = []
+        meshy_client = MeshyClient()
         
-        # Start Meshy.ai generation
-        try:
-            meshy_client = MeshyClient()
-            result = meshy_client.create_text_to_3d_task(
-                prompt=prompt,
-                art_style='realistic',
-                target_polycount=polygon_count
-            )
-            task_id = result.get('result')  # Extract task ID from response
+        for part in analysis.get('parts', []):
+            try:
+                # Create model document for this part
+                model_doc = Model3DSchema.create(
+                    user_id=str(request.user.id),
+                    prompt=part['refined_prompt'],
+                    quality=quality,
+                    polygon_count=polygon_count,
+                    status='processing'
+                )
+                
+                # Add design analysis metadata
+                model_doc['original_prompt'] = prompt
+                model_doc['part_name'] = part['name']
+                model_doc['part_description'] = part['description']
+                model_doc['manufacturing_method'] = part['manufacturing_method']
+                model_doc['manufacturing_reasoning'] = part['reasoning']
+                model_doc['material_suggestion'] = part['material_suggestion']
+                model_doc['estimated_dimensions'] = part['estimated_dimensions']
+                model_doc['complexity'] = part['complexity']
+                model_doc['design_analysis'] = analysis
+                
+                # Insert into MongoDB
+                result = db.models.insert_one(model_doc)
+                model_id = result.inserted_id
+                
+                # Start Meshy.ai generation
+                result = meshy_client.create_text_to_3d_task(
+                    prompt=part['refined_prompt'],
+                    art_style='realistic',
+                    target_polycount=polygon_count
+                )
+                task_id = result.get('result')
+                
+                # Create generation job
+                job_doc = GenerationJobSchema.create(
+                    model_id=model_id,
+                    meshy_task_id=task_id,
+                    meshy_status='PENDING'
+                )
+                db.generation_jobs.insert_one(job_doc)
+                
+                generated_parts.append({
+                    'model_id': str(model_id),
+                    'part_name': part['name'],
+                    'manufacturing_method': part['manufacturing_method']
+                })
+                
+                logger.info(f"Started generation for part '{part['name']}': model {model_id}, task {task_id}")
             
-            # Create generation job
-            job_doc = GenerationJobSchema.create(
-                model_id=model_id,
-                meshy_task_id=task_id,
-                meshy_status='PENDING'
-            )
-            db.generation_jobs.insert_one(job_doc)
-            
-            logger.info(f"Started generation for model {model_id}, task {task_id}")
-            
-        except Exception as e:
-            logger.error(f"Failed to start Meshy generation: {e}")
-            db.models.update_one(
-                {'_id': model_id},
-                Model3DSchema.update({'status': 'failed', 'error_message': str(e)})
-            )
-            return HttpResponse(f'Failed to start generation: {e}', status=500)
+            except Exception as e:
+                logger.error(f"Failed to generate part '{part['name']}': {e}")
+                # Continue with other parts even if one fails
+        
+        if not generated_parts:
+            return HttpResponse('Failed to start any generation tasks', status=500)
         
         # Notify owner
         try:
             notify_owner(
-                title="New 3D Model Generation Started",
-                content=f"Prompt: {prompt}\nQuality: {quality}"
+                title=f"Design Analysis Complete - {len(generated_parts)} Parts",
+                content=f"Original: {prompt}\nParts: {', '.join([p['part_name'] for p in generated_parts])}"
             )
         except Exception as e:
             logger.warning(f"Failed to send notification: {e}")
         
-        return HttpResponse('Generation started! Check the History page to see progress.')
+        # Return success message with part details
+        parts_summary = "<br>".join([
+            f"• {p['part_name']} ({p['manufacturing_method'].replace('_', ' ').title()})"
+            for p in generated_parts
+        ])
+        
+        return HttpResponse(
+            f"<div class='space-y-2'>" 
+            f"<p class='font-bold'>Design analyzed and split into {len(generated_parts)} part(s):</p>"
+            f"<div class='text-sm'>{parts_summary}</div>"
+            f"<p class='text-sm text-gray-600 mt-2'>Check the History page to see generation progress.</p>"
+            f"</div>"
+        )
     
     except Exception as e:
         logger.error(f"Generation failed: {e}")

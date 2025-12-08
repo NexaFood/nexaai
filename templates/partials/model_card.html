@@ -34,7 +34,38 @@
     
     <!-- Content -->
     <div class="p-5">
+        <!-- Part Name & Manufacturing Method -->
+        {% if model.part_name %}
+        <div class="flex items-center justify-between mb-2">
+            <span class="text-xs font-bold text-purple-600 bg-purple-50 px-2 py-1 rounded">
+                🔧 {{ model.part_name }}
+            </span>
+            {% if model.manufacturing_method == '3d_print' %}
+                <span class="text-xs font-semibold text-blue-600 bg-blue-50 px-2 py-1 rounded">
+                    🖨️ 3D Print
+                </span>
+            {% elif model.manufacturing_method == 'cnc' %}
+                <span class="text-xs font-semibold text-orange-600 bg-orange-50 px-2 py-1 rounded">
+                    ⚙️ CNC
+                </span>
+            {% endif %}
+        </div>
+        {% endif %}
+        
         <h3 class="font-bold text-lg mb-2 line-clamp-2">{{ model.prompt|truncatewords:15 }}</h3>
+        
+        <!-- Material & Dimensions -->
+        {% if model.material_suggestion or model.estimated_dimensions %}
+        <div class="flex items-center space-x-3 text-xs text-gray-600 mb-2">
+            {% if model.material_suggestion %}
+                <span>🧱 {{ model.material_suggestion }}</span>
+            {% endif %}
+            {% if model.estimated_dimensions %}
+                <span>📏 {{ model.estimated_dimensions }}</span>
+            {% endif %}
+        </div>
+        {% endif %}
+        
         <p class="text-sm text-gray-500 mb-4">{{ model.created_at|date:"M d, Y H:i" }}</p>
         
         <!-- Actions -->

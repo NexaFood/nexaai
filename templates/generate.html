@@ -66,6 +66,37 @@
                 </select>
             </div>
             
+            <!-- AI Analysis Toggle -->
+            <div class="bg-gradient-to-r from-purple-50 to-blue-50 border-2 border-purple-200 rounded-lg p-6">
+                <div class="flex items-start space-x-4">
+                    <input 
+                        type="checkbox" 
+                        id="use_analysis" 
+                        name="use_analysis" 
+                        value="true"
+                        checked
+                        class="mt-1 w-5 h-5 text-purple-600 rounded focus:ring-purple-500"
+                    >
+                    <div class="flex-1">
+                        <label for="use_analysis" class="block font-bold text-gray-900 mb-2 cursor-pointer">
+                            🤖 AI-Powered Design Analysis (Recommended)
+                        </label>
+                        <p class="text-sm text-gray-700 mb-3">
+                            Let AI analyze your design and automatically:
+                        </p>
+                        <ul class="text-sm text-gray-600 space-y-1 ml-4">
+                            <li>✨ <strong>Refine your prompt</strong> for optimal 3D generation</li>
+                            <li>🔧 <strong>Split into manufacturable parts</strong> that fit your printers/CNC</li>
+                            <li>🏭 <strong>Recommend manufacturing methods</strong> (3D print vs CNC) for each part</li>
+                            <li>📐 <strong>Suggest materials and dimensions</strong> for production</li>
+                        </ul>
+                        <p class="text-xs text-purple-600 mt-3 font-medium">
+                            💡 Complex designs will be intelligently broken down into multiple optimized parts
+                        </p>
+                    </div>
+                </div>
+            </div>
+            
             <!-- Quality Selection -->
             <div>
                 <label for="quality" class="block text-sm font-bold text-gray-700 mb-2">
