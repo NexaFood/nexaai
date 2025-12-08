@@ -146,6 +146,9 @@ class MongoDBAuthBackend(BaseBackend):
             return None
         
         try:
+            # Normalize username to lowercase
+            username = username.lower()
+            
             # Find user in MongoDB
             user_doc = db.users.find_one({'username': username})
             
@@ -195,6 +198,10 @@ def create_user(username, email, password, is_superuser=False, is_staff=False):
     """
     Helper function to create a new user in MongoDB.
     """
+    # Normalize username and email to lowercase
+    username = username.lower()
+    email = email.lower() if email else ''
+    
     # Check if user exists
     if db.users.find_one({'username': username}):
         raise ValueError(f"User '{username}' already exists")

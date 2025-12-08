@@ -503,8 +503,8 @@ def signup(request):
         return render(request, 'registration/signup.html')
     
     # POST - Handle signup
-    username = request.POST.get('username', '').strip()
-    email = request.POST.get('email', '').strip()
+    username = request.POST.get('username', '').strip().lower()  # Convert to lowercase
+    email = request.POST.get('email', '').strip().lower()  # Convert to lowercase
     password = request.POST.get('password', '')
     password2 = request.POST.get('password2', '')
     

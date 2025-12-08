@@ -14,8 +14,12 @@ class MongoSessionSerializer:
     
     def dumps(self, obj):
         """Serialize session data using pickle."""
-        return b64_encode(pickle.dumps(obj, pickle.HIGHEST_PROTOCOL)).decode('ascii')
+        pickled = pickle.dumps(obj, pickle.HIGHEST_PROTOCOL)
+        return b64_encode(pickled)
     
     def loads(self, data):
         """Deserialize session data from pickle."""
-        return pickle.loads(b64_decode(data.encode('ascii')))
+        # Handle both bytes and string input
+        if isinstance(data, str):
+            data = data.encode('ascii')
+        return pickle.loads(b64_decode(data))
