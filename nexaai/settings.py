@@ -127,8 +127,8 @@ LOGIN_URL = '/login/'
 LOGIN_REDIRECT_URL = '/generate/'
 LOGOUT_REDIRECT_URL = '/'
 
-# Session serializer - use PickleSerializer to support string user IDs from MongoDB
-SESSION_SERIALIZER = 'django.contrib.sessions.serializers.PickleSerializer'
+# Session serializer - use custom serializer to support string user IDs from MongoDB
+SESSION_SERIALIZER = 'models.session_serializer.MongoSessionSerializer'
 
 # REST Framework configuration
 REST_FRAMEWORK = {
