@@ -12,6 +12,21 @@ import logging
 logger = logging.getLogger(__name__)
 
 
+class MockPKField:
+    """Mock primary key field for Django compatibility."""
+    def __init__(self):
+        self.name = 'id'
+        self.attname = 'id'
+    
+    def value_to_string(self, obj):
+        """Return string representation of pk value."""
+        return str(getattr(obj, self.name, ''))
+    
+    def get_prep_value(self, value):
+        """Prepare value for database."""
+        return str(value) if value else None
+
+
 class MongoUserMeta:
     """Mock _meta class for Django compatibility."""
     def __init__(self):
@@ -19,7 +34,7 @@ class MongoUserMeta:
         self.model_name = 'mongouser'
         self.verbose_name = 'user'
         self.verbose_name_plural = 'users'
-        self.pk = type('pk', (), {'name': 'id'})()
+        self.pk = MockPKField()
 
 
 class MongoUser:
