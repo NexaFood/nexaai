@@ -126,7 +126,11 @@
 {% endblock %}
 
 {% block extra_scripts %}
-<script>
+<script type="module">
+    import * as THREE from 'three';
+    import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+    import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+    
     // Three.js 3D Viewer
     let scene, camera, renderer, controls, model;
     
@@ -169,14 +173,15 @@
         scene.add(directionalLight2);
         
         // Controls
-        controls = new THREE.OrbitControls(camera, renderer.domElement);
+        controls = new OrbitControls(camera, renderer.domElement);
         controls.enableDamping = true;
         controls.dampingFactor = 0.05;
         
         // Load model
         const modelUrl = "{{ model.glb_url }}";
-        if (modelUrl) {
-            const loader = new THREE.GLTFLoader();
+        console.log('Loading model from:', modelUrl);
+        if (modelUrl && modelUrl !== '') {
+            const loader = new GLTFLoader();
             loader.load(
                 modelUrl,
                 function(gltf) {
