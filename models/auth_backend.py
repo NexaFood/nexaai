@@ -91,7 +91,7 @@ class MongoUser:
     
     def save(self, update_fields=None, **kwargs):
         """Save user to MongoDB. Accepts Django kwargs but ignores them."""
-        if hasattr(self, '_id'):
+        if self.id:  # Check if user already has an ID (existing user)
             # Update existing
             db.users.update_one(
                 {'_id': ObjectId(self.id)},
