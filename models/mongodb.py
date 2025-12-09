@@ -62,6 +62,12 @@ class MongoDB:
             )
             self.users.create_index([('email', ASCENDING)])
             
+            # Design workflow collection indexes
+            self.design_projects.create_index([('user_id', ASCENDING), ('created_at', DESCENDING)])
+            self.design_projects.create_index([('stage', ASCENDING), ('status', ASCENDING)])
+            self.design_concepts.create_index([('project_id', ASCENDING)])
+            self.part_breakdowns.create_index([('project_id', ASCENDING)])
+            
             logger.info("MongoDB indexes created successfully")
         except Exception as e:
             logger.warning(f"Failed to create indexes: {e}")
@@ -90,6 +96,21 @@ class MongoDB:
     def users(self):
         """Users collection."""
         return self._db.users
+    
+    @property
+    def design_projects(self):
+        """Design projects collection (3-stage workflow)."""
+        return self._db.design_projects
+    
+    @property
+    def design_concepts(self):
+        """Design concepts collection (Stage 1)."""
+        return self._db.design_concepts
+    
+    @property
+    def part_breakdowns(self):
+        """Part breakdowns collection (Stage 2)."""
+        return self._db.part_breakdowns
     
     def close(self):
         """Close MongoDB connection."""
