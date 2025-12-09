@@ -186,7 +186,7 @@ def api_create_design_project(request):
                         hx-target="#concept-{project_id}"
                         hx-swap="outerHTML"
                         class="flex-1 bg-green-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-green-700 transition">
-                        ✓ Approve & Continue to Part Breakdown
+                        ✓ Approve & Generate Overall Model
                     </button>
                     <button 
                         hx-post="/api/design/refine-concept/{project_id}/"

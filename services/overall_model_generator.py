@@ -30,21 +30,27 @@ def generate_overall_model(concept, output_dir, model_id="overall_model"):
             - error: Error message if failed
     """
     try:
-        # Build description for overall model
+        # Build simplified description for overall model
+        # Extract just the essential shape/form from the prompt
+        original_prompt = concept.get('original_prompt', '')
+        
         description = f"""
-Design: {concept.get('original_prompt')}
+Create a SIMPLE, RECOGNIZABLE 3D model of: {original_prompt}
 
-Overview: {concept.get('overview', '')}
+IMPORTANT RULES:
+1. Keep it VERY SIMPLE - use basic shapes (boxes, cylinders, cones)
+2. Focus on the OVERALL FORM, not details
+3. This is a CONCEPT MODEL - just show the basic shape
+4. Use realistic proportions based on what this object is
+5. DO NOT try to model every feature - just the main body/shape
 
-Key Features:
-{chr(10).join('- ' + f for f in concept.get('key_features', []))}
+Examples:
+- "a rocket" → tall cylinder (body) + cone (nose) + small cylinders (fins)
+- "a robot" → box (body) + cylinder (head) + boxes (limbs)
+- "a car" → long box (body) + smaller box (cabin) + cylinders (wheels)
+- "a drone" → flat box (body) + thin cylinders (arms)
 
-Technical Specs: {concept.get('technical_specs', '')}
-
-IMPORTANT: Create a SINGLE, COMPLETE model that represents the entire design.
-This is an overall concept model, not individual parts.
-Make it visually representative of the design concept.
-Keep it relatively simple but recognizable.
+Keep it simple and manufacturable!
 """
         
         logger.info(f"Generating overall model for: {concept.get('original_prompt')}")
