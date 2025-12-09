@@ -14,7 +14,7 @@ from services.enhanced_design_analyzer import (
     generate_design_concept, break_down_into_parts, generate_part_prompts
 )
 from services.meshy_client import MeshyClient
-from models.middleware import session_login_required
+from models.views import session_login_required
 from datetime import datetime
 import logging
 import json
