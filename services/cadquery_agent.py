@@ -49,28 +49,62 @@ Key CadQuery concepts:
 - Start with a Workplane: cq.Workplane("XY")
 - Create 2D shapes: .box(), .circle(), .rect()
 - Extrude to 3D: .extrude(height)
-- Add features: .faces().workplane().hole(diameter)
+- Add features AFTER creating solid: .faces(selector).workplane().hole()
 - Combine operations: .union(), .cut()
 
-Example - Simple box:
+IMPORTANT RULES:
+1. ALWAYS create a solid shape FIRST before using .faces()
+2. Use .box() or .extrude() to create the base solid
+3. THEN select faces and add features
+4. Keep designs simple and manufacturable
+5. Use realistic dimensions (10-500mm typical)
+
+Example - Simple box (GOOD):
 ```python
 import cadquery as cq
 
+# Create a simple rectangular plate
 result = cq.Workplane("XY").box(100, 50, 10)
 ```
 
-Example - Box with holes:
+Example - Box with holes (GOOD):
 ```python
 import cadquery as cq
 
-result = (cq.Workplane("XY")
-    .box(100, 50, 10)
-    .faces(">Z")
+# Create base plate
+result = (
+    cq.Workplane("XY")
+    .box(100, 50, 10)  # Create solid FIRST
+    .faces(">Z")        # THEN select top face
     .workplane()
     .rect(80, 40, forConstruction=True)
     .vertices()
     .hole(5)
 )
+```
+
+Example - Mounting bracket (GOOD):
+```python
+import cadquery as cq
+
+# Create L-shaped mounting bracket
+base = cq.Workplane("XY").box(50, 40, 5)
+wall = cq.Workplane("XZ").workplane(offset=-20).box(50, 30, 5)
+result = base.union(wall)
+```
+
+Example - Cylinder (GOOD):
+```python
+import cadquery as cq
+
+# Create a simple cylinder
+result = cq.Workplane("XY").circle(20).extrude(50)
+```
+
+BAD Example (AVOID - creates empty result):
+```python
+# DON'T DO THIS - no solid created before .faces()
+result = cq.Workplane("XY").faces(">Z")  # ERROR!
 ```
 
 Generate clean, well-commented CadQuery code. The variable MUST be named 'result'.
@@ -83,9 +117,12 @@ Requirements:
 2. Final model MUST be in variable named 'result'
 3. Add comments explaining each step
 4. Use millimeters for all dimensions
-5. Make the code clean and readable
+5. ALWAYS create a solid shape FIRST (use .box() or .extrude())
+6. ONLY use .faces() AFTER creating a solid
+7. Keep the design simple and manufacturable
+8. Use realistic dimensions based on the part description
 
-Return ONLY the Python code, no explanations."""
+Return ONLY the Python code, no explanations or markdown."""
 
         response = self.client.chat.completions.create(
             model=self.model,
@@ -93,7 +130,7 @@ Return ONLY the Python code, no explanations."""
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": user_prompt}
             ],
-            temperature=0.7
+            temperature=0.3  # Lower temperature for more consistent, reliable code
         )
         
         code = response.choices[0].message.content.strip()
