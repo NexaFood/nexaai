@@ -246,7 +246,7 @@ def api_approve_parts_cadquery(request, project_id):
                 </div>
                 <div id="part-{part['part_number']}-status">
                     <button 
-                        hx-post="/api/design/cadquery/generate/{project_id}/{part['part_number']}/"
+                        hx-post="/api/design/generate/{project_id}/{part['part_number']}/"
                         hx-target="#part-{part['part_number']}-status"
                         hx-swap="innerHTML"
                         class="w-full bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition text-sm">

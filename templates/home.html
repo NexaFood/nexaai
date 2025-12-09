@@ -1,24 +1,19 @@
 {% extends "base.html" %}
 
-{% block title %}Home - NexaAI{% endblock %}
+{% block title %}NexaAI - AI CAD Designer{% endblock %}
 
 {% block content %}
 <!-- Hero Section -->
-<div class="gradient-bg text-white rounded-2xl shadow-2xl p-12 mb-12">
-    <div class="max-w-4xl mx-auto text-center">
-        <h1 class="text-5xl font-bold mb-6">Transform Text into 3D Models</h1>
-        <p class="text-xl mb-8 opacity-90">
-            AI-powered 3D model generation for manufacturing, prototyping, and 3D printing.
-            Simply describe what you want, and watch it come to life in minutes.
-        </p>
-        <div class="flex justify-center space-x-4">
-            <a href="/generate" class="bg-white text-purple-600 px-8 py-4 rounded-lg font-bold text-lg hover:bg-gray-100 transition transform hover:scale-105">
-                Start Generating
-            </a>
-            <a href="/history" class="bg-purple-700 text-white px-8 py-4 rounded-lg font-bold text-lg hover:bg-purple-800 transition transform hover:scale-105">
-                View Gallery
-            </a>
-        </div>
+<div class="gradient-bg text-white rounded-2xl shadow-2xl p-12 mb-12 text-center">
+    <h1 class="text-5xl font-bold mb-4">AI-Powered CAD Designer</h1>
+    <p class="text-2xl mb-8 opacity-90">Generate precise parametric CAD models from natural language descriptions</p>
+    <div class="flex justify-center gap-4">
+        <a href="/design/projects/" class="bg-white text-purple-600 px-8 py-4 rounded-lg font-bold text-lg hover:bg-gray-100 transition transform hover:scale-105">
+            🚀 Start Designing
+        </a>
+        <a href="#how-it-works" class="bg-purple-700 text-white px-8 py-4 rounded-lg font-bold text-lg hover:bg-purple-800 transition">
+            Learn More
+        </a>
     </div>
 </div>
 
@@ -27,62 +22,62 @@
     <div class="bg-white rounded-xl shadow-lg p-6 card-hover">
         <div class="bg-purple-100 w-16 h-16 rounded-full flex items-center justify-center mb-4">
             <svg class="w-8 h-8 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
             </svg>
         </div>
-        <h3 class="text-xl font-bold mb-2">Fast Generation</h3>
-        <p class="text-gray-600">Get high-quality 3D models in just 2-5 minutes using Meshy.ai's advanced AI.</p>
+        <h3 class="text-xl font-bold mb-2">STEP & STL Export</h3>
+        <p class="text-gray-600">Download manufacturing-ready CAD files for any CAD software or 3D printer.</p>
     </div>
     
     <div class="bg-white rounded-xl shadow-lg p-6 card-hover">
         <div class="bg-blue-100 w-16 h-16 rounded-full flex items-center justify-center mb-4">
             <svg class="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
             </svg>
         </div>
-        <h3 class="text-xl font-bold mb-2">AI Prompt Refinement</h3>
-        <p class="text-gray-600">Improve your prompts with LLM suggestions for better results.</p>
+        <h3 class="text-xl font-bold mb-2">Fast Generation</h3>
+        <p class="text-gray-600">Generate precise CAD models in 5-10 seconds per part, not minutes.</p>
     </div>
     
     <div class="bg-white rounded-xl shadow-lg p-6 card-hover">
         <div class="bg-green-100 w-16 h-16 rounded-full flex items-center justify-center mb-4">
             <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 10l-2 1m0 0l-2-1m2 1v2.5M20 7l-2 1m2-1l-2-1m2 1v2.5M14 4l-2-1-2 1M4 7l2-1M4 7l2 1M4 7v2.5M12 21l-2-1m2 1l2-1m-2 1v-2.5M6 18l-2-1v-2.5M18 18l2-1v-2.5"></path>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path>
             </svg>
         </div>
-        <h3 class="text-xl font-bold mb-2">3D Viewer</h3>
-        <p class="text-gray-600">Interactive Three.js viewer to inspect and rotate your models.</p>
+        <h3 class="text-xl font-bold mb-2">Editable Python Code</h3>
+        <p class="text-gray-600">View and edit the generated CadQuery Python code for full customization.</p>
     </div>
     
     <div class="bg-white rounded-xl shadow-lg p-6 card-hover">
         <div class="bg-orange-100 w-16 h-16 rounded-full flex items-center justify-center mb-4">
             <svg class="w-8 h-8 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
             </svg>
         </div>
-        <h3 class="text-xl font-bold mb-2">Model History</h3>
-        <p class="text-gray-600">Browse, download, and manage all your generated models.</p>
+        <h3 class="text-xl font-bold mb-2">Multi-Part Assemblies</h3>
+        <p class="text-gray-600">AI automatically splits complex designs into manufacturable parts.</p>
     </div>
 </div>
 
 <!-- How It Works -->
-<div class="bg-white rounded-2xl shadow-lg p-8 mb-12">
+<div id="how-it-works" class="bg-white rounded-2xl shadow-lg p-8 mb-12">
     <h2 class="text-3xl font-bold text-center mb-8">How It Works</h2>
     <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
         <div class="text-center">
             <div class="bg-purple-600 text-white w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4 text-xl font-bold">1</div>
-            <h3 class="text-xl font-bold mb-2">Describe Your Model</h3>
-            <p class="text-gray-600">Enter a text description of the 3D model you want to create. Be as detailed as possible.</p>
+            <h3 class="text-xl font-bold mb-2">Describe Your Design</h3>
+            <p class="text-gray-600">Enter a natural language description like "a mounting bracket for a motor" or "a model rocket with fins".</p>
         </div>
         <div class="text-center">
             <div class="bg-purple-600 text-white w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4 text-xl font-bold">2</div>
-            <h3 class="text-xl font-bold mb-2">AI Generation</h3>
-            <p class="text-gray-600">Our AI processes your prompt and generates a high-quality 3D model in minutes.</p>
+            <h3 class="text-xl font-bold mb-2">AI Analysis & Generation</h3>
+            <p class="text-gray-600">AI creates a design concept, splits it into parts, and generates parametric CAD code using CadQuery.</p>
         </div>
         <div class="text-center">
             <div class="bg-purple-600 text-white w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4 text-xl font-bold">3</div>
-            <h3 class="text-xl font-bold mb-2">View & Download</h3>
-            <p class="text-gray-600">Preview your model in 3D, download files (GLB, OBJ), and use for manufacturing.</p>
+            <h3 class="text-xl font-bold mb-2">Download & Manufacture</h3>
+            <p class="text-gray-600">Download STEP files for CAD software (FreeCAD, SolidWorks) or STL files for 3D printing.</p>
         </div>
     </div>
 </div>
@@ -90,25 +85,48 @@
 <!-- Stats -->
 <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
     <div class="bg-gradient-to-br from-purple-500 to-purple-700 text-white rounded-xl shadow-lg p-8 text-center">
-        <div class="text-4xl font-bold mb-2">2-5 min</div>
-        <div class="text-lg opacity-90">Average Generation Time</div>
+        <div class="text-4xl font-bold mb-2">5-10 sec</div>
+        <div class="text-lg opacity-90">Per Part Generation Time</div>
     </div>
     <div class="bg-gradient-to-br from-blue-500 to-blue-700 text-white rounded-xl shadow-lg p-8 text-center">
-        <div class="text-4xl font-bold mb-2">GLB + OBJ</div>
-        <div class="text-lg opacity-90">Export Formats</div>
+        <div class="text-4xl font-bold mb-2">STEP + STL</div>
+        <div class="text-lg opacity-90">CAD Export Formats</div>
     </div>
     <div class="bg-gradient-to-br from-green-500 to-green-700 text-white rounded-xl shadow-lg p-8 text-center">
         <div class="text-4xl font-bold mb-2">100%</div>
-        <div class="text-lg opacity-90">Print-Ready Models</div>
+        <div class="text-lg opacity-90">Manufacturing-Ready</div>
+    </div>
+</div>
+
+<!-- Example Use Cases -->
+<div class="bg-gradient-to-r from-blue-50 to-purple-50 rounded-2xl shadow-lg p-8 mb-12">
+    <h2 class="text-3xl font-bold text-center mb-8">What Can You Design?</h2>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="bg-white rounded-lg p-6">
+            <h3 class="text-lg font-bold mb-2">🔩 Mechanical Parts</h3>
+            <p class="text-gray-600">Brackets, mounts, enclosures, gears, pulleys, adapters, and custom mechanical components.</p>
+        </div>
+        <div class="bg-white rounded-lg p-6">
+            <h3 class="text-lg font-bold mb-2">🚀 Hobby Projects</h3>
+            <p class="text-gray-600">Model rockets, RC car parts, drone frames, robot chassis, and DIY electronics enclosures.</p>
+        </div>
+        <div class="bg-white rounded-lg p-6">
+            <h3 class="text-lg font-bold mb-2">🏠 Household Items</h3>
+            <p class="text-gray-600">Organizers, holders, clips, hooks, replacement parts, and custom storage solutions.</p>
+        </div>
+        <div class="bg-white rounded-lg p-6">
+            <h3 class="text-lg font-bold mb-2">⚙️ Prototypes</h3>
+            <p class="text-gray-600">Rapid prototyping for product development, concept validation, and functional testing.</p>
+        </div>
     </div>
 </div>
 
 <!-- CTA -->
 <div class="bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-2xl shadow-2xl p-12 text-center">
     <h2 class="text-4xl font-bold mb-4">Ready to Create?</h2>
-    <p class="text-xl mb-8 opacity-90">Start generating professional 3D models in minutes</p>
-    <a href="/generate" class="bg-white text-purple-600 px-10 py-4 rounded-lg font-bold text-lg hover:bg-gray-100 transition transform hover:scale-105 inline-block">
-        Generate Your First Model
+    <p class="text-xl mb-8 opacity-90">Start generating professional CAD models from text in seconds</p>
+    <a href="/design/projects/" class="bg-white text-purple-600 px-10 py-4 rounded-lg font-bold text-lg hover:bg-gray-100 transition transform hover:scale-105 inline-block">
+        🚀 Launch CAD Designer
     </a>
 </div>
 {% endblock %}

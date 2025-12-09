@@ -1,137 +1,111 @@
-# NexaAI - AI-Powered 3D Model Generation
+# NexaAI - AI CAD Designer
 
-Manufacturing orchestration platform with AI-powered 3D model generation using Meshy.ai, printer management, and MongoDB storage.
+AI-powered parametric CAD generation from natural language descriptions using CadQuery.
+
+## Overview
+
+NexaAI is an AI-powered CAD design system that generates precise, parametric CAD models from natural language descriptions. It uses OpenAI GPT-4 to generate CadQuery Python code, which is then executed to create manufacturing-ready STEP and STL files.
 
 ## Features
 
-- **Text-to-3D Generation** - Convert text prompts to 3D models using Meshy.ai
-- **LLM Prompt Refinement** - Improve prompts with AI before generation
-- **Four Quality Levels** - Preview (10k), Standard (30k), High (60k), Ultra (100k polygons)
-- **Interactive 3D Viewer** - Three.js-powered GLB viewer with CORS proxy
-- **Printer Management** - Manage Prusa and Snapmaker printers
-- **Snapmaker Mode Switching** - Switch between 3D Print, CNC, and Laser modes
-- **Print Job Tracking** - Track print history and status
-- **MongoDB Storage** - All data stored in MongoDB (users, models, printers, jobs)
-- **HTMX Dynamic Updates** - No page reloads, automatic status polling
-- **Django + PyMongo** - Clean hybrid architecture
+- **Natural Language to CAD**: Describe your design in plain English
+- **3-Stage Workflow**: Design Concept → Part Breakdown → CAD Generation
+- **Fast Generation**: 5-10 seconds per part
+- **Manufacturing-Ready**: Export STEP (for CAD software) and STL (for 3D printing) files
+- **Editable Code**: View and modify the generated CadQuery Python code
+- **Multi-Part Support**: Automatically splits complex designs into manufacturable parts
+- **AI-Powered Analysis**: Intelligent part breakdown with manufacturing recommendations
 
-## Tech Stack
+## Technology Stack
 
-- **Backend**: Django 5.0, PyMongo 4.10
-- **Frontend**: HTMX, TailwindCSS CDN, Three.js
-- **Database**: MongoDB (all data)
-- **3D Generation**: Meshy.ai API
-- **LLM**: OpenAI-compatible API
+- **Backend**: Django 5.0.1 + Python 3.11
+- **Database**: MongoDB
+- **CAD Generation**: CadQuery 2.4.0
+- **AI**: OpenAI GPT-4
+- **Frontend**: HTMX + Tailwind CSS
+- **Authentication**: Session-based with MongoDB
 
 ## Quick Start
 
 ### Prerequisites
 
-- Python 3.10+
-- MongoDB (local or Atlas)
-- Meshy.ai API key
-- OpenAI API key (or compatible)
+- Python 3.11
+- MongoDB
+- OpenAI API key
 
-### 1. Clone Repository
+### Installation
 
-\`\`\`bash
+1. Clone the repository:
+```bash
 git clone https://github.com/NexaFood/nexaai.git
 cd nexaai
-\`\`\`
+```
 
-### 2. Create Virtual Environment
-
-\`\`\`bash
-python3 -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-\`\`\`
-
-### 3. Install Dependencies
-
-\`\`\`bash
+2. Create virtual environment with CadQuery:
+```bash
+python3.11 -m venv venv_cadquery
+source venv_cadquery/bin/activate
 pip install -r requirements.txt
-\`\`\`
+pip install cadquery==2.4.0
+```
 
-### 4. Configure Environment
-
-Create \`.env\` file:
-
-\`\`\`env
-# Django
-DJANGO_SECRET_KEY=your-secret-key-here
-DEBUG=True
-ALLOWED_HOSTS=localhost,127.0.0.1
-
-# MongoDB
+3. Configure environment variables:
+```bash
+# Create .env file with:
+OPENAI_API_KEY=your-openai-api-key
 MONGO_URI=mongodb://localhost:27017/
 MONGO_DB_NAME=nexaai
+SECRET_KEY=your-secret-key
+```
 
-# Meshy.ai API
-MESHY_API_KEY=msy_your_key_here
-
-# LLM Configuration
-LLM_API_KEY=your_openai_key_here
-LLM_API_URL=https://api.openai.com/v1
-LLM_MODEL=gpt-4
-\`\`\`
-
-### 5. Run Django Migrations (for sessions only)
-
-\`\`\`bash
-python manage.py migrate
-\`\`\`
-
-### 6. Create Superuser in MongoDB
-
-\`\`\`bash
-python manage.py createsuperuser_mongo
-\`\`\`
-
-### 7. Start Server
-
-\`\`\`bash
+4. Start MongoDB and run server:
+```bash
+sudo systemctl start mongod
 python manage.py runserver
-\`\`\`
+```
 
-Visit: **http://localhost:8000/**
+5. Visit `http://localhost:8000`
 
-## User Management Commands
+## Usage
 
-### Create Superuser
-\`\`\`bash
-python manage.py createsuperuser_mongo
-\`\`\`
+### 3-Stage Design Workflow
 
-### List All Users
-\`\`\`bash
-python manage.py listusers_mongo
-\`\`\`
+1. **Design Concept**: Describe your design → AI generates concept
+2. **Part Breakdown**: AI splits into parts → Review and approve
+3. **CAD Generation**: Generate STEP/STL files → Download and use
 
-### Delete User
-\`\`\`bash
-python manage.py deleteuser_mongo <username>
-\`\`\`
-
-## MongoDB Collections
-
-Collections are created automatically:
-
-- **users** - User accounts
-- **models_3d** - 3D model metadata
-- **printers** - 3D printers and CNC machines
-- **print_jobs** - Print history
-- **generation_jobs** - Meshy.ai tasks
+See `CADQUERY_DJANGO_INTEGRATION.md` for detailed usage guide.
 
 ## Documentation
 
-- **MONGODB_SETUP.md** - Detailed MongoDB setup guide
-- **DEPLOYMENT.md** - Production deployment instructions
+- **README.md** (this file) - Quick start guide
+- **CADQUERY_DJANGO_INTEGRATION.md** - Technical integration details
+- **DEPLOYMENT_GUIDE.md** - Production deployment instructions
+- **AI_CAD_SYSTEM_SUMMARY.md** - CadQuery AI system documentation
+
+## Project Structure
+
+```
+nexaai/
+├── models/                    # Django app
+│   ├── cadquery_views.py     # CadQuery generation
+│   ├── design_views.py       # Design workflow
+│   └── design_schemas.py     # MongoDB schemas
+├── services/                  # Business logic
+│   ├── cadquery_agent.py     # AI code generation
+│   └── cadquery_executor.py  # Code execution
+├── templates/                 # HTML templates
+└── media/cadquery_models/    # Generated files
+```
 
 ## License
 
-MIT License
+Proprietary - NexaFood
 
 ## Support
 
-- GitHub: https://github.com/NexaFood/nexaai
-- Issues: https://github.com/NexaFood/nexaai/issues
+GitHub Issues: https://github.com/NexaFood/nexaai/issues
+
+---
+
+**NexaAI** - Transform ideas into CAD models with AI

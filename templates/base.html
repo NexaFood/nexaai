@@ -3,26 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}NexaAI - 3D Model Generation{% endblock %}</title>
+    <title>{% block title %}NexaAI - AI CAD Designer{% endblock %}</title>
     
-    <!-- TailwindCSS CDN -->
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     
-    <!-- HTMX -->
-    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     
-    <!-- Three.js for 3D viewing (using importmap for ES modules) -->
-    <script async src="https://unpkg.com/es-module-shims@1.6.3/dist/es-module-shims.js"></script>
-    <script type="importmap">
-    {
-        "imports": {
-            "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
-            "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
-        }
-    }
-    </script>
-    
-    <!-- Custom CSS -->
     <style>
         body {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -76,13 +66,11 @@
             <div class="flex items-center justify-between">
                 <div class="flex items-center space-x-4">
                     <h1 class="text-2xl font-bold">NexaAI</h1>
-                    <span class="text-sm opacity-90">AI-Powered 3D Generation</span>
+                    <span class="text-sm opacity-90">AI CAD Designer</span>
                 </div>
                 <div class="flex items-center space-x-6">
                     <a href="/" class="hover:text-gray-200 transition">Home</a>
-                    <a href="/generate/" class="hover:text-gray-200 transition">Generate</a>
-                    <a href="/design/projects/" class="hover:text-gray-200 transition font-semibold">🚀 Design Projects</a>
-                    <a href="/history/" class="hover:text-gray-200 transition">History</a>
+                    <a href="/design/projects/" class="hover:text-gray-200 transition font-semibold">🚀 CAD Designer</a>
                     <a href="/printers/" class="hover:text-gray-200 transition">Printers</a>
                     {% if user.is_authenticated %}
                         <span class="text-sm">{{ user.username }}</span>
@@ -116,24 +104,24 @@
             <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
                 <div>
                     <h3 class="text-lg font-bold mb-4">NexaAI</h3>
-                    <p class="text-gray-400">AI-powered 3D model generation for manufacturing and 3D printing.</p>
+                    <p class="text-gray-400">AI-powered parametric CAD generation from natural language descriptions.</p>
                 </div>
                 <div>
                     <h3 class="text-lg font-bold mb-4">Features</h3>
                     <ul class="text-gray-400 space-y-2">
-                        <li>Text-to-3D Generation</li>
-                        <li>LLM Prompt Refinement</li>
-                        <li>3D Model Viewer</li>
-                        <li>Model History</li>
+                        <li>Natural Language to CAD</li>
+                        <li>Parametric Design Generation</li>
+                        <li>STEP & STL Export</li>
+                        <li>Multi-Part Assembly Support</li>
                     </ul>
                 </div>
                 <div>
                     <h3 class="text-lg font-bold mb-4">Technology</h3>
                     <ul class="text-gray-400 space-y-2">
-                        <li>Meshy.ai API</li>
+                        <li>CadQuery</li>
+                        <li>OpenAI GPT-4</li>
                         <li>Django + HTMX</li>
-                        <li>Three.js</li>
-                        <li>AWS S3</li>
+                        <li>MongoDB</li>
                     </ul>
                 </div>
             </div>
