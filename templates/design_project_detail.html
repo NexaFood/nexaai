@@ -170,14 +170,14 @@
                         <p class="text-green-800 font-semibold mb-2">✓ Part {{ part.part_number }} generated successfully!</p>
                         
                         <div class="flex gap-2 mb-3">
-                            {% if part.step_file_path %}
-                            <a href="{{ part.step_file_path|replace:'/home/ubuntu/nexaai/media':'/media' }}" download 
+                            {% if part.step_url %}
+                            <a href="{{ part.step_url }}" download 
                                class="px-3 py-1 bg-blue-600 text-white text-sm rounded hover:bg-blue-700">
                                 📥 Download STEP
                             </a>
                             {% endif %}
-                            {% if part.stl_file_path %}
-                            <a href="{{ part.stl_file_path|replace:'/home/ubuntu/nexaai/media':'/media' }}" download 
+                            {% if part.stl_url %}
+                            <a href="{{ part.stl_url }}" download 
                                class="px-3 py-1 bg-purple-600 text-white text-sm rounded hover:bg-purple-700">
                                 📥 Download STL
                             </a>

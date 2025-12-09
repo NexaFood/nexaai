@@ -62,6 +62,15 @@ def design_project_detail(request, project_id):
         breakdown = db.part_breakdowns.find_one({'project_id': to_object_id(project_id)})
         if breakdown:
             breakdown = doc_to_dict(breakdown)
+            # Convert file paths to URLs for each part
+            from pathlib import Path
+            from django.conf import settings
+            media_root = str(Path(settings.MEDIA_ROOT))
+            for part in breakdown.get('parts', []):
+                if part.get('step_file_path'):
+                    part['step_url'] = part['step_file_path'].replace(media_root, '/media').replace('\\\\', '/')
+                if part.get('stl_file_path'):
+                    part['stl_url'] = part['stl_file_path'].replace(media_root, '/media').replace('\\\\', '/')
     
     if project['stage'] in ['generation', 'completed']:
         models = list(db.models.find({'project_id': to_object_id(project_id)}))
