@@ -15,13 +15,13 @@ logger = logging.getLogger(__name__)
 class CadQueryAgent:
     """AI agent that generates CadQuery Python code for 3D models."""
     
-    def __init__(self, model="deepseek-coder"):
+    def __init__(self, model="gpt-4.1-mini"):
         """
         Initialize the CadQuery AI agent.
         
         Args:
             model: LLM model to use for code generation
-                  Options: deepseek-coder (best for code), gpt-4.1-mini, gpt-4.1-nano
+                  Options: gpt-4.1-mini (best available), gpt-4.1-nano, gemini-2.5-flash
         """
         self.client = OpenAI()  # Uses OPENAI_API_KEY from environment
         self.model = model
