@@ -9,7 +9,7 @@
                 {% elif printer.status == 'printing' %}bg-blue-500
                 {% elif printer.status == 'offline' %}bg-gray-500
                 {% else %}bg-red-500{% endif %}">
-                {{ printer.get_status_display }}
+                {{ printer.status_display }}
             </span>
         </div>
         <p class="text-sm opacity-90">{{ printer.model }}</p>
@@ -21,9 +21,9 @@
         <div>
             <p class="text-sm text-gray-500 mb-1">Type</p>
             <p class="font-semibold">
-                {{ printer.get_printer_type_display }}
+                {{ printer.printer_type_display }}
                 {% if printer.printer_type == 'snapmaker' and printer.current_mode %}
-                    <span class="text-sm text-purple-600">({{ printer.get_current_mode_display }})</span>
+                    <span class="text-sm text-purple-600">({{ printer.current_mode_display }})</span>
                 {% endif %}
             </p>
         </div>
@@ -52,19 +52,19 @@
 
         <!-- Actions -->
         <div class="pt-4 border-t border-gray-200 flex space-x-2">
-            <a href="/printers/edit/{{ printer.id }}" class="flex-1 bg-purple-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-purple-700 transition text-center text-sm">
+            <a href="/printers/edit/{{ printer._id }}" class="flex-1 bg-purple-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-purple-700 transition text-center text-sm">
                 Edit
             </a>
             {% if printer.printer_type == 'snapmaker' %}
             <button 
-                onclick="showModeChangeModal({{ printer.id }}, '{{ printer.current_mode }}')"
+                onclick="showModeChangeModal('{{ printer._id }}', '{{ printer.current_mode }}')"
                 class="flex-1 bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-700 transition text-sm"
             >
                 Change Mode
             </button>
             {% endif %}
             <button 
-                onclick="deletePrinter({{ printer.id }}, '{{ printer.name }}')"
+                onclick="deletePrinter('{{ printer._id }}', '{{ printer.name }}')"
                 class="bg-red-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-red-700 transition text-sm"
             >
                 Delete
