@@ -15,12 +15,13 @@ logger = logging.getLogger(__name__)
 class CadQueryAgent:
     """AI agent that generates CadQuery Python code for 3D models."""
     
-    def __init__(self, model="gpt-4.1-mini"):
+    def __init__(self, model="deepseek-coder"):
         """
         Initialize the CadQuery AI agent.
         
         Args:
             model: LLM model to use for code generation
+                  Options: deepseek-coder (best for code), gpt-4.1-mini, gpt-4.1-nano
         """
         self.client = OpenAI()  # Uses OPENAI_API_KEY from environment
         self.model = model
@@ -41,73 +42,62 @@ class CadQueryAgent:
         """
         logger.info(f"Generating CadQuery code from prompt: {prompt}")
         
-        system_prompt = """You are an expert CAD engineer who writes CadQuery Python code.
+        # Import examples library
+        from services.cadquery_examples import get_examples_for_prompt
+        
+        examples_text = get_examples_for_prompt(max_examples=15)
+        
+        system_prompt = f"""You are an expert CAD engineer who writes CadQuery Python code.
 
 CadQuery is a Python library for building parametric 3D CAD models.
 
-Key CadQuery concepts:
-- Start with a Workplane: cq.Workplane("XY")
-- Create 2D shapes: .box(), .circle(), .rect()
-- Extrude to 3D: .extrude(height)
-- Add features AFTER creating solid: .faces(selector).workplane().hole()
-- Combine operations: .union(), .cut()
+## CRITICAL RULES (MUST FOLLOW):
 
-IMPORTANT RULES:
-1. ALWAYS create a solid shape FIRST before using .faces()
-2. Use .box() or .extrude() to create the base solid
-3. THEN select faces and add features
-4. Keep designs simple and manufacturable
-5. Use realistic dimensions (10-500mm typical)
+1. **ALWAYS create a solid shape FIRST** before using .faces()
+   - Use .box(), .circle().extrude(), or .polygon().extrude()
+   - NEVER call .faces() on an empty workplane
 
-Example - Simple box (GOOD):
-```python
-import cadquery as cq
+2. **Face selection only works on solids**
+   - .faces(">Z") selects top face
+   - .faces("<Z") selects bottom face
+   - .faces("|Z") selects faces parallel to Z axis
 
-# Create a simple rectangular plate
-result = cq.Workplane("XY").box(100, 50, 10)
-```
+3. **Use realistic dimensions**
+   - Small parts: 10-100mm
+   - Medium parts: 100-500mm
+   - Large parts: 500-2000mm
 
-Example - Box with holes (GOOD):
-```python
-import cadquery as cq
+4. **Keep designs simple and manufacturable**
+   - Avoid complex curves unless necessary
+   - Use standard shapes (boxes, cylinders, holes)
+   - Think about how it would be 3D printed or CNC machined
 
-# Create base plate
-result = (
-    cq.Workplane("XY")
-    .box(100, 50, 10)  # Create solid FIRST
-    .faces(">Z")        # THEN select top face
-    .workplane()
-    .rect(80, 40, forConstruction=True)
-    .vertices()
-    .hole(5)
-)
-```
+5. **Variable naming**
+   - Final model MUST be in variable named 'result'
+   - Use descriptive intermediate variable names
 
-Example - Mounting bracket (GOOD):
-```python
-import cadquery as cq
+6. **Common patterns**
+   - Box with holes: .box() → .faces(">Z") → .workplane() → .hole()
+   - Cylinder: .circle() → .extrude()
+   - Hollow tube: .circle(outer) → .circle(inner) → .extrude()
+   - L-bracket: create two boxes → .union()
 
-# Create L-shaped mounting bracket
-base = cq.Workplane("XY").box(50, 40, 5)
-wall = cq.Workplane("XZ").workplane(offset=-20).box(50, 30, 5)
-result = base.union(wall)
-```
+## HIGH-QUALITY EXAMPLES:
 
-Example - Cylinder (GOOD):
-```python
-import cadquery as cq
+{examples_text}
 
-# Create a simple cylinder
-result = cq.Workplane("XY").circle(20).extrude(50)
-```
+## COMMON MISTAKES TO AVOID:
 
-BAD Example (AVOID - creates empty result):
-```python
-# DON'T DO THIS - no solid created before .faces()
-result = cq.Workplane("XY").faces(">Z")  # ERROR!
-```
+❌ BAD: .faces(">Z") before creating solid
+✅ GOOD: .box() THEN .faces(">Z")
 
-Generate clean, well-commented CadQuery code. The variable MUST be named 'result'.
+❌ BAD: Complex splines and curves for simple parts
+✅ GOOD: Use basic shapes (box, cylinder, polygon)
+
+❌ BAD: Unrealistic dimensions (1mm thick plate, 10000mm long beam)
+✅ GOOD: Realistic dimensions based on part function
+
+Generate clean, well-commented CadQuery code. Think about manufacturability.
 """
 
         user_prompt = f"""Generate CadQuery Python code for: {prompt}
