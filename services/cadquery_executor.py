@@ -16,43 +16,67 @@ logger = logging.getLogger(__name__)
 class CadQueryExecutor:
     """Executes CadQuery code and exports 3D models."""
     
-    def __init__(self, venv_path=None, output_dir=None):
+    def __init__(self, python_path=None, output_dir=None):
         """
         Initialize the CadQuery executor.
         
         Args:
-            venv_path: Path to CadQuery virtual environment (auto-detected if None)
+            python_path: Path to Python interpreter with CadQuery installed
+                        If None, will try Django settings, then sys.executable
             output_dir: Directory to save exported models (auto-detected if None)
         """
-        # Auto-detect project root (where manage.py is located)
-        if venv_path is None:
-            # Find project root by looking for manage.py
-            current_file = Path(__file__).resolve()
-            project_root = current_file.parent.parent  # Go up from services/ to project root
-            venv_path = project_root / "venv_cadquery"
+        # Determine Python path
+        if python_path is None:
+            # Try to get from Django settings
+            try:
+                from django.conf import settings
+                python_path = getattr(settings, 'CADQUERY_PYTHON_PATH', None)
+            except:
+                pass
         
+        if python_path is None:
+            # Use current Python interpreter (works for Conda envs)
+            python_path = sys.executable
+            logger.info("Using current Python interpreter (sys.executable)")
+        
+        self.python_path = Path(python_path)
+        
+        # Verify Python exists
+        if not self.python_path.exists():
+            logger.error(f"Python interpreter not found: {self.python_path}")
+            raise FileNotFoundError(f"Python interpreter not found: {self.python_path}")
+        
+        # Set output directory
         if output_dir is None:
             # Default to media/cadquery_models in project root
             current_file = Path(__file__).resolve()
             project_root = current_file.parent.parent
             output_dir = project_root / "media" / "cadquery_models"
         
-        self.venv_path = Path(venv_path)
-        
-        # Support both Windows and Linux
-        if sys.platform == "win32":
-            self.python_path = self.venv_path / "Scripts" / "python.exe"
-        else:
-            self.python_path = self.venv_path / "bin" / "python"
-        
         self.output_dir = Path(output_dir)
         self.output_dir.mkdir(parents=True, exist_ok=True)
         
         logger.info(f"CadQuery Executor initialized")
         logger.info(f"  Platform: {sys.platform}")
-        logger.info(f"  Project root: {self.venv_path.parent}")
         logger.info(f"  Python: {self.python_path}")
         logger.info(f"  Output: {self.output_dir}")
+        
+        # Test if CadQuery is available
+        try:
+            test_result = subprocess.run(
+                [str(self.python_path), "-c", "import cadquery; print(cadquery.__version__)"],
+                capture_output=True,
+                text=True,
+                timeout=5
+            )
+            if test_result.returncode == 0:
+                version = test_result.stdout.strip()
+                logger.info(f"  CadQuery version: {version}")
+            else:
+                logger.warning(f"  CadQuery not found in Python environment!")
+                logger.warning(f"  Error: {test_result.stderr}")
+        except Exception as e:
+            logger.warning(f"  Could not verify CadQuery installation: {e}")
     
     def execute_code(self, code: str, model_id: str, export_formats: list = ["step", "stl"]) -> Dict[str, Any]:
         """

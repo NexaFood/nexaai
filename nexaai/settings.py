@@ -118,6 +118,11 @@ MEDIA_ROOT = BASE_DIR / 'media'
 # Default primary key field type
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+# CadQuery Configuration
+# Set CADQUERY_PYTHON_PATH to use a specific Python interpreter (e.g., Conda env)
+# If not set, will try to auto-detect or use current Python (sys.executable)
+CADQUERY_PYTHON_PATH = os.getenv('CADQUERY_PYTHON_PATH', None)
+
 # Authentication settings
 LOGIN_URL = '/login/'
 LOGIN_REDIRECT_URL = '/generate/'
