@@ -70,16 +70,17 @@ def api_generate_part_cadquery(request, project_id, part_number):
         
         code_result = agent.generate_code(description)
         
-        if not code_result['success']:
+        if not code_result or 'code' not in code_result:
             # Update part with error
+            error_msg = 'Failed to generate CadQuery code'
             db.part_breakdowns.update_one(
                 {'project_id': to_object_id(project_id), 'parts.part_number': int(part_number)},
                 {'$set': {
                     'parts.$.status': 'failed',
-                    'parts.$.generation_error': code_result.get('error', 'Unknown error')
+                    'parts.$.generation_error': error_msg
                 }}
             )
-            return HttpResponse(f"Failed to generate code: {code_result.get('error', 'Unknown error')}", status=500)
+            return HttpResponse(f"Failed to generate code: {error_msg}", status=500)
         
         # Execute the code and export files
         logger.info(f"Executing CadQuery code for part {part_number}")
