@@ -169,11 +169,17 @@ def api_generate_part_cadquery(request, project_id, part_number):
                 
                 <div class="flex gap-2 mb-3">
                     <a href="{step_url}" download class="px-3 py-1 bg-blue-600 text-white text-sm rounded hover:bg-blue-700">
-                        Download STEP
+                        📥 Download STEP
                     </a>
                     <a href="{stl_url}" download class="px-3 py-1 bg-purple-600 text-white text-sm rounded hover:bg-purple-700">
-                        Download STL
+                        📥 Download STL
                     </a>
+                    <button 
+                        onclick="showPrinterSelector('{project_id}', {part_number}, '{part['name']}')"
+                        class="px-3 py-1 bg-green-600 text-white text-sm rounded hover:bg-green-700"
+                    >
+                        🖨️ Send to Printer
+                    </button>
                 </div>
                 
                 <details class="text-sm">

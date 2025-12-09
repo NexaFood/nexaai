@@ -117,6 +117,26 @@
             </div>
         </div>
     </div>
+<</div>
+
+<!-- Printer Selector Modal -->
+<div id="printerModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50">
+    <div class="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+        <h3 class="text-xl font-bold mb-4">Send to Printer</h3>
+        <p class="text-sm text-gray-600 mb-4">Part: <span id="modalPartName"></span></p>
+        
+        <div id="printerList" class="space-y-2 mb-4">
+            <!-- Printers will be loaded here -->
+        </div>
+        
+        <div id="sendResult" class="mb-4"></div>
+        
+        <div class="flex gap-2">
+            <button onclick="closePrinterModal()" class="flex-1 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">
+                Cancel
+            </button>
+        </div>
+    </div>
 </div>
 
 <script src="https://unpkg.com/htmx.org@1.9.10"></script>
@@ -125,5 +145,83 @@
     document.body.addEventListener('htmx:configRequest', (event) => {
         event.detail.headers['X-CSRFToken'] = '{{ csrf_token }}';
     });
+    
+    let currentProjectId = null;
+    let currentPartNumber = null;
+    
+    function showPrinterSelector(projectId, partNumber, partName) {
+        currentProjectId = projectId;
+        currentPartNumber = partNumber;
+        
+        document.getElementById('modalPartName').textContent = partName;
+        document.getElementById('printerModal').classList.remove('hidden');
+        document.getElementById('sendResult').innerHTML = '';
+        
+        // Load available printers
+        fetch('/api/printers')
+            .then(response => response.text())
+            .then(html => {
+                // Parse the HTML to extract printer data
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(html, 'text/html');
+                
+                // Get printer cards and extract printer info
+                const printerCards = doc.querySelectorAll('[href*="/printers/edit/"]');
+                const printerList = document.getElementById('printerList');
+                
+                if (printerCards.length === 0) {
+                    printerList.innerHTML = '<p class="text-gray-500 text-sm">No printers configured. <a href="/printers/add" class="text-purple-600 hover:underline">Add a printer</a></p>';
+                    return;
+                }
+                
+                // Build printer selection buttons
+                let buttons = '';
+                printerCards.forEach(card => {
+                    const href = card.getAttribute('href');
+                    const printerId = href.split('/').pop();
+                    const printerName = card.closest('.bg-white').querySelector('h3').textContent;
+                    
+                    buttons += `
+                        <button 
+                            onclick="sendToPrinter('${printerId}', '${printerName}')"
+                            class="w-full px-4 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 text-left"
+                        >
+                            🖨️ ${printerName}
+                        </button>
+                    `;
+                });
+                
+                printerList.innerHTML = buttons;
+            })
+            .catch(error => {
+                document.getElementById('printerList').innerHTML = '<p class="text-red-500 text-sm">Failed to load printers</p>';
+            });
+    }
+    
+    function sendToPrinter(printerId, printerName) {
+        const resultDiv = document.getElementById('sendResult');
+        resultDiv.innerHTML = '<p class="text-gray-500 text-sm">Sending to ' + printerName + '...</p>';
+        
+        // Send to printer
+        fetch(`/api/design/send-to-printer/${currentProjectId}/${currentPartNumber}/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: `printer_id=${printerId}`
+        })
+        .then(response => response.text())
+        .then(html => {
+            resultDiv.innerHTML = html;
+        })
+        .catch(error => {
+            resultDiv.innerHTML = '<div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">Error: ' + error + '</div>';
+        });
+    }
+    
+    function closePrinterModal() {
+        document.getElementById('printerModal').classList.add('hidden');
+    }
 </script>
 {% endblock %}

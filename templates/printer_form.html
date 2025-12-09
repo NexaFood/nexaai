@@ -114,6 +114,24 @@
                 >
             </div>
 
+            <!-- API Key / Token -->
+            <div>
+                <label for="api_key" class="block text-sm font-bold text-gray-700 mb-2">
+                    API Key / Token
+                </label>
+                <input 
+                    type="text" 
+                    id="api_key" 
+                    name="api_key"
+                    value="{% if printer %}{{ printer.api_key }}{% endif %}"
+                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    placeholder="PrusaLink API key or Snapmaker token"
+                >
+                <p class="text-xs text-gray-500 mt-1">
+                    Required for remote printing. Find in printer settings.
+                </p>
+            </div>
+
             <!-- Build Volume -->
             <div>
                 <label class="block text-sm font-bold text-gray-700 mb-2">

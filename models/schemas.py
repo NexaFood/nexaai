@@ -52,6 +52,7 @@ class PrinterSchema:
             'model': model,
             'serial_number': kwargs.get('serial_number'),
             'ip_address': kwargs.get('ip_address'),
+            'api_key': kwargs.get('api_key'),  # PrusaLink API key or Snapmaker token
             'build_volume_x': build_volume_x,
             'build_volume_y': build_volume_y,
             'build_volume_z': build_volume_z,

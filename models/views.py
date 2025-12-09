@@ -434,6 +434,7 @@ def printer_add(request):
                 build_volume_z=int(request.POST.get('build_volume_z')),
                 serial_number=request.POST.get('serial_number') or None,
                 ip_address=request.POST.get('ip_address') or None,
+                api_key=request.POST.get('api_key') or None,
                 status=request.POST.get('status', 'idle'),
                 current_mode=request.POST.get('current_mode') if request.POST.get('printer_type') == 'snapmaker' else None,
             )
@@ -469,6 +470,7 @@ def printer_edit(request, printer_id):
                 'model': request.POST.get('model'),
                 'serial_number': request.POST.get('serial_number') or None,
                 'ip_address': request.POST.get('ip_address') or None,
+                'api_key': request.POST.get('api_key') or None,
                 'build_volume_x': int(request.POST.get('build_volume_x')),
                 'build_volume_y': int(request.POST.get('build_volume_y')),
                 'build_volume_z': int(request.POST.get('build_volume_z')),

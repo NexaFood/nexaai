@@ -5,6 +5,7 @@ from django.urls import path
 from . import views
 from . import design_views
 from . import cadquery_views
+from . import print_job_views
 
 app_name = 'models'
 
@@ -31,4 +32,8 @@ urlpatterns = [
     path('api/design/approve-concept/<str:project_id>/', design_views.api_approve_concept, name='api-approve-concept'),
     path('api/design/approve-parts/<str:project_id>/', cadquery_views.api_approve_parts_cadquery, name='api-approve-parts'),
     path('api/design/generate/<str:project_id>/<int:part_number>/', cadquery_views.api_generate_part_cadquery, name='api-generate-part'),
+    
+    # Print job endpoints
+    path('api/design/send-to-printer/<str:project_id>/<int:part_number>/', print_job_views.api_send_to_printer, name='api-send-to-printer'),
+    path('api/printers/<str:printer_id>/status/', print_job_views.api_get_printer_status, name='api-printer-status'),
 ]
