@@ -1,0 +1,339 @@
+{% extends "base.html" %}
+
+{% block title %}{{ project.name }} - Design Project - NexaAI{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto">
+    <!-- Header -->
+    <div class="mb-8">
+        <a href="/design/projects/" class="text-purple-600 hover:text-purple-700 flex items-center space-x-2 mb-4">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+            </svg>
+            <span>Back to Projects</span>
+        </a>
+        
+        <div class="flex items-center justify-between">
+            <div>
+                <h1 class="text-4xl font-bold mb-2">{{ project.name }}</h1>
+                <p class="text-gray-600">{{ project.original_prompt }}</p>
+            </div>
+            <div class="text-right">
+                <span class="inline-block px-4 py-2 rounded-full text-sm font-semibold
+                    {% if project.stage == 'concept' %}bg-blue-100 text-blue-800
+                    {% elif project.stage == 'parts' %}bg-yellow-100 text-yellow-800
+                    {% elif project.stage == 'generation' %}bg-purple-100 text-purple-800
+                    {% elif project.stage == 'completed' %}bg-green-100 text-green-800
+                    {% else %}bg-gray-100 text-gray-800{% endif %}">
+                    Stage: {{ project.stage|title }}
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Progress Bar -->
+    <div class="mb-8">
+        <div class="flex items-center justify-between mb-2">
+            <span class="text-sm font-semibold text-gray-700">Progress</span>
+            <span class="text-sm text-gray-600">
+                {% if project.stage == 'concept' %}Step 1 of 3
+                {% elif project.stage == 'parts' %}Step 2 of 3
+                {% elif project.stage == 'generation' or project.stage == 'completed' %}Step 3 of 3
+                {% endif %}
+            </span>
+        </div>
+        <div class="w-full bg-gray-200 rounded-full h-3">
+            <div class="bg-gradient-to-r from-purple-500 to-blue-500 h-3 rounded-full transition-all duration-500"
+                 style="width: {% if project.stage == 'concept' %}33%{% elif project.stage == 'parts' %}66%{% elif project.stage == 'generation' or project.stage == 'completed' %}100%{% endif %}">
+            </div>
+        </div>
+    </div>
+
+    <!-- Stage 1: Design Concept -->
+    {% if concept %}
+    <div class="bg-white rounded-2xl shadow-lg p-8 mb-6">
+        <div class="flex items-center justify-between mb-4">
+            <h2 class="text-2xl font-bold">📝 Stage 1: Design Concept</h2>
+            <span class="text-green-600 font-semibold">✓ Approved</span>
+        </div>
+        
+        <div class="prose max-w-none">
+            <h3 class="text-lg font-semibold text-gray-800 mb-2">Overview</h3>
+            <p class="text-gray-700 whitespace-pre-wrap">{{ concept.overview }}</p>
+            
+            <h3 class="text-lg font-semibold text-gray-800 mt-4 mb-2">Key Features</h3>
+            <ul class="list-disc list-inside text-gray-700">
+                {% for feature in concept.key_features %}
+                <li>{{ feature }}</li>
+                {% endfor %}
+            </ul>
+            
+            <h3 class="text-lg font-semibold text-gray-800 mt-4 mb-2">Technical Specifications</h3>
+            <p class="text-gray-700 whitespace-pre-wrap">{{ concept.technical_specs }}</p>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Stage 2: Part Breakdown -->
+    {% if breakdown %}
+    <div class="bg-white rounded-2xl shadow-lg p-8 mb-6">
+        <div class="flex items-center justify-between mb-4">
+            <h2 class="text-2xl font-bold">🔧 Stage 2: Part Breakdown</h2>
+            <span class="text-green-600 font-semibold">✓ Approved</span>
+        </div>
+        
+        <p class="text-gray-600 mb-4">{{ breakdown.parts|length }} parts identified</p>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {% for part in breakdown.parts %}
+            <div class="border border-gray-200 rounded-lg p-4">
+                <div class="flex items-start justify-between mb-2">
+                    <h3 class="font-bold text-gray-800">Part {{ part.part_number }}</h3>
+                    <span class="text-xs px-2 py-1 rounded
+                        {% if part.status == 'completed' %}bg-green-100 text-green-800
+                        {% elif part.status == 'generating' %}bg-blue-100 text-blue-800
+                        {% elif part.status == 'failed' %}bg-red-100 text-red-800
+                        {% else %}bg-gray-100 text-gray-800{% endif %}">
+                        {{ part.status|default:"pending" }}
+                    </span>
+                </div>
+                <p class="text-sm font-semibold text-gray-700 mb-2">{{ part.name }}</p>
+                <p class="text-xs text-gray-600 mb-2">{{ part.description }}</p>
+                <div class="text-xs text-gray-500">
+                    <span class="font-semibold">Method:</span> {{ part.manufacturing_method }}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        
+        <!-- Generate All Button -->
+        {% if project.stage == 'parts' %}
+        <div class="mt-6 text-center">
+            <form hx-post="/api/design/approve-parts/{{ project.id }}/" 
+                  hx-target="#generation-status"
+                  hx-swap="innerHTML"
+                  class="inline-block">
+                {% csrf_token %}
+                <button type="submit" 
+                        class="bg-purple-600 text-white px-8 py-4 rounded-lg font-bold text-lg hover:bg-purple-700 transition">
+                    Start CAD Generation →
+                </button>
+            </form>
+            <div id="generation-status" class="mt-4"></div>
+        </div>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    <!-- Stage 3: CAD Generation -->
+    {% if project.stage == 'generation' or project.stage == 'completed' %}
+    <div class="bg-white rounded-2xl shadow-lg p-8 mb-6">
+        <div class="flex items-center justify-between mb-4">
+            <h2 class="text-2xl font-bold">⚙️ Stage 3: CAD Generation</h2>
+            {% if project.stage == 'completed' %}
+            <span class="text-green-600 font-semibold">✓ Complete</span>
+            {% else %}
+            <span class="text-blue-600 font-semibold">In Progress...</span>
+            {% endif %}
+        </div>
+        
+        <p class="text-gray-600 mb-6">
+            Progress: {{ project.generated_parts|default:0 }} / {{ breakdown.parts|length }} parts generated
+        </p>
+        
+        <!-- Part Generation Cards -->
+        <div class="space-y-4">
+            {% for part in breakdown.parts %}
+            <div class="border border-gray-200 rounded-lg p-4">
+                <div class="flex items-center justify-between mb-2">
+                    <h3 class="font-bold text-gray-800">Part {{ part.part_number }}: {{ part.name }}</h3>
+                    {% if part.status == 'completed' %}
+                    <span class="text-green-600 font-semibold">✓ Generated</span>
+                    {% elif part.status == 'generating' %}
+                    <span class="text-blue-600 font-semibold">⏳ Generating...</span>
+                    {% elif part.status == 'failed' %}
+                    <span class="text-red-600 font-semibold">✗ Failed</span>
+                    {% else %}
+                    <button 
+                        hx-post="/api/design/generate/{{ project.id }}/{{ part.part_number }}/"
+                        hx-target="#part-{{ part.part_number }}-result"
+                        hx-swap="innerHTML"
+                        class="bg-purple-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-purple-700 transition text-sm">
+                        Generate CAD Model
+                    </button>
+                    {% endif %}
+                </div>
+                
+                <div id="part-{{ part.part_number }}-result">
+                    {% if part.status == 'completed' %}
+                    <div class="bg-green-50 border border-green-200 rounded-lg p-4 mt-2">
+                        <p class="text-green-800 font-semibold mb-2">✓ Part {{ part.part_number }} generated successfully!</p>
+                        
+                        <div class="flex gap-2 mb-3">
+                            {% if part.step_file_path %}
+                            <a href="{{ part.step_file_path|replace:'/home/ubuntu/nexaai/media':'/media' }}" download 
+                               class="px-3 py-1 bg-blue-600 text-white text-sm rounded hover:bg-blue-700">
+                                📥 Download STEP
+                            </a>
+                            {% endif %}
+                            {% if part.stl_file_path %}
+                            <a href="{{ part.stl_file_path|replace:'/home/ubuntu/nexaai/media':'/media' }}" download 
+                               class="px-3 py-1 bg-purple-600 text-white text-sm rounded hover:bg-purple-700">
+                                📥 Download STL
+                            </a>
+                            {% endif %}
+                            <button 
+                                onclick="showPrinterSelector('{{ project.id }}', {{ part.part_number }}, '{{ part.name }}')"
+                                class="px-3 py-1 bg-green-600 text-white text-sm rounded hover:bg-green-700">
+                                🖨️ Send to Printer
+                            </button>
+                        </div>
+                        
+                        {% if part.cadquery_code %}
+                        <details class="text-sm">
+                            <summary class="cursor-pointer text-gray-600 hover:text-gray-800 font-semibold">View Generated Code</summary>
+                            <pre class="mt-2 bg-gray-800 text-green-400 p-3 rounded overflow-x-auto text-xs">{{ part.cadquery_code }}</pre>
+                        </details>
+                        {% endif %}
+                    </div>
+                    {% elif part.status == 'failed' %}
+                    <div class="bg-red-50 border border-red-200 rounded-lg p-4 mt-2">
+                        <p class="text-red-800 font-semibold">✗ Generation failed</p>
+                        {% if part.generation_error %}
+                        <p class="text-sm text-red-600 mt-1">{{ part.generation_error }}</p>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Project Info -->
+    <div class="bg-gray-50 rounded-lg p-6">
+        <h3 class="font-bold text-gray-800 mb-4">Project Information</h3>
+        <div class="grid grid-cols-2 gap-4 text-sm">
+            <div>
+                <span class="text-gray-600">Created:</span>
+                <span class="font-semibold">{{ project.created_at|date:"M d, Y H:i" }}</span>
+            </div>
+            <div>
+                <span class="text-gray-600">Last Updated:</span>
+                <span class="font-semibold">{{ project.updated_at|date:"M d, Y H:i" }}</span>
+            </div>
+            <div>
+                <span class="text-gray-600">Status:</span>
+                <span class="font-semibold">{{ project.status|title }}</span>
+            </div>
+            {% if project.completed_at %}
+            <div>
+                <span class="text-gray-600">Completed:</span>
+                <span class="font-semibold">{{ project.completed_at|date:"M d, Y H:i" }}</span>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Printer Selector Modal (reuse from design_projects.html) -->
+<div id="printerModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50">
+    <div class="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+        <h3 class="text-xl font-bold mb-4">Send to Printer</h3>
+        <p class="text-sm text-gray-600 mb-4">Part: <span id="modalPartName"></span></p>
+        
+        <div id="printerList" class="space-y-2 mb-4">
+            <!-- Printers will be loaded here -->
+        </div>
+        
+        <div id="sendResult" class="mb-4"></div>
+        
+        <div class="flex gap-2">
+            <button onclick="closePrinterModal()" class="flex-1 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">
+                Cancel
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Configure HTMX
+    document.body.addEventListener('htmx:configRequest', (event) => {
+        event.detail.headers['X-CSRFToken'] = '{{ csrf_token }}';
+    });
+    
+    let currentProjectId = null;
+    let currentPartNumber = null;
+    
+    function showPrinterSelector(projectId, partNumber, partName) {
+        currentProjectId = projectId;
+        currentPartNumber = partNumber;
+        
+        document.getElementById('modalPartName').textContent = partName;
+        document.getElementById('printerModal').classList.remove('hidden');
+        document.getElementById('sendResult').innerHTML = '';
+        
+        // Load available printers
+        fetch('/api/printers')
+            .then(response => response.text())
+            .then(html => {
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(html, 'text/html');
+                const printerCards = doc.querySelectorAll('[href*="/printers/edit/"]');
+                const printerList = document.getElementById('printerList');
+                
+                if (printerCards.length === 0) {
+                    printerList.innerHTML = '<p class="text-gray-500 text-sm">No printers configured. <a href="/printers/add" class="text-purple-600 hover:underline">Add a printer</a></p>';
+                    return;
+                }
+                
+                let buttons = '';
+                printerCards.forEach(card => {
+                    const href = card.getAttribute('href');
+                    const printerId = href.split('/').pop();
+                    const printerName = card.closest('.bg-white').querySelector('h3').textContent;
+                    
+                    buttons += `
+                        <button 
+                            onclick="sendToPrinter('${printerId}', '${printerName}')"
+                            class="w-full px-4 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 text-left"
+                        >
+                            🖨️ ${printerName}
+                        </button>
+                    `;
+                });
+                
+                printerList.innerHTML = buttons;
+            })
+            .catch(error => {
+                document.getElementById('printerList').innerHTML = '<p class="text-red-500 text-sm">Failed to load printers</p>';
+            });
+    }
+    
+    function sendToPrinter(printerId, printerName) {
+        const resultDiv = document.getElementById('sendResult');
+        resultDiv.innerHTML = '<p class="text-gray-500 text-sm">Sending to ' + printerName + '...</p>';
+        
+        fetch(`/api/design/send-to-printer/${currentProjectId}/${currentPartNumber}/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: `printer_id=${printerId}`
+        })
+        .then(response => response.text())
+        .then(html => {
+            resultDiv.innerHTML = html;
+        })
+        .catch(error => {
+            resultDiv.innerHTML = '<div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">Error: ' + error + '</div>';
+        });
+    }
+    
+    function closePrinterModal() {
+        document.getElementById('printerModal').classList.add('hidden');
+    }
+</script>
+{% endblock %}
