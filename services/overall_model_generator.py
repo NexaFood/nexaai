@@ -35,22 +35,52 @@ def generate_overall_model(concept, output_dir, model_id="overall_model"):
         original_prompt = concept.get('original_prompt', '')
         
         description = f"""
-Create a SIMPLE, RECOGNIZABLE 3D model of: {original_prompt}
+Create a SIMPLE but RECOGNIZABLE 3D model of: {original_prompt}
 
-IMPORTANT RULES:
-1. Keep it VERY SIMPLE - use basic shapes (boxes, cylinders, cones)
-2. Focus on the OVERALL FORM, not details
-3. This is a CONCEPT MODEL - just show the basic shape
-4. Use realistic proportions based on what this object is
-5. DO NOT try to model every feature - just the main body/shape
+Your goal: Make a model that someone would immediately recognize as "{original_prompt}".
 
-Examples:
-- "a rocket" → tall cylinder (body) + cone (nose) + small cylinders (fins)
-- "a robot" → box (body) + cylinder (head) + boxes (limbs)
-- "a car" → long box (body) + smaller box (cabin) + cylinders (wheels)
-- "a drone" → flat box (body) + thin cylinders (arms)
+GUIDELINES:
+1. Use appropriate basic shapes for THIS specific object
+2. Include the KEY features that make it recognizable
+3. Keep each feature simple (no complex curves or details)
+4. Use realistic proportions
+5. Combine 3-8 simple shapes maximum
 
-Keep it simple and manufacturable!
+GOOD EXAMPLES:
+
+Rocket:
+- Main body: tall cylinder (diameter 100mm, height 500mm)
+- Nose cone: cone on top (base 100mm, height 150mm)
+- Fins: 3-4 small rectangular boxes at base
+- Result: Clearly recognizable as a rocket
+
+Car:
+- Body: long box (length 400mm, width 180mm, height 80mm)
+- Cabin: smaller box on top, offset to back (length 200mm, width 180mm, height 100mm)
+- Wheels: 4 cylinders positioned at corners (diameter 60mm, width 30mm)
+- Result: Clearly recognizable as a car
+
+Robot:
+- Body: box (100x80x120mm)
+- Head: cylinder on top (diameter 60mm, height 40mm)
+- Arms: 2 long boxes on sides (20x20x100mm each)
+- Legs: 2 boxes at bottom (30x30x80mm each)
+- Result: Clearly recognizable as a robot
+
+Drone:
+- Center body: flat box (150x150x30mm)
+- Arms: 4 thin cylinders extending from corners (diameter 10mm, length 100mm)
+- Motors: small cylinders at end of each arm (diameter 25mm, height 15mm)
+- Result: Clearly recognizable as a drone
+
+Lawn Mower:
+- Deck: wide flat box (500x400x100mm)
+- Handle: vertical box at back (30x30x400mm) + horizontal box on top (300x30x30mm)
+- Wheels: 4 cylinders (diameter 80mm, width 40mm)
+- Result: Clearly recognizable as a lawn mower
+
+Your task: Think about what shapes would make "{original_prompt}" IMMEDIATELY RECOGNIZABLE.
+Use union() to combine shapes. Keep it simple but distinctive!
 """
         
         logger.info(f"Generating overall model for: {concept.get('original_prompt')}")
