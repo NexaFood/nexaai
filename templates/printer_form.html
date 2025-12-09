@@ -28,7 +28,7 @@
                     id="name" 
                     name="name" 
                     required
-                    value="{{ printer.name if printer else '' }}"
+                    value="{% if printer %}{{ printer.name }}{% endif %}"
                     class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                     placeholder="e.g., My Prusa MK4"
                 >
@@ -46,13 +46,13 @@
                     onchange="toggleSnapmakerMode(this.value)"
                     class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                 >
-                    <option value="prusa" {{ 'selected' if printer and printer.printer_type == 'prusa' else '' }}>Prusa (3D Print Only)</option>
-                    <option value="snapmaker" {{ 'selected' if printer and printer.printer_type == 'snapmaker' else '' }}>Snapmaker (Multi-Mode)</option>
+                    <option value="prusa" {% if printer and printer.printer_type == 'prusa' %}selected{% endif %}>Prusa (3D Print Only)</option>
+                    <option value="snapmaker" {% if printer and printer.printer_type == 'snapmaker' %}selected{% endif %}>Snapmaker (Multi-Mode)</option>
                 </select>
             </div>
 
             <!-- Snapmaker Mode (only for Snapmaker) -->
-            <div id="snapmaker_mode_field" style="display: {{ 'block' if printer and printer.printer_type == 'snapmaker' else 'none' }};">
+            <div id="snapmaker_mode_field" style="display: {% if printer and printer.printer_type == 'snapmaker' %}block{% else %}none{% endif %};">
                 <label for="current_mode" class="block text-sm font-bold text-gray-700 mb-2">
                     Current Mode *
                 </label>
@@ -61,9 +61,9 @@
                     name="current_mode"
                     class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                 >
-                    <option value="3d_print" {{ 'selected' if printer and printer.current_mode == '3d_print' else '' }}>3D Printing</option>
-                    <option value="cnc" {{ 'selected' if printer and printer.current_mode == 'cnc' else '' }}>CNC Milling</option>
-                    <option value="laser" {{ 'selected' if printer and printer.current_mode == 'laser' else '' }}>Laser Engraving</option>
+                    <option value="3d_print" {% if printer and printer.current_mode == '3d_print' %}selected{% endif %}>3D Printing</option>
+                    <option value="cnc" {% if printer and printer.current_mode == 'cnc' %}selected{% endif %}>CNC Milling</option>
+                    <option value="laser" {% if printer and printer.current_mode == 'laser' %}selected{% endif %}>Laser Engraving</option>
                 </select>
             </div>
 
@@ -77,7 +77,7 @@
                     id="model" 
                     name="model" 
                     required
-                    value="{{ printer.model if printer else '' }}"
+                    value="{% if printer %}{{ printer.model }}{% endif %}"
                     class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                     placeholder="e.g., Prusa MK4, Snapmaker 2.0 A350"
                 >
@@ -92,7 +92,7 @@
                     type="text" 
                     id="serial_number" 
                     name="serial_number"
-                    value="{{ printer.serial_number if printer else '' }}"
+                    value="{% if printer %}{{ printer.serial_number }}{% endif %}"
                     class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                     placeholder="Optional"
                 >
@@ -107,7 +107,7 @@
                     type="text" 
                     id="ip_address" 
                     name="ip_address"
-                    value="{{ printer.ip_address if printer else '' }}"
+                    value="{% if printer %}{{ printer.ip_address }}{% endif %}"
                     class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                     placeholder="e.g., 192.168.1.100"
                     pattern="^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$"
@@ -127,7 +127,7 @@
                             id="build_volume_x" 
                             name="build_volume_x" 
                             required
-                            value="{{ printer.build_volume_x if printer else '' }}"
+                            value="{% if printer %}{{ printer.build_volume_x }}{% endif %}"
                             class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                             placeholder="250"
                             min="1"
@@ -140,7 +140,7 @@
                             id="build_volume_y" 
                             name="build_volume_y" 
                             required
-                            value="{{ printer.build_volume_y if printer else '' }}"
+                            value="{% if printer %}{{ printer.build_volume_y }}{% endif %}"
                             class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                             placeholder="210"
                             min="1"
@@ -153,7 +153,7 @@
                             id="build_volume_z" 
                             name="build_volume_z" 
                             required
-                            value="{{ printer.build_volume_z if printer else '' }}"
+                            value="{% if printer %}{{ printer.build_volume_z }}{% endif %}"
                             class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                             placeholder="210"
                             min="1"
@@ -173,10 +173,10 @@
                     required
                     class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                 >
-                    <option value="idle" {{ 'selected' if printer and printer.status == 'idle' else '' }}>Idle</option>
-                    <option value="printing" {{ 'selected' if printer and printer.status == 'printing' else '' }}>Printing</option>
-                    <option value="offline" {{ 'selected' if printer and printer.status == 'offline' else '' }}>Offline</option>
-                    <option value="error" {{ 'selected' if printer and printer.status == 'error' else '' }}>Error</option>
+                    <option value="idle" {% if printer and printer.status == 'idle' %}selected{% endif %}>Idle</option>
+                    <option value="printing" {% if printer and printer.status == 'printing' %}selected{% endif %}>Printing</option>
+                    <option value="offline" {% if printer and printer.status == 'offline' %}selected{% endif %}>Offline</option>
+                    <option value="error" {% if printer and printer.status == 'error' %}selected{% endif %}>Error</option>
                 </select>
             </div>
 
@@ -186,7 +186,7 @@
                     type="submit"
                     class="flex-1 bg-purple-600 text-white px-8 py-4 rounded-lg font-bold text-lg hover:bg-purple-700 transition"
                 >
-                    {{ 'Update Printer' if printer else 'Add Printer' }}
+                    {% if printer %}Update Printer{% else %}Add Printer{% endif %}
                 </button>
                 <a 
                     href="/printers"
