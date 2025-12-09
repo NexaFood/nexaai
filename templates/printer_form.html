@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}{{ 'Edit' if printer else 'Add' }} Printer - NexaAI{% endblock %}
+{% block title %}{% if printer %}Edit{% else %}Add{% endif %} Printer - NexaAI{% endblock %}
 
 {% block content %}
 <div class="max-w-3xl mx-auto">
@@ -11,7 +11,7 @@
             </svg>
             <span>Back to Printers</span>
         </a>
-        <h1 class="text-4xl font-bold">{{ 'Edit' if printer else 'Add' }} Printer</h1>
+        <h1 class="text-4xl font-bold">{% if printer %}Edit{% else %}Add{% endif %} Printer</h1>
     </div>
 
     <div class="bg-white rounded-2xl shadow-lg p-8">
