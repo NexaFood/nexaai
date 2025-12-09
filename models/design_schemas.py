@@ -112,6 +112,13 @@ class PartSchema:
             'notes': kwargs.get('notes', ''),
             'refined_prompt': kwargs.get('refined_prompt', ''),  # For 3D generation
             'model_id': None,  # Will be set when 3D model is generated
+            
+            # CadQuery generation data
+            'cadquery_code': None,  # Generated Python code
+            'step_file_path': None,  # Path to STEP file
+            'stl_file_path': None,  # Path to STL file
+            'generation_error': None,  # Error message if generation failed
+            
             'status': 'pending',  # 'pending', 'generating', 'completed', 'failed'
         }
 

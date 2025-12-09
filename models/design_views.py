@@ -304,14 +304,35 @@ def api_approve_concept(request, project_id):
                     </table>
                 </div>
                 
+                <div class="mb-4">
+                    <p class="text-sm font-semibold text-gray-700 mb-2">Choose Generation Method:</p>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                            <h4 class="font-semibold text-blue-900 mb-1">CadQuery (Recommended)</h4>
+                            <p class="text-xs text-blue-700 mb-3">Precise parametric CAD • STEP/STL files • Fast (5-10s/part) • Editable code</p>
+                            <button 
+                                hx-post="/api/design/cadquery/approve-parts/{project_id}/"
+                                hx-target="#parts-{project_id}"
+                                hx-swap="outerHTML"
+                                class="w-full bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-700 transition">
+                                ✓ Use CadQuery
+                            </button>
+                        </div>
+                        <div class="bg-purple-50 border border-purple-200 rounded-lg p-4">
+                            <h4 class="font-semibold text-purple-900 mb-1">Meshy-6 (Artistic)</h4>
+                            <p class="text-xs text-purple-700 mb-3">Textured 3D models • Artistic style • Slow (10-20min/part) • GLB files</p>
+                            <button 
+                                hx-post="/api/design/approve-parts/{project_id}/"
+                                hx-target="#parts-{project_id}"
+                                hx-swap="outerHTML"
+                                class="w-full bg-purple-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-purple-700 transition">
+                                ✓ Use Meshy-6
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
                 <div class="flex gap-4">
-                    <button 
-                        hx-post="/api/design/approve-parts/{project_id}/"
-                        hx-target="#parts-{project_id}"
-                        hx-swap="outerHTML"
-                        class="flex-1 bg-green-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-green-700 transition">
-                        ✓ Approve & Start 3D Generation
-                    </button>
                     <button 
                         hx-post="/api/design/refine-parts/{project_id}/"
                         hx-target="#parts-{project_id}"
