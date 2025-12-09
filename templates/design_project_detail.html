@@ -198,10 +198,17 @@
                     </div>
                     {% elif part.status == 'failed' %}
                     <div class="bg-red-50 border border-red-200 rounded-lg p-4 mt-2">
-                        <p class="text-red-800 font-semibold">✗ Generation failed</p>
+                        <p class="text-red-800 font-semibold mb-2">✗ Generation failed</p>
                         {% if part.generation_error %}
-                        <p class="text-sm text-red-600 mt-1">{{ part.generation_error }}</p>
+                        <p class="text-sm text-red-600 mb-3">{{ part.generation_error }}</p>
                         {% endif %}
+                        <button 
+                            hx-post="/api/design/generate/{{ project.id }}/{{ part.part_number }}/"
+                            hx-target="#part-{{ part.part_number }}-result"
+                            hx-swap="innerHTML"
+                            class="bg-purple-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-purple-700 transition text-sm">
+                            🔄 Retry Generation
+                        </button>
                     </div>
                     {% endif %}
                 </div>
