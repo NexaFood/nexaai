@@ -5,12 +5,14 @@ Replaces Meshy API with local CadQuery generation for precise parametric CAD.
 from django.shortcuts import render
 from django.http import HttpResponse, JsonResponse
 from django.views.decorators.http import require_http_methods
+from django.conf import settings
 from models.mongodb import db, to_object_id, doc_to_dict
 from models.design_schemas import PartSchema
 from models.views import session_login_required
 from services.cadquery_agent import CadQueryAgent
 from services.cadquery_executor import CadQueryExecutor
 from datetime import datetime
+from pathlib import Path
 import logging
 import os
 
@@ -85,9 +87,10 @@ def api_generate_part_cadquery(request, project_id, part_number):
         # Execute the code and export files
         logger.info(f"Executing CadQuery code for part {part_number}")
         
-        # Create output directory for this project
-        output_dir = f"/home/ubuntu/nexaai/media/cadquery_models/project_{project_id}"
-        os.makedirs(output_dir, exist_ok=True)
+        # Create output directory for this project (cross-platform)
+        output_dir = Path(settings.MEDIA_ROOT) / "cadquery_models" / f"project_{project_id}"
+        output_dir.mkdir(parents=True, exist_ok=True)
+        output_dir = str(output_dir)  # Convert back to string for compatibility
         
         # Generate model_id based on part name
         safe_name = part['name'].lower().replace(' ', '_').replace('-', '_')
@@ -153,9 +156,11 @@ def api_generate_part_cadquery(request, project_id, part_number):
                 }}
             )
         
-        # Return success HTML with download links
-        step_url = step_file.replace('/home/ubuntu/nexaai/media/', '/media/').replace('\\', '/')
-        stl_url = stl_file.replace('/home/ubuntu/nexaai/media/', '/media/').replace('\\', '/')
+        # Return success HTML with download links (cross-platform)
+        # Convert absolute paths to URLs
+        media_root = str(Path(settings.MEDIA_ROOT))
+        step_url = step_file.replace(media_root, '/media').replace('\\', '/')
+        stl_url = stl_file.replace(media_root, '/media').replace('\\', '/')
         
         return HttpResponse(f'''
             <div class="bg-green-50 border border-green-200 rounded-lg p-4">

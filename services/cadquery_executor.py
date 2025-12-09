@@ -16,14 +16,27 @@ logger = logging.getLogger(__name__)
 class CadQueryExecutor:
     """Executes CadQuery code and exports 3D models."""
     
-    def __init__(self, venv_path="/home/ubuntu/nexaai/venv_cadquery", output_dir="/home/ubuntu/nexaai/media/cadquery_models"):
+    def __init__(self, venv_path=None, output_dir=None):
         """
         Initialize the CadQuery executor.
         
         Args:
-            venv_path: Path to CadQuery virtual environment
-            output_dir: Directory to save exported models
+            venv_path: Path to CadQuery virtual environment (auto-detected if None)
+            output_dir: Directory to save exported models (auto-detected if None)
         """
+        # Auto-detect project root (where manage.py is located)
+        if venv_path is None:
+            # Find project root by looking for manage.py
+            current_file = Path(__file__).resolve()
+            project_root = current_file.parent.parent  # Go up from services/ to project root
+            venv_path = project_root / "venv_cadquery"
+        
+        if output_dir is None:
+            # Default to media/cadquery_models in project root
+            current_file = Path(__file__).resolve()
+            project_root = current_file.parent.parent
+            output_dir = project_root / "media" / "cadquery_models"
+        
         self.venv_path = Path(venv_path)
         
         # Support both Windows and Linux
@@ -37,6 +50,7 @@ class CadQueryExecutor:
         
         logger.info(f"CadQuery Executor initialized")
         logger.info(f"  Platform: {sys.platform}")
+        logger.info(f"  Project root: {self.venv_path.parent}")
         logger.info(f"  Python: {self.python_path}")
         logger.info(f"  Output: {self.output_dir}")
     
