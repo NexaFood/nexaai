@@ -176,11 +176,17 @@ except Exception as e:
             
             if result.returncode == 0 and "SUCCESS" in result.stdout:
                 # Parse output to get file paths
+                # Output format: "step:C:\path\file.step" or "stl:/path/file.stl"
                 files = {}
                 for line in result.stdout.split("\n"):
-                    if ":" in line and not line.startswith("Exported"):
-                        fmt, path = line.split(":", 1)
-                        files[fmt.strip()] = path.strip()
+                    line = line.strip()
+                    # Look for lines starting with format name
+                    if line.startswith('step:'):
+                        files['step'] = line[5:].strip()
+                    elif line.startswith('stl:'):
+                        files['stl'] = line[4:].strip()
+                    elif line.startswith('dxf:'):
+                        files['dxf'] = line[4:].strip()
                 
                 logger.info(f"✓ Successfully executed and exported {len(files)} files")
                 
