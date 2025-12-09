@@ -84,19 +84,22 @@ def api_generate_part_cadquery(request, project_id, part_number):
         
         # Execute the code and export files
         logger.info(f"Executing CadQuery code for part {part_number}")
-        executor = CadQueryExecutor()
         
         # Create output directory for this project
         output_dir = f"/home/ubuntu/nexaai/media/cadquery_models/project_{project_id}"
         os.makedirs(output_dir, exist_ok=True)
         
-        # Generate filename based on part name
+        # Generate model_id based on part name
         safe_name = part['name'].lower().replace(' ', '_').replace('-', '_')
-        output_prefix = f"{output_dir}/part_{part_number}_{safe_name}"
+        model_id = f"part_{part_number}_{safe_name}"
         
-        exec_result = executor.execute_and_export(
+        # Initialize executor with project-specific output directory
+        executor = CadQueryExecutor(output_dir=output_dir)
+        
+        exec_result = executor.execute_code(
             code_result['code'],
-            output_prefix=output_prefix
+            model_id=model_id,
+            export_formats=["step", "stl"]
         )
         
         if not exec_result['success']:
@@ -110,14 +113,18 @@ def api_generate_part_cadquery(request, project_id, part_number):
             )
             return HttpResponse(f"Failed to execute code: {exec_result.get('error', 'Unknown error')}", status=500)
         
+        # Get file paths from result
+        step_file = exec_result['files'].get('step', '')
+        stl_file = exec_result['files'].get('stl', '')
+        
         # Update part with success data
         db.part_breakdowns.update_one(
             {'project_id': to_object_id(project_id), 'parts.part_number': int(part_number)},
             {'$set': {
                 'parts.$.status': 'completed',
                 'parts.$.cadquery_code': code_result['code'],
-                'parts.$.step_file_path': exec_result['step_file'],
-                'parts.$.stl_file_path': exec_result['stl_file'],
+                'parts.$.step_file_path': step_file,
+                'parts.$.stl_file_path': stl_file,
                 'parts.$.generation_error': None
             }}
         )
@@ -147,8 +154,8 @@ def api_generate_part_cadquery(request, project_id, part_number):
             )
         
         # Return success HTML with download links
-        step_url = exec_result['step_file'].replace('/home/ubuntu/nexaai/media/', '/media/')
-        stl_url = exec_result['stl_file'].replace('/home/ubuntu/nexaai/media/', '/media/')
+        step_url = step_file.replace('/home/ubuntu/nexaai/media/', '/media/').replace('\\', '/')
+        stl_url = stl_file.replace('/home/ubuntu/nexaai/media/', '/media/').replace('\\', '/')
         
         return HttpResponse(f'''
             <div class="bg-green-50 border border-green-200 rounded-lg p-4">

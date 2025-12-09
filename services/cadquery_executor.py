@@ -25,11 +25,18 @@ class CadQueryExecutor:
             output_dir: Directory to save exported models
         """
         self.venv_path = Path(venv_path)
-        self.python_path = self.venv_path / "bin" / "python"
+        
+        # Support both Windows and Linux
+        if sys.platform == "win32":
+            self.python_path = self.venv_path / "Scripts" / "python.exe"
+        else:
+            self.python_path = self.venv_path / "bin" / "python"
+        
         self.output_dir = Path(output_dir)
         self.output_dir.mkdir(parents=True, exist_ok=True)
         
         logger.info(f"CadQuery Executor initialized")
+        logger.info(f"  Platform: {sys.platform}")
         logger.info(f"  Python: {self.python_path}")
         logger.info(f"  Output: {self.output_dir}")
     
@@ -54,10 +61,14 @@ class CadQueryExecutor:
         # Indent the user code properly
         indented_code = "\n".join("    " + line if line.strip() else "" for line in code.split("\n"))
         
+        # Use forward slashes for paths (works on both Windows and Linux)
+        output_dir_str = str(self.output_dir).replace("\\", "/")
+        
         script = f"""
 import cadquery as cq
 import sys
 import traceback
+from pathlib import Path
 
 try:
     # Execute the generated code
@@ -69,7 +80,7 @@ try:
         sys.exit(1)
     
     # Export to requested formats
-    output_dir = "{self.output_dir}"
+    output_dir = Path(r"{output_dir_str}")
     model_id = "{model_id}"
     
     files = {{}}
@@ -78,25 +89,25 @@ try:
         # Add export code for each format
         if "step" in export_formats:
             script += f"""
-    step_file = f"{{output_dir}}/{{model_id}}.step"
-    cq.exporters.export(result, step_file)
-    files['step'] = step_file
+    step_file = output_dir / f"{{model_id}}.step"
+    cq.exporters.export(result, str(step_file))
+    files['step'] = str(step_file)
     print(f"Exported STEP: {{step_file}}")
 """
         
         if "stl" in export_formats:
             script += f"""
-    stl_file = f"{{output_dir}}/{{model_id}}.stl"
-    cq.exporters.export(result, stl_file)
-    files['stl'] = stl_file
+    stl_file = output_dir / f"{{model_id}}.stl"
+    cq.exporters.export(result, str(stl_file))
+    files['stl'] = str(stl_file)
     print(f"Exported STL: {{stl_file}}")
 """
         
         if "dxf" in export_formats:
             script += f"""
-    dxf_file = f"{{output_dir}}/{{model_id}}.dxf"
-    cq.exporters.export(result, dxf_file)
-    files['dxf'] = dxf_file
+    dxf_file = output_dir / f"{{model_id}}.dxf"
+    cq.exporters.export(result, str(dxf_file))
+    files['dxf'] = str(dxf_file)
     print(f"Exported DXF: {{dxf_file}}")
 """
         
