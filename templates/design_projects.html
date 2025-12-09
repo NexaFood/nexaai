@@ -1,0 +1,122 @@
+{% extends "base.html" %}
+
+{% block title %}Design Projects - NexaAI{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <div class="mb-8">
+        <h1 class="text-4xl font-bold text-gray-800 mb-2">Design Projects</h1>
+        <p class="text-gray-600">Create complex designs with AI-powered concept generation and automatic part splitting</p>
+    </div>
+
+    <!-- New Project Form -->
+    <div class="bg-white rounded-lg shadow-lg p-6 mb-8">
+        <h2 class="text-2xl font-bold text-gray-800 mb-4">Start New Design Project</h2>
+        
+        <form hx-post="/api/design/create-project/" 
+              hx-target="#project-results" 
+              hx-swap="afterbegin"
+              class="space-y-4">
+            <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-2">
+                    What do you want to design?
+                </label>
+                <textarea 
+                    name="prompt" 
+                    rows="3"
+                    placeholder="e.g., A model rocket with parachute recovery system"
+                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    required></textarea>
+                <p class="text-sm text-gray-500 mt-2">
+                    Describe your design idea. The AI will create a detailed concept, split it into parts, and recommend manufacturing methods.
+                </p>
+            </div>
+            
+            <button type="submit" 
+                    class="w-full bg-purple-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-purple-700 transition">
+                🚀 Start Design Project
+            </button>
+        </form>
+    </div>
+
+    <!-- Project Results (HTMX target) -->
+    <div id="project-results"></div>
+
+    <!-- Existing Projects -->
+    {% if projects %}
+    <div class="mb-8">
+        <h2 class="text-2xl font-bold text-gray-800 mb-4">Your Projects</h2>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {% for project in projects %}
+            <div class="bg-white rounded-lg shadow-lg p-6 hover:shadow-xl transition">
+                <div class="flex items-center justify-between mb-4">
+                    <span class="px-3 py-1 rounded-full text-xs font-semibold
+                        {% if project.stage == 'concept' %}bg-blue-100 text-blue-800
+                        {% elif project.stage == 'parts' %}bg-green-100 text-green-800
+                        {% elif project.stage == 'generation' %}bg-purple-100 text-purple-800
+                        {% else %}bg-gray-100 text-gray-800{% endif %}">
+                        Stage: {{ project.stage|title }}
+                    </span>
+                    <span class="text-sm text-gray-500">
+                        {{ project.created_at|date:"M d, Y" }}
+                    </span>
+                </div>
+                
+                <h3 class="text-lg font-bold text-gray-800 mb-2">
+                    {{ project.original_prompt|truncatewords:10 }}
+                </h3>
+                
+                {% if project.total_parts > 0 %}
+                <div class="mb-4">
+                    <p class="text-sm text-gray-600">
+                        {{ project.total_parts }} parts 
+                        ({{ project.generated_parts }} generated)
+                    </p>
+                </div>
+                {% endif %}
+                
+                <a href="/design/projects/{{ project.id }}/" 
+                   class="inline-block bg-purple-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-purple-700 transition">
+                    View Project →
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- How It Works -->
+    <div class="bg-gradient-to-r from-purple-50 to-blue-50 rounded-lg p-8">
+        <h2 class="text-2xl font-bold text-gray-800 mb-6">How the 3-Stage Workflow Works</h2>
+        
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="bg-white rounded-lg p-6">
+                <div class="text-3xl mb-4">📝</div>
+                <h3 class="text-lg font-bold text-gray-800 mb-2">Stage 1: Design Concept</h3>
+                <p class="text-gray-600 text-sm">
+                    AI generates a detailed design concept from your idea. Review and approve or request refinements.
+                </p>
+            </div>
+            
+            <div class="bg-white rounded-lg p-6">
+                <div class="text-3xl mb-4">🔧</div>
+                <h3 class="text-lg font-bold text-gray-800 mb-2">Stage 2: Part Breakdown</h3>
+                <p class="text-gray-600 text-sm">
+                    AI splits the design into manufacturable parts (up to 200+) and recommends 3D printing or CNC for each.
+                </p>
+            </div>
+            
+            <div class="bg-white rounded-lg p-6">
+                <div class="text-3xl mb-4">🎨</div>
+                <h3 class="text-lg font-bold text-gray-800 mb-2">Stage 3: 3D Generation</h3>
+                <p class="text-gray-600 text-sm">
+                    Generates high-quality textured 3D models for each part using Meshy-6. Automatic preview → refine → download.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://unpkg.com/htmx.org@1.9.10"></script>
+{% endblock %}

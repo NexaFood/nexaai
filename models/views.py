@@ -167,11 +167,12 @@ def api_generate(request):
                 result = db.models.insert_one(model_doc)
                 model_id = result.inserted_id
                 
-                # Start Meshy.ai generation
+                # Start Meshy.ai generation with Meshy-6
                 result = meshy_client.create_text_to_3d_task(
                     prompt=part['refined_prompt'],
                     art_style='realistic',
-                    target_polycount=polygon_count
+                    target_polycount=polygon_count,
+                    ai_model='latest'  # Use Meshy-6 for best quality
                 )
                 task_id = result.get('result')
                 

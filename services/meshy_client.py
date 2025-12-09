@@ -33,7 +33,7 @@ class MeshyClient:
             'Content-Type': 'application/json'
         }
     
-    def create_text_to_3d_task(self, prompt, art_style='realistic', target_polycount=30000):
+    def create_text_to_3d_task(self, prompt, art_style='realistic', target_polycount=30000, ai_model='latest'):
         """
         Create a new text-to-3D preview task.
         
@@ -41,6 +41,7 @@ class MeshyClient:
             prompt: Text description of the 3D model
             art_style: Art style (realistic, cartoon, low-poly, etc.)
             target_polycount: Target polygon count (controls quality)
+            ai_model: AI model version ('meshy-4', 'meshy-5', 'latest' for Meshy-6)
         
         Returns:
             dict: Task creation response with task ID
@@ -48,6 +49,8 @@ class MeshyClient:
         Note:
             This creates a 'preview' mode task. For textured/refined models,
             you need to call refine_task() after this completes.
+            
+            Meshy-6 ('latest') costs 20 credits, older models cost 5 credits.
         """
         url = f"{self.base_url}/v2/text-to-3d"
         
@@ -56,6 +59,7 @@ class MeshyClient:
             'prompt': prompt,
             'art_style': art_style,
             'target_polycount': target_polycount,
+            'ai_model': ai_model,
             'enable_pbr': True
         }
         
@@ -97,20 +101,31 @@ class MeshyClient:
             logger.error(f"Failed to get Meshy task status: {e}")
             raise Exception(f"Meshy API error: {str(e)}")
     
-    def refine_task(self, task_id):
+    def refine_task(self, task_id, ai_model='latest', enable_pbr=True):
         """
-        Refine a preview task to get higher quality model.
+        Refine a preview task to get higher quality textured model.
         
         Args:
             task_id: Preview task ID
+            ai_model: AI model version ('meshy-4', 'meshy-5', 'latest' for Meshy-6)
+            enable_pbr: Generate PBR maps (metallic, roughness, normal)
         
         Returns:
             dict: Refine task response
+            
+        Note:
+            The ai_model must match the version used in the preview task.
+            If preview used 'latest' (Meshy-6), refine must also use 'latest'.
         """
         url = f"{self.base_url}/v2/text-to-3d/{task_id}/refine"
         
+        payload = {
+            'ai_model': ai_model,
+            'enable_pbr': enable_pbr
+        }
+        
         try:
-            response = requests.post(url, headers=self.headers, timeout=30)
+            response = requests.post(url, json=payload, headers=self.headers, timeout=30)
             response.raise_for_status()
             result = response.json()
             
