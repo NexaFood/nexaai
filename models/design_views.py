@@ -5,6 +5,7 @@ Stage 1: Design Concept → Stage 2: Part Breakdown → Stage 3: 3D Generation
 from django.shortcuts import render
 from django.http import HttpResponse, JsonResponse
 from django.views.decorators.http import require_http_methods
+from django.conf import settings
 from models.mongodb import db, to_object_id, doc_to_dict
 from models.design_schemas import (
     DesignProjectSchema, DesignConceptSchema, PartBreakdownSchema, PartSchema
