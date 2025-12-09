@@ -52,19 +52,19 @@
 
         <!-- Actions -->
         <div class="pt-4 border-t border-gray-200 flex space-x-2">
-            <a href="/printers/edit/{{ printer._id }}" class="flex-1 bg-purple-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-purple-700 transition text-center text-sm">
+            <a href="/printers/edit/{{ printer.id }}" class="flex-1 bg-purple-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-purple-700 transition text-center text-sm">
                 Edit
             </a>
             {% if printer.printer_type == 'snapmaker' %}
             <button 
-                onclick="showModeChangeModal('{{ printer._id }}', '{{ printer.current_mode }}')"
+                onclick="showModeChangeModal('{{ printer.id }}', '{{ printer.current_mode }}')"
                 class="flex-1 bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-700 transition text-sm"
             >
                 Change Mode
             </button>
             {% endif %}
             <button 
-                onclick="deletePrinter('{{ printer._id }}', '{{ printer.name }}')"
+                onclick="deletePrinter('{{ printer.id }}', '{{ printer.name }}')"
                 class="bg-red-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-red-700 transition text-sm"
             >
                 Delete
