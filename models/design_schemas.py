@@ -15,18 +15,24 @@ class DesignProjectSchema:
         return {
             'user_id': str(user_id),
             'original_prompt': original_prompt,
-            'stage': 'concept',  # 'concept', 'parts', 'generation', 'completed'
+            'stage': 'concept',  # 'concept', 'overall_model', 'parts', 'generation', 'completed'
             'status': 'pending',  # 'pending', 'approved', 'generating', 'completed', 'failed'
             
             # Stage 1: Concept
             'concept_description': None,
             'concept_approved_at': None,
             
-            # Stage 2: Parts
+            # Stage 2: Overall Model
+            'overall_model_code': None,
+            'overall_model_step_path': None,
+            'overall_model_stl_path': None,
+            'overall_model_approved_at': None,
+            
+            # Stage 3: Parts
             'parts_breakdown': [],  # List of part objects
             'parts_approved_at': None,
             
-            # Stage 3: Generation
+            # Stage 4: Generation
             'total_parts': 0,
             'generated_parts': 0,
             'failed_parts': 0,

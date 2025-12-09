@@ -48,6 +48,14 @@ def design_project_detail(request, project_id):
     
     project = doc_to_dict(project)
     
+    # Convert overall model file paths to URLs
+    from pathlib import Path
+    media_root = str(Path(settings.MEDIA_ROOT))
+    if project.get('overall_model_step_path'):
+        project['overall_model_step_url'] = project['overall_model_step_path'].replace(media_root, '/media').replace('\\\\', '/')
+    if project.get('overall_model_stl_path'):
+        project['overall_model_stl_url'] = project['overall_model_stl_path'].replace(media_root, '/media').replace('\\\\', '/')
+    
     # Get related data based on stage
     concept = None
     breakdown = None
@@ -201,7 +209,7 @@ def api_create_design_project(request):
 @require_http_methods(["POST"])
 def api_approve_concept(request, project_id):
     """
-    HTMX endpoint to approve concept and move to part breakdown.
+    HTMX endpoint to approve concept and move to overall model generation.
     """
     try:
         project = db.design_projects.find_one({
@@ -218,118 +226,28 @@ def api_approve_concept(request, project_id):
             {'$set': {'status': 'approved', 'approved_at': datetime.utcnow()}}
         )
         
-        # Get concept for part breakdown
-        concept = db.design_concepts.find_one({'project_id': to_object_id(project_id)})
-        
-        # Generate part breakdown
-        logger.info(f"Generating part breakdown for project {project_id}")
-        parts_list = break_down_into_parts(
-            design_concept=concept,
-            original_prompt=project['original_prompt']
-        )
-        
-        # Add refined prompts to parts
-        parts_list = generate_part_prompts(parts_list, concept)
-        
-        # Save part breakdown
-        breakdown_doc = PartBreakdownSchema.create(
-            project_id=project_id,
-            parts_list=parts_list
-        )
-        db.part_breakdowns.insert_one(breakdown_doc)
-        
-        # Update project
+        # Update project to overall_model stage
         db.design_projects.update_one(
             {'_id': to_object_id(project_id)},
             {'$set': {
-                'stage': 'parts',
+                'stage': 'overall_model',
                 'concept_approved_at': datetime.utcnow(),
-                'total_parts': len(parts_list),
+                'status': 'generating',
                 'updated_at': datetime.utcnow()
             }}
         )
         
-        # Return parts breakdown HTML
-        parts_html = ''.join([
-            f'''
-            <tr class="border-b hover:bg-gray-50">
-                <td class="px-4 py-3 text-sm">{part['part_number']}</td>
-                <td class="px-4 py-3">
-                    <p class="font-semibold text-gray-800">{part['name']}</p>
-                    <p class="text-sm text-gray-600">{part['description']}</p>
-                </td>
-                <td class="px-4 py-3">
-                    <span class="px-2 py-1 rounded text-xs font-semibold {'bg-purple-100 text-purple-800' if part['manufacturing_method'] == '3d_print' else 'bg-blue-100 text-blue-800'}">
-                        {'3D Print' if part['manufacturing_method'] == '3d_print' else 'CNC'}
-                    </span>
-                </td>
-                <td class="px-4 py-3 text-sm">{part['material_recommendation']}</td>
-                <td class="px-4 py-3 text-sm">{part['estimated_dimensions']['x']}×{part['estimated_dimensions']['y']}×{part['estimated_dimensions']['z']}mm</td>
-                <td class="px-4 py-3 text-sm text-center">{part['quantity']}</td>
-            </tr>
-            '''
-            for part in parts_list
-        ])
-        
+        # Redirect to project detail page to show overall model stage
         return HttpResponse(f'''
-            <div class="bg-white rounded-lg shadow-lg p-6 mb-6" id="parts-{project_id}">
-                <div class="flex items-center justify-between mb-4">
-                    <h3 class="text-2xl font-bold text-gray-800">Part Breakdown</h3>
-                    <span class="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm font-semibold">
-                        Stage 2: Parts
-                    </span>
-                </div>
-                
-                <div class="mb-4 grid grid-cols-3 gap-4">
-                    <div class="bg-gray-50 p-4 rounded-lg">
-                        <p class="text-sm text-gray-500">Total Parts</p>
-                        <p class="text-2xl font-bold text-gray-800">{len(parts_list)}</p>
-                    </div>
-                    <div class="bg-purple-50 p-4 rounded-lg">
-                        <p class="text-sm text-gray-500">3D Print</p>
-                        <p class="text-2xl font-bold text-purple-800">{sum(1 for p in parts_list if p['manufacturing_method'] == '3d_print')}</p>
-                    </div>
-                    <div class="bg-blue-50 p-4 rounded-lg">
-                        <p class="text-sm text-gray-500">CNC</p>
-                        <p class="text-2xl font-bold text-blue-800">{sum(1 for p in parts_list if p['manufacturing_method'] == 'cnc')}</p>
-                    </div>
-                </div>
-                
-                <div class="overflow-x-auto mb-6">
-                    <table class="w-full">
-                        <thead class="bg-gray-100">
-                            <tr>
-                                <th class="px-4 py-3 text-left text-sm font-semibold">#</th>
-                                <th class="px-4 py-3 text-left text-sm font-semibold">Part Name & Description</th>
-                                <th class="px-4 py-3 text-left text-sm font-semibold">Method</th>
-                                <th class="px-4 py-3 text-left text-sm font-semibold">Material</th>
-                                <th class="px-4 py-3 text-left text-sm font-semibold">Dimensions</th>
-                                <th class="px-4 py-3 text-left text-sm font-semibold">Qty</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {parts_html}
-                        </tbody>
-                    </table>
-                </div>
-                
-                <div class="flex gap-4">
-                    <button 
-                        hx-post="/api/design/approve-parts/{project_id}/"
-                        hx-target="#parts-{project_id}"
-                        hx-swap="outerHTML"
-                        class="flex-1 bg-green-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-green-700 transition">
-                        ✓ Approve & Generate CAD Models
-                    </button>
-                    <button 
-                        hx-post="/api/design/refine-parts/{project_id}/"
-                        hx-target="#parts-{project_id}"
-                        hx-swap="outerHTML"
-                        class="flex-1 bg-yellow-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-yellow-700 transition">
-                        ↻ Refine Part Breakdown
-                    </button>
-                </div>
+            <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
+                <p class="font-semibold">✓ Concept approved!</p>
+                <p class="text-sm">Redirecting to overall model generation...</p>
             </div>
+            <script>
+                setTimeout(function() {{
+                    window.location.href = '/design/projects/{project_id}/';
+                }}, 1000);
+            </script>
         ''')
     
     except Exception as e:

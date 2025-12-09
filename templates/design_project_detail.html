@@ -36,15 +36,16 @@
         <div class="flex items-center justify-between mb-2">
             <span class="text-sm font-semibold text-gray-700">Progress</span>
             <span class="text-sm text-gray-600">
-                {% if project.stage == 'concept' %}Step 1 of 3
-                {% elif project.stage == 'parts' %}Step 2 of 3
-                {% elif project.stage == 'generation' or project.stage == 'completed' %}Step 3 of 3
+                {% if project.stage == 'concept' %}Step 1 of 4
+                {% elif project.stage == 'overall_model' %}Step 2 of 4
+                {% elif project.stage == 'parts' %}Step 3 of 4
+                {% elif project.stage == 'generation' or project.stage == 'completed' %}Step 4 of 4
                 {% endif %}
             </span>
         </div>
         <div class="w-full bg-gray-200 rounded-full h-3">
             <div class="bg-gradient-to-r from-purple-500 to-blue-500 h-3 rounded-full transition-all duration-500"
-                 style="width: {% if project.stage == 'concept' %}33%{% elif project.stage == 'parts' %}66%{% elif project.stage == 'generation' or project.stage == 'completed' %}100%{% endif %}">
+                 style="width: {% if project.stage == 'concept' %}25%{% elif project.stage == 'overall_model' %}50%{% elif project.stage == 'parts' %}75%{% elif project.stage == 'generation' or project.stage == 'completed' %}100%{% endif %}">
             </div>
         </div>
     </div>
@@ -74,11 +75,83 @@
     </div>
     {% endif %}
 
-    <!-- Stage 2: Part Breakdown -->
+    <!-- Stage 2: Overall 3D Model -->
+    {% if project.stage == 'overall_model' or project.stage == 'parts' or project.stage == 'generation' or project.stage == 'completed' %}
+    <div class="bg-white rounded-2xl shadow-lg p-8 mb-6">
+        <div class="flex items-center justify-between mb-4">
+            <h2 class="text-2xl font-bold">🏛️ Stage 2: Overall 3D Model</h2>
+            {% if project.overall_model_approved_at %}
+            <span class="text-green-600 font-semibold">✓ Approved</span>
+            {% elif project.stage == 'overall_model' %}
+            <span class="text-blue-600 font-semibold">⏳ Pending</span>
+            {% endif %}
+        </div>
+        
+        {% if project.stage == 'overall_model' and not project.overall_model_code %}
+        <!-- Generate button -->
+        <p class="text-gray-600 mb-4">Generate a complete 3D model of your design before breaking it into parts.</p>
+        <button 
+            hx-post="/api/design/generate-overall-model/{{ project.id }}/"
+            hx-target="#overall-model-result"
+            hx-swap="innerHTML"
+            class="bg-purple-600 text-white px-8 py-4 rounded-lg font-bold text-lg hover:bg-purple-700 transition">
+            Generate Overall Model →
+        </button>
+        <div id="overall-model-result" class="mt-4"></div>
+        
+        {% elif project.overall_model_code %}
+        <!-- Show generated model -->
+        <div id="overall-model-result">
+            <div class="bg-green-50 border border-green-200 rounded-lg p-6">
+                <p class="text-green-800 font-semibold mb-2">✓ Overall model generated!</p>
+                
+                <div class="flex gap-2 mb-4">
+                    {% if project.overall_model_step_url %}
+                    <a href="{{ project.overall_model_step_url }}" download class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-semibold">
+                        📥 Download STEP
+                    </a>
+                    {% endif %}
+                    {% if project.overall_model_stl_url %}
+                    <a href="{{ project.overall_model_stl_url }}" download class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 text-sm font-semibold">
+                        📥 Download STL
+                    </a>
+                    {% endif %}
+                </div>
+                
+                <details class="mb-4">
+                    <summary class="cursor-pointer text-gray-600 hover:text-gray-800 font-semibold text-sm">View Generated Code</summary>
+                    <pre class="mt-2 bg-gray-800 text-green-400 p-3 rounded overflow-x-auto text-xs">{{ project.overall_model_code }}</pre>
+                </details>
+                
+                {% if not project.overall_model_approved_at %}
+                <div class="flex gap-2">
+                    <button 
+                        hx-post="/api/design/approve-overall-model/{{ project.id }}/"
+                        hx-target="#overall-model-result"
+                        hx-swap="innerHTML"
+                        class="flex-1 bg-green-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-green-700 transition">
+                        ✓ Approve & Break Into Parts
+                    </button>
+                    <button 
+                        hx-post="/api/design/generate-overall-model/{{ project.id }}/"
+                        hx-target="#overall-model-result"
+                        hx-swap="innerHTML"
+                        class="bg-yellow-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-yellow-700 transition">
+                        🔄 Regenerate
+                    </button>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    <!-- Stage 3: Part Breakdown -->
     {% if breakdown %}
     <div class="bg-white rounded-2xl shadow-lg p-8 mb-6">
         <div class="flex items-center justify-between mb-4">
-            <h2 class="text-2xl font-bold">🔧 Stage 2: Part Breakdown</h2>
+            <h2 class="text-2xl font-bold">🔧 Stage 3: Part Breakdown</h2>
             <span class="text-green-600 font-semibold">✓ Approved</span>
         </div>
         
@@ -125,11 +198,11 @@
     </div>
     {% endif %}
 
-    <!-- Stage 3: CAD Generation -->
+    <!-- Stage 4: CAD Generation -->
     {% if project.stage == 'generation' or project.stage == 'completed' %}
     <div class="bg-white rounded-2xl shadow-lg p-8 mb-6">
         <div class="flex items-center justify-between mb-4">
-            <h2 class="text-2xl font-bold">⚙️ Stage 3: CAD Generation</h2>
+            <h2 class="text-2xl font-bold">⚙️ Stage 4: CAD Generation</h2>
             {% if project.stage == 'completed' %}
             <span class="text-green-600 font-semibold">✓ Complete</span>
             {% else %}

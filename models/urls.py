@@ -6,6 +6,7 @@ from . import views
 from . import design_views
 from . import cadquery_views
 from . import print_job_views
+from . import overall_model_views
 
 app_name = 'models'
 
@@ -30,6 +31,8 @@ urlpatterns = [
     # Design workflow API endpoints
     path('api/design/create-project/', design_views.api_create_design_project, name='api-create-design-project'),
     path('api/design/approve-concept/<str:project_id>/', design_views.api_approve_concept, name='api-approve-concept'),
+    path('api/design/generate-overall-model/<str:project_id>/', overall_model_views.api_generate_overall_model, name='api-generate-overall-model'),
+    path('api/design/approve-overall-model/<str:project_id>/', overall_model_views.api_approve_overall_model, name='api-approve-overall-model'),
     path('api/design/approve-parts/<str:project_id>/', cadquery_views.api_approve_parts_cadquery, name='api-approve-parts'),
     path('api/design/generate/<str:project_id>/<int:part_number>/', cadquery_views.api_generate_part_cadquery, name='api-generate-part'),
     
