@@ -1,0 +1,69 @@
+{
+  "total_generated": 5,
+  "failed": 0,
+  "success_rate": "100.0%",
+  "categories": [
+    "mechanical parts",
+    "brackets",
+    "mounts",
+    "enclosures",
+    "connectors",
+    "fasteners",
+    "gears",
+    "pulleys",
+    "tubes",
+    "pipes",
+    "flanges",
+    "adapters",
+    "plates",
+    "panels",
+    "frames",
+    "chassis",
+    "housings",
+    "covers",
+    "caps",
+    "spacers"
+  ],
+  "examples": [
+    {
+      "description": "A simple flange with a 100mm outer diameter, 60mm inner diameter, 10mm thickness, and four 8mm diameter bolt holes evenly spaced around the inner circle.",
+      "code": "import cadquery as cq\n\nresult = (\n    cq.Workplane(\"XY\")\n    .circle(50)  # Outer diameter radius\n    .circle(30)  # Inner diameter radius\n    .extrude(10)  # Thickness\n    .faces(\">Z\")\n    .workplane()\n    .rarray(1, 4, 0, 90)\n    .polarArray(30, 4)  # Bolt hole circle radius 30mm\n    .hole(8)\n)",
+      "id": "synthetic_0",
+      "source": "synthetic",
+      "category": "mechanical parts",
+      "prompt": "A simple flange with a 100mm outer diameter, 60mm inner diameter, 10mm thickness, and four 8mm diameter bolt holes evenly spaced around the inner circle."
+    },
+    {
+      "description": "An L-shaped bracket with 100mm long arms, 20mm wide, 5mm thick, and two 6mm diameter mounting holes on each arm.",
+      "code": "import cadquery as cq\n\nresult = (\n    cq.Workplane(\"XY\")\n    .box(100, 20, 5)  # Horizontal arm\n    .faces(\"<Y\")\n    .workplane()\n    .box(20, 20, 5)  # Vertical arm\n    .edges(\"<Z and >X\")\n    .fillet(5)  # Rounded corner for strength\n    .faces(\">Z\")\n    .workplane()\n    .rect(90, 10, forConstruction=True)\n    .vertices()\n    .hole(6)\n    .faces(\"<Y\")\n    .workplane()\n    .rect(10, 10, forConstruction=True)\n    .vertices()\n    .hole(6)\n)",
+      "id": "synthetic_1",
+      "source": "synthetic",
+      "category": "brackets",
+      "prompt": "An L-shaped bracket with 100mm long arms, 20mm wide, 5mm thick, and two 6mm diameter mounting holes on each arm."
+    },
+    {
+      "description": "A circular mounting bracket with a 120mm outer diameter, 80mm inner diameter, 10mm thickness, and four equally spaced 6mm mounting holes on a 100mm bolt circle diameter.",
+      "code": "import cadquery as cq\n\nresult = (\n    cq.Workplane(\"XY\")\n    .circle(60)  # Outer radius\n    .circle(40)  # Inner radius (hole)\n    .extrude(10)  # Thickness\n    .faces(\">Z\")\n    .workplane()\n    .polarArray(100/2, 0, 360, 4)  # Bolt circle radius and 4 holes\n    .hole(6)\n)",
+      "id": "synthetic_2",
+      "source": "synthetic",
+      "category": "mounts",
+      "prompt": "A circular mounting bracket with a 120mm outer diameter, 80mm inner diameter, 10mm thickness, and four equally spaced 6mm mounting holes on a 100mm bolt circle diameter."
+    },
+    {
+      "description": "A simple rectangular enclosure box with outer dimensions 120x80x40mm, 3mm thick walls, and a recessed lid.",
+      "code": "import cadquery as cq\n\n# Outer dimensions\nlength = 120\nwidth = 80\nheight = 40\nwall_thickness = 3\nlid_recess = 2\n\nresult = (\n    cq.Workplane(\"XY\")\n    .box(length, width, height)\n    # Hollow out the box\n    .faces(\">Z\")\n    .workplane()\n    .rect(length - 2*wall_thickness, width - 2*wall_thickness, forConstruction=True)\n    .vertices()\n    .circle(wall_thickness/2)\n    .cutThruAll()\n    .faces(\">Z\")\n    .workplane(offset=-height + wall_thickness)\n    .rect(length - 2*wall_thickness, width - 2*wall_thickness)\n    .cutBlind(- (height - wall_thickness))\n    # Create lid as a recess on top\n    .faces(\">Z\")\n    .workplane()\n    .rect(length - 2*wall_thickness, width - 2*wall_thickness)\n    .cutBlind(-lid_recess)\n)",
+      "id": "synthetic_3",
+      "source": "synthetic",
+      "category": "enclosures",
+      "prompt": "A simple rectangular enclosure box with outer dimensions 120x80x40mm, 3mm thick walls, and a recessed lid."
+    },
+    {
+      "description": "A cylindrical male connector pin 10mm long and 5mm diameter with a 2mm diameter groove near the base for retaining rings.",
+      "code": "import cadquery as cq\n\nresult = (\n    cq.Workplane(\"XY\")\n    .circle(2.5)\n    .extrude(10)\n    .faces(\">Z\")\n    .workplane(centerOption=\"CenterOfMass\")\n    .circle(3)\n    .cutThruAll()\n    .faces(\">Z\")\n    .workplane(offset=-2)\n    .circle(1)\n    .cutBlind(-0.5)\n)",
+      "id": "synthetic_4",
+      "source": "synthetic",
+      "category": "connectors",
+      "prompt": "A cylindrical male connector pin 10mm long and 5mm diameter with a 2mm diameter groove near the base for retaining rings."
+    }
+  ]
+}

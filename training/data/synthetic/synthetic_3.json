@@ -1,0 +1,8 @@
+{
+  "description": "A simple rectangular enclosure box with outer dimensions 120x80x40mm, 3mm thick walls, and a recessed lid.",
+  "code": "import cadquery as cq\n\n# Outer dimensions\nlength = 120\nwidth = 80\nheight = 40\nwall_thickness = 3\nlid_recess = 2\n\nresult = (\n    cq.Workplane(\"XY\")\n    .box(length, width, height)\n    # Hollow out the box\n    .faces(\">Z\")\n    .workplane()\n    .rect(length - 2*wall_thickness, width - 2*wall_thickness, forConstruction=True)\n    .vertices()\n    .circle(wall_thickness/2)\n    .cutThruAll()\n    .faces(\">Z\")\n    .workplane(offset=-height + wall_thickness)\n    .rect(length - 2*wall_thickness, width - 2*wall_thickness)\n    .cutBlind(- (height - wall_thickness))\n    # Create lid as a recess on top\n    .faces(\">Z\")\n    .workplane()\n    .rect(length - 2*wall_thickness, width - 2*wall_thickness)\n    .cutBlind(-lid_recess)\n)",
+  "id": "synthetic_3",
+  "source": "synthetic",
+  "category": "enclosures",
+  "prompt": "A simple rectangular enclosure box with outer dimensions 120x80x40mm, 3mm thick walls, and a recessed lid."
+}

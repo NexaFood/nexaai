@@ -1,0 +1,8 @@
+{
+  "description": "A circular mounting bracket with a 120mm outer diameter, 80mm inner diameter, 10mm thickness, and four equally spaced 6mm mounting holes on a 100mm bolt circle diameter.",
+  "code": "import cadquery as cq\n\nresult = (\n    cq.Workplane(\"XY\")\n    .circle(60)  # Outer radius\n    .circle(40)  # Inner radius (hole)\n    .extrude(10)  # Thickness\n    .faces(\">Z\")\n    .workplane()\n    .polarArray(100/2, 0, 360, 4)  # Bolt circle radius and 4 holes\n    .hole(6)\n)",
+  "id": "synthetic_2",
+  "source": "synthetic",
+  "category": "mounts",
+  "prompt": "A circular mounting bracket with a 120mm outer diameter, 80mm inner diameter, 10mm thickness, and four equally spaced 6mm mounting holes on a 100mm bolt circle diameter."
+}
