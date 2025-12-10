@@ -1,0 +1,58 @@
+# CadQuery Model Training Configuration
+# Optimized for RTX 3080 Ti (12 GB VRAM)
+
+# Model Settings
+model:
+  name: "codellama/CodeLlama-7b-hf"
+  use_4bit: true
+  bnb_4bit_compute_dtype: "float16"
+  bnb_4bit_quant_type: "nf4"
+  use_nested_quant: true
+
+# LoRA Settings
+lora:
+  r: 64
+  alpha: 16
+  dropout: 0.1
+  target_modules:
+    - "q_proj"
+    - "k_proj"
+    - "v_proj"
+    - "o_proj"
+    - "gate_proj"
+    - "up_proj"
+    - "down_proj"
+
+# Training Settings
+training:
+  output_dir: "./cadquery_model"
+  num_train_epochs: 3
+  per_device_train_batch_size: 4
+  per_device_eval_batch_size: 4
+  gradient_accumulation_steps: 4
+  learning_rate: 0.0002
+  max_grad_norm: 0.3
+  warmup_ratio: 0.03
+  lr_scheduler_type: "cosine"
+  logging_steps: 10
+  save_steps: 500
+  eval_steps: 500
+  save_total_limit: 3
+  fp16: true
+  optim: "paged_adamw_32bit"
+  group_by_length: true
+  report_to: "tensorboard"
+  max_seq_length: 2048
+
+# Data Settings
+data:
+  train_data: "./data/final_dataset/train.jsonl"
+  val_data: "./data/final_dataset/validation.jsonl"
+  test_data: "./data/final_dataset/test.jsonl"
+
+# Notes:
+# - Batch size of 4 with gradient accumulation of 4 = effective batch size of 16
+# - 4-bit quantization reduces VRAM usage from ~28 GB to ~10 GB
+# - LoRA reduces trainable parameters from 7B to ~100M
+# - FP16 training speeds up training by ~2x
+# - Total training time: ~36-42 hours on RTX 3080 Ti
