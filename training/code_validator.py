@@ -125,9 +125,10 @@ class CodeValidator:
                 invalid_examples.append(validated_example)
         
         # Save validation report
+        success_rate = 0.0 if self.stats['total'] == 0 else (self.stats['valid'] / self.stats['total'] * 100)
         report = {
             'stats': self.stats,
-            'success_rate': f"{(self.stats['valid'] / self.stats['total'] * 100):.1f}%",
+            'success_rate': f"{success_rate:.1f}%",
             'error_breakdown': self.stats['errors']
         }
         
