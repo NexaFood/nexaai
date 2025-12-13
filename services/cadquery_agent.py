@@ -131,15 +131,8 @@ class CadQueryAgent:
     def _generate_with_custom_model(self, prompt: str) -> str:
         """Generate code using the custom fine-tuned model"""
         
-        # Format prompt for the model
-        formatted_prompt = f"""Generate CadQuery code for the following:
-
-Description: {prompt}
-
-Code:
-import cadquery as cq
-
-result = """
+        # Format prompt to match training format: "### Prompt: {prompt}\n### Code:\n{code}"
+        formatted_prompt = f"### Prompt: {prompt}\n### Code:\n"
         
         # Tokenize
         inputs = self.tokenizer(
@@ -164,12 +157,9 @@ result = """
         # Decode
         generated_text = self.tokenizer.decode(outputs[0], skip_special_tokens=True)
         
-        # Extract just the code part
-        if "result = " in generated_text:
-            # Get everything after "result = "
-            code_part = generated_text.split("result = ", 1)[1]
-            # Clean up any trailing text after the code
-            code = f"import cadquery as cq\n\nresult = {code_part}"
+        # Extract just the code part (after "### Code:\n")
+        if "### Code:" in generated_text:
+            code = generated_text.split("### Code:", 1)[1].strip()
         else:
             code = generated_text
         
