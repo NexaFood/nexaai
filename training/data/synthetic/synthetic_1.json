@@ -1,8 +1,8 @@
 {
-  "description": "An L-shaped bracket with 100mm long arms, 20mm wide, 5mm thick, and two 6mm diameter mounting holes on each arm.",
-  "code": "import cadquery as cq\n\nresult = (\n    cq.Workplane(\"XY\")\n    .box(100, 20, 5)  # Horizontal arm\n    .faces(\"<Y\")\n    .workplane()\n    .box(20, 20, 5)  # Vertical arm\n    .edges(\"<Z and >X\")\n    .fillet(5)  # Rounded corner for strength\n    .faces(\">Z\")\n    .workplane()\n    .rect(90, 10, forConstruction=True)\n    .vertices()\n    .hole(6)\n    .faces(\"<Y\")\n    .workplane()\n    .rect(10, 10, forConstruction=True)\n    .vertices()\n    .hole(6)\n)",
+  "description": "A simple L-shaped bracket with 100x50x5mm legs and two 6mm diameter mounting holes on each leg.",
+  "code": "import cadquery as cq\n\nresult = (\n    cq.Workplane(\"XY\")\n    .box(100, 50, 5)\n    .faces(\"<Y\")\n    .workplane(centerOption=\"CenterOfMass\")\n    .box(50, 50, 5)\n    .union()\n    .faces(\">Z\")\n    .workplane()\n    .pushPoints([(20, 20), (80, 20)])\n    .hole(6)\n    .faces(\"<Y\")\n    .workplane(offset=2.5)\n    .pushPoints([(20, 10), (40, 10)])\n    .hole(6)\n)",
   "id": "synthetic_1",
   "source": "synthetic",
   "category": "brackets",
-  "prompt": "An L-shaped bracket with 100mm long arms, 20mm wide, 5mm thick, and two 6mm diameter mounting holes on each arm."
+  "prompt": "A simple L-shaped bracket with 100x50x5mm legs and two 6mm diameter mounting holes on each leg."
 }

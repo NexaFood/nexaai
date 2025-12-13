@@ -1,8 +1,8 @@
 {
-  "description": "A simple flange with a 100mm outer diameter, 60mm inner diameter, 10mm thickness, and four 8mm diameter bolt holes evenly spaced around the inner circle.",
-  "code": "import cadquery as cq\n\nresult = (\n    cq.Workplane(\"XY\")\n    .circle(50)  # Outer diameter radius\n    .circle(30)  # Inner diameter radius\n    .extrude(10)  # Thickness\n    .faces(\">Z\")\n    .workplane()\n    .rarray(1, 4, 0, 90)\n    .polarArray(30, 4)  # Bolt hole circle radius 30mm\n    .hole(8)\n)",
+  "description": "A simple flange with a 60mm outer diameter, 30mm inner hole, 10mm thickness, and four 8mm diameter bolt holes evenly spaced on a 50mm pitch circle diameter.",
+  "code": "import cadquery as cq\n\nresult = (\n    cq.Workplane(\"XY\")\n    .circle(30)  # inner hole radius\n    .extrude(10)\n    .faces(\">Z\")\n    .workplane()\n    .circle(30)  # inner hole\n    .circle(60)  # outer diameter\n    .extrude(0)  # create face for bolt holes\n    .workplane(offset=10)\n    .polarArray(25, 0, 360, 4)  # bolt holes on PCD=50 (radius 25)\n    .hole(8)\n)",
   "id": "synthetic_0",
   "source": "synthetic",
   "category": "mechanical parts",
-  "prompt": "A simple flange with a 100mm outer diameter, 60mm inner diameter, 10mm thickness, and four 8mm diameter bolt holes evenly spaced around the inner circle."
+  "prompt": "A simple flange with a 60mm outer diameter, 30mm inner hole, 10mm thickness, and four 8mm diameter bolt holes evenly spaced on a 50mm pitch circle diameter."
 }

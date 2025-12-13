@@ -60,14 +60,14 @@ def run_complete_pipeline(
     validator = CodeValidator()
     
     # Validate GitHub examples
-    github_dir = "/home/dobbeltop/nexaai/training/data/github_examples"
+    github_dir = "/home/dobbeltop/Ropositories/nexaai/training/data/github_examples"
     if Path(github_dir).exists():
         print("\nValidating GitHub examples...")
         github_valid, github_invalid = validator.validate_dataset(github_dir)
         print(f"✓ GitHub: {len(github_valid)} valid, {len(github_invalid)} invalid")
     
     # Validate synthetic examples
-    synthetic_dir = "/home/dobbeltop/nexaai/training/data/synthetic"
+    synthetic_dir = "/home/dobbeltop/Ropositories/nexaai/training/data/synthetic"
     if Path(synthetic_dir).exists():
         print("\nValidating synthetic examples...")
         synthetic_valid, synthetic_invalid = validator.validate_dataset(synthetic_dir)
