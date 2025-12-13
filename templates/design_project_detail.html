@@ -584,6 +584,13 @@
     
     function submitCorrection(projectId, modelType) {
         const textarea = document.getElementById(`correction-${modelType}-${projectId}`);
+        
+        if (!textarea) {
+            console.error(`Textarea not found: correction-${modelType}-${projectId}`);
+            alert('❌ Error: Could not find correction textarea.');
+            return;
+        }
+        
         const correctedCode = textarea.value;
         
         if (!correctedCode.trim()) {
@@ -591,6 +598,69 @@
             return;
         }
         
+        // Show modal to choose correction type
+        showCorrectionTypeDialog(projectId, modelType, correctedCode);
+    }
+    
+    function showCorrectionTypeDialog(projectId, modelType, correctedCode) {
+        // Create modal overlay
+        const modal = document.createElement('div');
+        modal.style.cssText = 'position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 9999;';
+        
+        // Create modal content
+        modal.innerHTML = `
+            <div style="background: white; border-radius: 12px; padding: 24px; max-width: 500px; box-shadow: 0 20px 60px rgba(0,0,0,0.3);">
+                <h3 style="margin: 0 0 16px 0; font-size: 20px; font-weight: 600; color: #1f2937;">
+                    🎯 What type of correction is this?
+                </h3>
+                
+                <div style="margin-bottom: 20px; padding: 16px; background: #f3f4f6; border-radius: 8px;">
+                    <button onclick="submitWithType('${projectId}', '${modelType}', 'code_fix')" 
+                            style="width: 100%; padding: 16px; margin-bottom: 12px; background: #3b82f6; color: white; border: none; border-radius: 8px; font-size: 15px; font-weight: 600; cursor: pointer; text-align: left;">
+                        <div style="font-size: 18px; margin-bottom: 4px;">🔧 Code Fix</div>
+                        <div style="font-size: 13px; opacity: 0.9;">I fixed syntax errors or made it executable (but don't know if the model is good)</div>
+                    </button>
+                    
+                    <button onclick="submitWithType('${projectId}', '${modelType}', 'model_improvement')" 
+                            style="width: 100%; padding: 16px; background: #10b981; color: white; border: none; border-radius: 8px; font-size: 15px; font-weight: 600; cursor: pointer; text-align: left;">
+                        <div style="font-size: 18px; margin-bottom: 4px;">⭐ Model Improvement</div>
+                        <div style="font-size: 13px; opacity: 0.9;">I improved the design quality (code works AND model is better)</div>
+                    </button>
+                </div>
+                
+                <button onclick="closeCorrectionDialog()" 
+                        style="width: 100%; padding: 12px; background: #6b7280; color: white; border: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer;">
+                    Cancel
+                </button>
+            </div>
+        `;
+        
+        modal.id = 'correction-type-modal';
+        modal.onclick = (e) => { if (e.target === modal) closeCorrectionDialog(); };
+        document.body.appendChild(modal);
+        
+        // Store corrected code for later
+        window.currentCorrectedCode = correctedCode;
+    }
+    
+    function closeCorrectionDialog() {
+        const modal = document.getElementById('correction-type-modal');
+        if (modal) modal.remove();
+        window.currentCorrectedCode = null;
+    }
+    
+    function submitWithType(projectId, modelType, correctionType) {
+        const correctedCode = window.currentCorrectedCode;
+        
+        if (!correctedCode) {
+            alert('❌ Error: Corrected code not found.');
+            return;
+        }
+        
+        // Close dialog
+        closeCorrectionDialog();
+        
+        // Submit feedback
         fetch(`/api/design/feedback/${projectId}/`, {
             method: 'POST',
             headers: {
@@ -600,14 +670,23 @@
             body: JSON.stringify({
                 model_type: modelType,
                 rating: 'corrected',
-                corrected_code: correctedCode
+                corrected_code: correctedCode,
+                correction_type: correctionType
             })
         })
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                alert('🎉 Thank you! Your correction is worth 10x regular examples for training!');
-                textarea.value = ''; // Clear the textarea
+                const message = correctionType === 'model_improvement' 
+                    ? '🎉 Thank you! Model improvements are worth 10x for training!' 
+                    : '✅ Thank you! Code fixes help improve execution quality!';
+                alert(message);
+                
+                // Clear textarea
+                const textarea = document.getElementById(`correction-${modelType}-${projectId}`);
+                if (textarea) textarea.value = '';
+            } else {
+                alert('❌ Error: ' + (data.error || 'Unknown error'));
             }
         })
         .catch(error => {
