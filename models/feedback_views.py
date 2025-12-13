@@ -71,6 +71,14 @@ def submit_feedback(request, project_id):
         if not generated_code and rating != 'corrected':
             generated_code = '<generation_failed>'
         
+        # Determine correction type
+        correction_type = None
+        if rating == 'corrected':
+            if not generated_code or generated_code == '<generation_failed>':
+                correction_type = 'code_fix'  # Fixed broken/missing code
+            else:
+                correction_type = 'model_improvement'  # Improved working code
+        
         # Create feedback entry
         feedback_entry = {
             'timestamp': datetime.now().isoformat(),
@@ -81,8 +89,10 @@ def submit_feedback(request, project_id):
             'prompt': original_prompt,
             'generated_code': generated_code,
             'corrected_code': corrected_code,
+            'correction_type': correction_type,  # 'code_fix' or 'model_improvement' or None
             'model_version': 'final_model',  # Track which model version generated this
             'success': rating in ['good', 'corrected'],  # For training data filtering
+            'validated': correction_type == 'model_improvement',  # Only model improvements are validated good
         }
         
         # Log to production logs directory
