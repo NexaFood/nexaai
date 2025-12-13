@@ -130,10 +130,11 @@ Return ONLY the JSON object, no other text."""
                 print(f"✗ Failed")
         
         # Save summary
+        success_rate = 0.0 if count == 0 else (generated / count * 100)
         summary = {
             'total_generated': generated,
             'failed': failed,
-            'success_rate': f"{(generated / count * 100):.1f}%",
+            'success_rate': f"{success_rate:.1f}%",
             'categories': self.categories,
             'examples': self.examples
         }
