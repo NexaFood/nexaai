@@ -59,13 +59,17 @@ def submit_feedback(request, project_id):
         # Get the original generation data
         if model_type == 'overall_model':
             original_prompt = project.get('original_prompt', '')
-            generated_code = project.get('overall_model_code', '')
+            generated_code = project.get('overall_model_code', '')  # May be empty if generation failed
         else:
             # For parts, would need part_id
             return JsonResponse({
                 'success': False,
                 'error': 'Part feedback not yet implemented'
             }, status=400)
+        
+        # Allow feedback even without generated code (for failures)
+        if not generated_code and rating != 'corrected':
+            generated_code = '<generation_failed>'
         
         # Create feedback entry
         feedback_entry = {
