@@ -17,7 +17,7 @@ from services.cadquery_executor import CadQueryExecutor
 class CodeValidator:
     """Validates CadQuery code by attempting to execute it."""
     
-    def __init__(self, output_dir: str = "/home/ubuntu/nexaai/training/data/validated"):
+    def __init__(self, output_dir: str = "/home/dobbeltop/nexaai/training/data/validated"):
         self.output_dir = Path(output_dir)
         self.output_dir.mkdir(parents=True, exist_ok=True)
         self.executor = CadQueryExecutor()
@@ -161,7 +161,7 @@ if __name__ == "__main__":
     validator = CodeValidator()
     
     # Validate GitHub examples
-    github_dir = "/home/ubuntu/nexaai/training/data/github_examples"
+    github_dir = "/home/dobbeltop/nexaai/training/data/github_examples"
     if Path(github_dir).exists():
         valid, invalid = validator.validate_dataset(github_dir)
         print(f"\n✓ Validated {len(valid)} valid examples from GitHub")

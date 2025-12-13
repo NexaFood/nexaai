@@ -7,7 +7,7 @@ echo "======================================================================"
 echo ""
 
 # Count generated examples
-TOTAL=$(ls /home/ubuntu/nexaai/training/data/synthetic/synthetic_*.json 2>/dev/null | wc -l)
+TOTAL=$(ls /home/dobbeltop/nexaai/training/data/synthetic/synthetic_*.json 2>/dev/null | wc -l)
 TARGET=10000
 PROGRESS=$(echo "scale=1; $TOTAL / $TARGET * 100" | bc)
 
@@ -37,7 +37,7 @@ fi
 
 echo ""
 echo "Latest examples:"
-ls -lht /home/ubuntu/nexaai/training/data/synthetic/synthetic_*.json | head -5 | awk '{print "  " $9 " (" $5 ") - " $6 " " $7 " " $8}'
+ls -lht /home/dobbeltop/nexaai/training/data/synthetic/synthetic_*.json | head -5 | awk '{print "  " $9 " (" $5 ") - " $6 " " $7 " " $8}'
 
 echo ""
 echo "======================================================================"

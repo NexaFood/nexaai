@@ -72,7 +72,7 @@ def run_synthetic_pipeline(target_examples: int = 10000, batch_size: int = 100):
     print("-" * 70)
     validator = CodeValidator()
     
-    synthetic_dir = "/home/ubuntu/nexaai/training/data/synthetic"
+    synthetic_dir = "/home/dobbeltop/nexaai/training/data/synthetic"
     valid, invalid = validator.validate_dataset(synthetic_dir)
     
     print(f"\n✓ Validation complete:")

@@ -14,7 +14,7 @@ import time
 class GitHubScraper:
     """Scrapes GitHub for CadQuery examples using GitHub CLI."""
     
-    def __init__(self, output_dir: str = "/home/ubuntu/nexaai/training/data/github_examples"):
+    def __init__(self, output_dir: str = "/home/dobbeltop/nexaai/training/data/github_examples"):
         self.output_dir = Path(output_dir)
         self.output_dir.mkdir(parents=True, exist_ok=True)
         self.examples = []
