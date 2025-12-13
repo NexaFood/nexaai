@@ -261,7 +261,7 @@ Return ONLY the Python code, no explanations or markdown."""
     def _clean_generated_code(self, code: str) -> str:
         """Clean up generated code and remove trailing explanations"""
         
-        # Remove markdown code blocks
+        # Remove markdown code blocks (start and end)
         if code.startswith("```python"):
             code = code[9:]
         if code.startswith("```"):
@@ -270,6 +270,12 @@ Return ONLY the Python code, no explanations or markdown."""
             code = code[:-3]
         
         code = code.strip()
+        
+        # Remove any remaining code fences that appear in the middle
+        # (AI sometimes adds these as separators)
+        lines = code.split('\n')
+        lines = [line for line in lines if line.strip() not in ['```', '```python', '```py']]
+        code = '\n'.join(lines)
         
         # Remove trailing explanations (common with LLMs)
         # Look for lines that are clearly prose, not code
