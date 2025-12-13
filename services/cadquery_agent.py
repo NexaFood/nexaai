@@ -48,14 +48,15 @@ class CadQueryAgent:
         from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig
         from peft import PeftModel
         
-        # Find the latest checkpoint
+        # Find the trained model
         checkpoint_dir = Path(__file__).parent.parent / "training" / "cadquery_model"
         
-        # Try checkpoints in order of preference
+        # Try models in order of preference
         checkpoint_paths = [
-            checkpoint_dir / "checkpoint-1200",  # Final
-            checkpoint_dir / "checkpoint-1000",  # Second
-            checkpoint_dir / "checkpoint-500",   # First
+            checkpoint_dir / "final_model",      # Production model (best)
+            checkpoint_dir / "checkpoint-1200",  # Final checkpoint
+            checkpoint_dir / "checkpoint-1000",  # Second checkpoint
+            checkpoint_dir / "checkpoint-500",   # First checkpoint
         ]
         
         checkpoint_path = None
