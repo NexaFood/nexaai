@@ -281,22 +281,40 @@ Return ONLY the Python code, no explanations or markdown."""
         code = code.strip()
         
         # Remove trailing explanations (common with LLMs)
-        # Stop at lines that look like explanations, not code
+        # Look for lines that are clearly prose, not code
         lines = code.split('\n')
         cleaned_lines = []
         
-        for line in lines:
+        for i, line in enumerate(lines):
             stripped = line.strip()
             
-            # Stop if we hit an explanation line
-            if stripped and not stripped.startswith('#'):
-                # Check if line looks like prose (starts with capital, has spaces, no Python syntax)
-                if (stripped[0].isupper() and 
-                    ' ' in stripped and 
-                    not any(char in stripped for char in ['=', '(', ')', '.', '[', ']']) and
-                    not stripped.startswith('import')):
-                    # This looks like an explanation, stop here
-                    break
+            # Keep empty lines and comments
+            if not stripped or stripped.startswith('#'):
+                cleaned_lines.append(line)
+                continue
+            
+            # Check if this looks like an explanation (prose) rather than code
+            # Prose characteristics:
+            # - Starts with capital letter
+            # - Contains multiple words (3+)
+            # - No Python operators or syntax
+            # - Forms a complete sentence
+            
+            words = stripped.split()
+            has_python_syntax = any(char in stripped for char in ['=', '(', ')', '.', '[', ']', ':', ','])
+            starts_with_keyword = stripped.split()[0].lower() in ['import', 'from', 'def', 'class', 'if', 'for', 'while', 'try', 'with', 'return', 'result']
+            
+            is_prose = (
+                len(words) >= 3 and
+                stripped[0].isupper() and
+                not has_python_syntax and
+                not starts_with_keyword and
+                not stripped.endswith((':', ',', ')', ']', '}'))
+            )
+            
+            if is_prose:
+                # This looks like an explanation, stop here
+                break
             
             cleaned_lines.append(line)
         
