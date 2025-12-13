@@ -217,7 +217,7 @@ def train_model(model, tokenizer, dataset, train_config):
         logging_steps=train_config.logging_steps,
         save_steps=train_config.save_steps,
         eval_steps=train_config.eval_steps,
-        evaluation_strategy="steps",
+        eval_strategy="steps",
         save_total_limit=train_config.save_total_limit,
         fp16=train_config.fp16,
         optim=train_config.optim,
