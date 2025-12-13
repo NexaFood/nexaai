@@ -41,8 +41,8 @@ class ModelConfig:
 @dataclass
 class LoRAConfig:
     """LoRA configuration"""
-    lora_r: int = 64
-    lora_alpha: int = 16
+    lora_r: int = 16  # Reduced from 64 to fit in 12GB VRAM
+    lora_alpha: int = 32  # Alpha = 2 * rank is recommended
     lora_dropout: float = 0.1
     target_modules: list = field(default_factory=lambda: [
         "q_proj", "k_proj", "v_proj", "o_proj",
@@ -55,9 +55,9 @@ class TrainConfig:
     """Training configuration"""
     output_dir: str = "./cadquery_model"
     num_train_epochs: int = 3
-    per_device_train_batch_size: int = 4
-    per_device_eval_batch_size: int = 4
-    gradient_accumulation_steps: int = 4
+    per_device_train_batch_size: int = 1  # Reduced from 4 to fit in 12GB
+    per_device_eval_batch_size: int = 1  # Reduced from 4
+    gradient_accumulation_steps: int = 16  # Increased to maintain effective batch size
     learning_rate: float = 2e-4
     max_grad_norm: float = 0.3
     warmup_ratio: float = 0.03
@@ -70,7 +70,7 @@ class TrainConfig:
     optim: str = "paged_adamw_32bit"
     group_by_length: bool = True
     report_to: str = "tensorboard"
-    max_seq_length: int = 2048
+    max_seq_length: int = 1024  # Reduced from 2048 to save memory
 
 
 @dataclass
@@ -226,6 +226,7 @@ def train_model(model, tokenizer, dataset, train_config):
         load_best_model_at_end=True,
         metric_for_best_model="eval_loss",
         greater_is_better=False,
+        gradient_checkpointing=True,  # Enable to save memory
     )
     
     # Data collator
