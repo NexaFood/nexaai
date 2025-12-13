@@ -268,7 +268,7 @@ Return ONLY the Python code, no explanations or markdown."""
         return code
     
     def _clean_generated_code(self, code: str) -> str:
-        """Clean up generated code"""
+        """Clean up generated code and remove trailing explanations"""
         
         # Remove markdown code blocks
         if code.startswith("```python"):
@@ -279,6 +279,28 @@ Return ONLY the Python code, no explanations or markdown."""
             code = code[:-3]
         
         code = code.strip()
+        
+        # Remove trailing explanations (common with LLMs)
+        # Stop at lines that look like explanations, not code
+        lines = code.split('\n')
+        cleaned_lines = []
+        
+        for line in lines:
+            stripped = line.strip()
+            
+            # Stop if we hit an explanation line
+            if stripped and not stripped.startswith('#'):
+                # Check if line looks like prose (starts with capital, has spaces, no Python syntax)
+                if (stripped[0].isupper() and 
+                    ' ' in stripped and 
+                    not any(char in stripped for char in ['=', '(', ')', '.', '[', ']']) and
+                    not stripped.startswith('import')):
+                    # This looks like an explanation, stop here
+                    break
+            
+            cleaned_lines.append(line)
+        
+        code = '\n'.join(cleaned_lines).strip()
         
         # Ensure it starts with import
         if not code.startswith("import cadquery"):
