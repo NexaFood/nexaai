@@ -2,30 +2,98 @@
 CadQuery AI Agent
 
 Generates CadQuery Python code from natural language design descriptions.
-Much simpler than Onshape API - just generates code that creates the 3D model.
+Supports both custom fine-tuned model and GPT-4 fallback.
 """
 
 import os
 import logging
+import torch
 from openai import OpenAI
-from typing import Dict, Any, List
+from typing import Dict, Any, List, Optional
+from pathlib import Path
 
 logger = logging.getLogger(__name__)
 
 class CadQueryAgent:
     """AI agent that generates CadQuery Python code for 3D models."""
     
-    def __init__(self, model="gpt-4.1-mini"):
+    def __init__(self, use_custom_model: bool = True, model: str = "gpt-4.1-mini"):
         """
         Initialize the CadQuery AI agent.
         
         Args:
-            model: LLM model to use for code generation
-                  Options: gpt-4.1-mini (best available), gpt-4.1-nano, gemini-2.5-flash
+            use_custom_model: If True, use custom fine-tuned model. If False, use GPT-4.
+            model: GPT model to use as fallback (gpt-4.1-mini, gpt-4.1-nano, gemini-2.5-flash)
         """
-        self.client = OpenAI()  # Uses OPENAI_API_KEY from environment
-        self.model = model
-        logger.info(f"CadQuery AI Agent initialized with model: {model}")
+        self.use_custom_model = use_custom_model
+        self.gpt_model = model
+        self.custom_model = None
+        self.tokenizer = None
+        
+        if use_custom_model:
+            try:
+                self._load_custom_model()
+                logger.info("✅ Custom CadQuery model loaded successfully")
+            except Exception as e:
+                logger.warning(f"⚠️ Failed to load custom model: {e}")
+                logger.info("Falling back to GPT-4")
+                self.use_custom_model = False
+                self.client = OpenAI()
+        else:
+            self.client = OpenAI()
+            logger.info(f"CadQuery AI Agent initialized with GPT model: {model}")
+    
+    def _load_custom_model(self):
+        """Load the custom fine-tuned CadQuery model"""
+        from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig
+        from peft import PeftModel
+        
+        # Find the latest checkpoint
+        checkpoint_dir = Path(__file__).parent.parent / "training" / "cadquery_model"
+        
+        # Try checkpoints in order of preference
+        checkpoint_paths = [
+            checkpoint_dir / "checkpoint-1200",  # Final
+            checkpoint_dir / "checkpoint-1000",  # Second
+            checkpoint_dir / "checkpoint-500",   # First
+        ]
+        
+        checkpoint_path = None
+        for path in checkpoint_paths:
+            if path.exists():
+                checkpoint_path = path
+                logger.info(f"Found checkpoint: {path}")
+                break
+        
+        if not checkpoint_path:
+            raise FileNotFoundError("No trained checkpoint found")
+        
+        # Load base model with 4-bit quantization
+        logger.info("Loading CodeLlama base model...")
+        bnb_config = BitsAndBytesConfig(
+            load_in_4bit=True,
+            bnb_4bit_quant_type="nf4",
+            bnb_4bit_compute_dtype=torch.float16,
+            bnb_4bit_use_double_quant=True,
+        )
+        
+        base_model = AutoModelForCausalLM.from_pretrained(
+            "codellama/CodeLlama-7b-hf",
+            quantization_config=bnb_config,
+            device_map="auto",
+            trust_remote_code=True,
+        )
+        
+        # Load LoRA adapters
+        logger.info(f"Loading LoRA adapters from {checkpoint_path}...")
+        self.custom_model = PeftModel.from_pretrained(base_model, str(checkpoint_path))
+        
+        # Load tokenizer
+        self.tokenizer = AutoTokenizer.from_pretrained("codellama/CodeLlama-7b-hf")
+        self.tokenizer.pad_token = self.tokenizer.eos_token
+        self.tokenizer.padding_side = "right"
+        
+        logger.info("✅ Custom model loaded successfully")
     
     def generate_code(self, prompt: str) -> Dict[str, Any]:
         """
@@ -38,9 +106,79 @@ class CadQueryAgent:
             Dict with:
                 - code: Python code using CadQuery
                 - description: What the code creates
-                - parts: List of parts created
+                - model_used: Which model generated the code
         """
         logger.info(f"Generating CadQuery code from prompt: {prompt}")
+        
+        if self.use_custom_model and self.custom_model is not None:
+            code = self._generate_with_custom_model(prompt)
+            model_used = "custom-cadquery-model"
+        else:
+            code = self._generate_with_gpt(prompt)
+            model_used = self.gpt_model
+        
+        logger.info(f"Generated {len(code)} characters of CadQuery code using {model_used}")
+        
+        return {
+            "code": code,
+            "description": prompt,
+            "language": "python",
+            "library": "cadquery",
+            "model_used": model_used
+        }
+    
+    def _generate_with_custom_model(self, prompt: str) -> str:
+        """Generate code using the custom fine-tuned model"""
+        
+        # Format prompt for the model
+        formatted_prompt = f"""Generate CadQuery code for the following:
+
+Description: {prompt}
+
+Code:
+import cadquery as cq
+
+result = """
+        
+        # Tokenize
+        inputs = self.tokenizer(
+            formatted_prompt,
+            return_tensors="pt",
+            truncation=True,
+            max_length=512
+        ).to(self.custom_model.device)
+        
+        # Generate
+        with torch.no_grad():
+            outputs = self.custom_model.generate(
+                **inputs,
+                max_new_tokens=512,
+                temperature=0.7,
+                top_p=0.95,
+                do_sample=True,
+                pad_token_id=self.tokenizer.eos_token_id,
+                eos_token_id=self.tokenizer.eos_token_id,
+            )
+        
+        # Decode
+        generated_text = self.tokenizer.decode(outputs[0], skip_special_tokens=True)
+        
+        # Extract just the code part
+        if "result = " in generated_text:
+            # Get everything after "result = "
+            code_part = generated_text.split("result = ", 1)[1]
+            # Clean up any trailing text after the code
+            code = f"import cadquery as cq\n\nresult = {code_part}"
+        else:
+            code = generated_text
+        
+        # Clean up the code
+        code = self._clean_generated_code(code)
+        
+        return code
+    
+    def _generate_with_gpt(self, prompt: str) -> str:
+        """Generate code using GPT-4"""
         
         # Import examples library
         from services.cadquery_examples import get_examples_for_prompt
@@ -115,37 +253,42 @@ Requirements:
 Return ONLY the Python code, no explanations or markdown."""
 
         response = self.client.chat.completions.create(
-            model=self.model,
+            model=self.gpt_model,
             messages=[
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": user_prompt}
             ],
-            temperature=0.3  # Lower temperature for more consistent, reliable code
+            temperature=0.3
         )
         
         code = response.choices[0].message.content.strip()
+        code = self._clean_generated_code(code)
         
-        # Remove markdown code blocks if present
+        return code
+    
+    def _clean_generated_code(self, code: str) -> str:
+        """Clean up generated code"""
+        
+        # Remove markdown code blocks
         if code.startswith("```python"):
             code = code[9:]
         if code.startswith("```"):
             code = code[3:]
         if code.endswith("```"):
             code = code[:-3]
+        
         code = code.strip()
         
-        logger.info(f"Generated {len(code)} characters of CadQuery code")
+        # Ensure it starts with import
+        if not code.startswith("import cadquery"):
+            code = "import cadquery as cq\n\n" + code
         
-        return {
-            "code": code,
-            "description": prompt,
-            "language": "python",
-            "library": "cadquery"
-        }
+        return code
     
     def generate_multi_part_design(self, prompt: str) -> Dict[str, Any]:
         """
         Generate a multi-part design with separate CadQuery code for each part.
+        Currently only supported with GPT-4.
         
         Args:
             prompt: Natural language description of the complete design
@@ -156,6 +299,10 @@ Return ONLY the Python code, no explanations or markdown."""
                 - assembly_notes: How to assemble the parts
         """
         logger.info(f"Generating multi-part design from prompt: {prompt}")
+        
+        # Multi-part generation requires structured output, use GPT-4
+        if not hasattr(self, 'client'):
+            self.client = OpenAI()
         
         system_prompt = """You are an expert CAD engineer who designs multi-part assemblies.
 
@@ -191,7 +338,7 @@ For each part, generate complete CadQuery code.
 Return ONLY valid JSON, no other text."""
 
         response = self.client.chat.completions.create(
-            model=self.model,
+            model=self.gpt_model,
             messages=[
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": user_prompt}
