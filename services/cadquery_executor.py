@@ -190,13 +190,14 @@ except Exception as e:
                 
                 logger.info(f"✓ Successfully executed and exported {len(files)} files")
                 
-                # Clean up script file
-                script_file.unlink()
+                # Keep script file for debugging/display (don't delete)
+                # script_file.unlink()  # Commented out to keep the script
                 
                 return {
                     "success": True,
                     "files": files,
-                    "stdout": result.stdout
+                    "stdout": result.stdout,
+                    "script_path": str(script_file)  # Return script path
                 }
             else:
                 error_msg = result.stderr or result.stdout
@@ -206,20 +207,23 @@ except Exception as e:
                     "success": False,
                     "error": error_msg,
                     "stdout": result.stdout,
-                    "stderr": result.stderr
+                    "stderr": result.stderr,
+                    "script_path": str(script_file)  # Return script path for debugging
                 }
                 
         except subprocess.TimeoutExpired:
             logger.error("✗ Execution timed out (60s)")
             return {
                 "success": False,
-                "error": "Code execution timed out after 60 seconds"
+                "error": "Code execution timed out after 60 seconds",
+                "script_path": str(script_file)
             }
         except Exception as e:
             logger.error(f"✗ Execution error: {str(e)}")
             return {
                 "success": False,
-                "error": str(e)
+                "error": str(e),
+                "script_path": str(script_file)
             }
     
     def execute_multi_part(self, parts: list, project_id: str) -> Dict[str, Any]:

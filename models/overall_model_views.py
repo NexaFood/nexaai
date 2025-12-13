@@ -58,11 +58,19 @@ def api_generate_overall_model(request, project_id):
             error_msg = result.get('error', 'Unknown error')
             failed_code = result.get('code', '')  # May have partial code
             
+            # Read the actual executed script file
+            script_path = result.get('script_path')
+            actual_script = ""
+            if script_path and Path(script_path).exists():
+                actual_script = Path(script_path).read_text()
+            else:
+                actual_script = failed_code  # Fallback to generated code
+            
             # Save the broken code to database so user can see and fix it
             db.design_projects.update_one(
                 {'_id': to_object_id(project_id)},
                 {'$set': {
-                    'overall_model_code': failed_code,  # Save broken code
+                    'overall_model_code': actual_script,  # Save actual script
                     'overall_model_error': error_msg,
                     'status': 'failed',
                     'updated_at': datetime.utcnow()
@@ -75,9 +83,9 @@ def api_generate_overall_model(request, project_id):
                     <p class="text-sm mt-1">{error_msg}</p>
                     
                     {f'''<div class="mt-3 border-t border-red-300 pt-3">
-                        <p class="text-sm font-semibold mb-2">Generated Code (incomplete/broken):</p>
-                        <pre class="bg-gray-900 text-yellow-300 p-3 rounded text-xs overflow-x-auto max-h-60 overflow-y-auto">{failed_code}</pre>
-                    </div>''' if failed_code else '<p class="text-sm mt-2 italic">No code was generated.</p>'}
+                        <p class="text-sm font-semibold mb-2">📄 Executed Script (overall_model_script.py):</p>
+                        <pre class="bg-gray-900 text-yellow-300 p-3 rounded text-xs overflow-x-auto max-h-60 overflow-y-auto">{actual_script}</pre>
+                    </div>''' if actual_script else '<p class="text-sm mt-2 italic">No code was generated.</p>'}
                     
                     <div class="mt-4 border-t border-red-300 pt-3">
                         <p class="text-sm font-semibold mb-2">📊 Help improve the AI:</p>
@@ -94,7 +102,7 @@ def api_generate_overall_model(request, project_id):
                                 <textarea 
                                     id="correction-overall-{project_id}"
                                     class="w-full h-64 p-2 border rounded font-mono text-xs"
-                                    placeholder="import cadquery as cq\n\nresult = ...">{failed_code if failed_code else 'import cadquery as cq\n\nresult = '}</textarea>
+                                    placeholder="import cadquery as cq\n\nresult = ...">{actual_script if actual_script else 'import cadquery as cq\n\nresult = '}</textarea>
                                 <button 
                                     onclick="submitCorrection('{project_id}', 'overall_model')"
                                     class="mt-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-semibold">
@@ -132,6 +140,14 @@ def api_generate_overall_model(request, project_id):
         
         logger.info(f"✓ Overall model generated successfully for project {project_id}")
         
+        # Read the actual executed script file
+        script_path = result.get('script_path')
+        actual_script = ""
+        if script_path and Path(script_path).exists():
+            actual_script = Path(script_path).read_text()
+        else:
+            actual_script = result['code']  # Fallback to generated code
+        
         # Return success HTML with download links and approve button
         return HttpResponse(f'''
             <div class="bg-green-50 border border-green-200 rounded-lg p-6">
@@ -147,9 +163,9 @@ def api_generate_overall_model(request, project_id):
                     </a>
                 </div>
                 
-                <details class="mb-4">
-                    <summary class="cursor-pointer text-gray-600 hover:text-gray-800 font-semibold text-sm">View Generated Code</summary>
-                    <pre class="mt-2 bg-gray-800 text-green-400 p-3 rounded overflow-x-auto text-xs">{result['code']}</pre>
+                <details class="mb-4" open>
+                    <summary class="cursor-pointer text-gray-600 hover:text-gray-800 font-semibold text-sm">📄 View Executed Script (overall_model_script.py)</summary>
+                    <pre class="mt-2 bg-gray-900 text-green-300 p-4 rounded overflow-x-auto text-xs max-h-96 overflow-y-auto">{actual_script}</pre>
                 </details>
                 
                 <div class="flex gap-2">
