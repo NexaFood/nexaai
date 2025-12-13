@@ -96,8 +96,8 @@ class CodeValidator:
         print(f"  Output: {self.output_dir}")
         print(f"{'='*60}\n")
         
-        # Find all example files
-        example_files = list(input_path.glob("example_*.json"))
+        # Find all example files (both GitHub and synthetic)
+        example_files = list(input_path.glob("example_*.json")) + list(input_path.glob("synthetic_*.json"))
         print(f"Found {len(example_files)} examples to validate\n")
         
         valid_examples = []
