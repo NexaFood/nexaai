@@ -55,24 +55,29 @@ def api_generate_overall_model(request, project_id):
         )
         
         if not result['success']:
-            # Update project with error
+            error_msg = result.get('error', 'Unknown error')
+            failed_code = result.get('code', '')  # May have partial code
+            
+            # Save the broken code to database so user can see and fix it
             db.design_projects.update_one(
                 {'_id': to_object_id(project_id)},
                 {'$set': {
+                    'overall_model_code': failed_code,  # Save broken code
+                    'overall_model_error': error_msg,
                     'status': 'failed',
                     'updated_at': datetime.utcnow()
                 }}
             )
-            
-            error_msg = result.get('error', 'Unknown error')
-            failed_code = result.get('code', '')  # May have partial code
             
             return HttpResponse(f'''
                 <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
                     <p class="font-semibold">✗ Overall model generation failed</p>
                     <p class="text-sm mt-1">{error_msg}</p>
                     
-                    {f'<details class="mt-2"><summary class="cursor-pointer text-sm font-semibold">View failed code</summary><pre class="mt-2 bg-gray-800 text-red-400 p-2 rounded text-xs overflow-x-auto">{failed_code}</pre></details>' if failed_code else ''}
+                    {f'''<div class="mt-3 border-t border-red-300 pt-3">
+                        <p class="text-sm font-semibold mb-2">Generated Code (incomplete/broken):</p>
+                        <pre class="bg-gray-900 text-yellow-300 p-3 rounded text-xs overflow-x-auto max-h-60 overflow-y-auto">{failed_code}</pre>
+                    </div>''' if failed_code else '<p class="text-sm mt-2 italic">No code was generated.</p>'}
                     
                     <div class="mt-4 border-t border-red-300 pt-3">
                         <p class="text-sm font-semibold mb-2">📊 Help improve the AI:</p>
@@ -82,14 +87,14 @@ def api_generate_overall_model(request, project_id):
                             ❌ Report Failure
                         </button>
                         
-                        <details class="mt-3">
-                            <summary class="cursor-pointer text-sm text-blue-600 hover:text-blue-700 font-semibold">✏️ I know what the correct code should be</summary>
+                        <details class="mt-3" open>
+                            <summary class="cursor-pointer text-sm text-blue-600 hover:text-blue-700 font-semibold">✏️ Fix the code and submit correction</summary>
                             <div class="mt-2 p-3 bg-blue-50 rounded">
-                                <p class="text-xs text-gray-600 mb-2">Provide the correct code to help train the AI:</p>
+                                <p class="text-xs text-gray-600 mb-2">Edit the code below to fix it, then submit:</p>
                                 <textarea 
                                     id="correction-overall-{project_id}"
-                                    class="w-full h-40 p-2 border rounded font-mono text-xs"
-                                    placeholder="import cadquery as cq\n\nresult = ..."></textarea>
+                                    class="w-full h-64 p-2 border rounded font-mono text-xs"
+                                    placeholder="import cadquery as cq\n\nresult = ...">{failed_code if failed_code else 'import cadquery as cq\n\nresult = '}</textarea>
                                 <button 
                                     onclick="submitCorrection('{project_id}', 'overall_model')"
                                     class="mt-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-semibold">

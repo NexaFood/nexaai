@@ -146,12 +146,13 @@ class CadQueryAgent:
         with torch.no_grad():
             outputs = self.custom_model.generate(
                 **inputs,
-                max_new_tokens=512,
+                max_new_tokens=1024,  # Increased from 512 to allow longer code
                 temperature=0.7,
                 top_p=0.95,
                 do_sample=True,
                 pad_token_id=self.tokenizer.eos_token_id,
                 eos_token_id=self.tokenizer.eos_token_id,
+                repetition_penalty=1.1,  # Prevent repetitive code
             )
         
         # Decode
