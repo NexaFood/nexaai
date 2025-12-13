@@ -17,7 +17,10 @@ sys.path.append(str(Path(__file__).parent.parent))
 class SyntheticGenerator:
     """Generates synthetic CadQuery training examples using GPT-4."""
     
-    def __init__(self, output_dir: str = "/home/dobbeltop/nexaai/training/data/synthetic"):
+    def __init__(self, output_dir: str = None):
+        if output_dir is None:
+            # Use relative path from this file's location
+            output_dir = str(Path(__file__).parent / "data" / "synthetic")
         self.output_dir = Path(output_dir)
         self.output_dir.mkdir(parents=True, exist_ok=True)
         self.client = OpenAI()  # Uses environment variable OPENAI_API_KEY

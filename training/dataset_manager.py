@@ -14,7 +14,10 @@ from datetime import datetime
 class DatasetManager:
     """Manages the complete training dataset."""
     
-    def __init__(self, base_dir: str = "/home/dobbeltop/nexaai/training/data"):
+    def __init__(self, base_dir: str = None):
+        if base_dir is None:
+            # Use relative path from this file's location
+            base_dir = str(Path(__file__).parent / "data")
         self.base_dir = Path(base_dir)
         self.base_dir.mkdir(parents=True, exist_ok=True)
         

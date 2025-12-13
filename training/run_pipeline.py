@@ -35,7 +35,7 @@ def run_complete_pipeline(
     print("="*70 + "\n")
     
     # Step 1: Collect from GitHub
-    if not skip_github:
+    if not skip_github and github_examples > 0:
         print("\n📥 STEP 1: Collecting examples from GitHub...")
         print("-" * 70)
         scraper = GitHubScraper()
@@ -45,7 +45,7 @@ def run_complete_pipeline(
         print("\n⏭️  STEP 1: Skipping GitHub collection (using existing data)\n")
     
     # Step 2: Generate synthetic data
-    if not skip_synthetic:
+    if not skip_synthetic and synthetic_examples > 0:
         print("\n🤖 STEP 2: Generating synthetic examples...")
         print("-" * 70)
         generator = SyntheticGenerator()
@@ -60,17 +60,17 @@ def run_complete_pipeline(
     validator = CodeValidator()
     
     # Validate GitHub examples
-    github_dir = "/home/dobbeltop/Ropositories/nexaai/training/data/github_examples"
-    if Path(github_dir).exists():
+    github_dir = Path(__file__).parent / "data" / "github_examples"
+    if github_dir.exists():
         print("\nValidating GitHub examples...")
-        github_valid, github_invalid = validator.validate_dataset(github_dir)
+        github_valid, github_invalid = validator.validate_dataset(str(github_dir))
         print(f"✓ GitHub: {len(github_valid)} valid, {len(github_invalid)} invalid")
     
     # Validate synthetic examples
-    synthetic_dir = "/home/dobbeltop/Ropositories/nexaai/training/data/synthetic"
-    if Path(synthetic_dir).exists():
+    synthetic_dir = Path(__file__).parent / "data" / "synthetic"
+    if synthetic_dir.exists():
         print("\nValidating synthetic examples...")
-        synthetic_valid, synthetic_invalid = validator.validate_dataset(synthetic_dir)
+        synthetic_valid, synthetic_invalid = validator.validate_dataset(str(synthetic_dir))
         print(f"✓ Synthetic: {len(synthetic_valid)} valid, {len(synthetic_invalid)} invalid")
     
     # Step 4: Merge and organize dataset

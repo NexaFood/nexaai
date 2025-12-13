@@ -17,7 +17,10 @@ from services.cadquery_executor import CadQueryExecutor
 class CodeValidator:
     """Validates CadQuery code by attempting to execute it."""
     
-    def __init__(self, output_dir: str = "/home/dobbeltop/nexaai/training/data/validated"):
+    def __init__(self, output_dir: str = None):
+        if output_dir is None:
+            # Use relative path from this file's location
+            output_dir = str(Path(__file__).parent / "data" / "validated")
         self.output_dir = Path(output_dir)
         self.output_dir.mkdir(parents=True, exist_ok=True)
         self.executor = CadQueryExecutor()
