@@ -7,6 +7,7 @@ from . import design_views
 from . import cadquery_views
 from . import print_job_views
 from . import overall_model_views
+from . import feedback_views
 
 app_name = 'models'
 
@@ -35,6 +36,9 @@ urlpatterns = [
     path('api/design/approve-overall-model/<str:project_id>/', overall_model_views.api_approve_overall_model, name='api-approve-overall-model'),
     path('api/design/approve-parts/<str:project_id>/', cadquery_views.api_approve_parts_cadquery, name='api-approve-parts'),
     path('api/design/generate/<str:project_id>/<int:part_number>/', cadquery_views.api_generate_part_cadquery, name='api-generate-part'),
+    
+    # Feedback endpoints
+    path('api/design/feedback/<str:project_id>/', feedback_views.submit_feedback, name='api-submit-feedback'),
     
     # Print job endpoints
     path('api/design/send-to-printer/<str:project_id>/<int:part_number>/', print_job_views.api_send_to_printer, name='api-send-to-printer'),
