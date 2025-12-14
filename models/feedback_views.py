@@ -59,8 +59,17 @@ def submit_feedback(request, project_id):
         # Get the original generation data
         if model_type == 'overall_model':
             original_prompt = project.get('original_prompt', '')
-            ai_generated_code = project.get('overall_model_ai_code', '')  # Just AI code
-            generation_success = project.get('overall_model_success', False)  # Did it execute?
+            
+            # Try new field names first, fallback to old field names for backward compatibility
+            ai_generated_code = project.get('overall_model_ai_code', '')
+            if not ai_generated_code:
+                # Fallback to old field name (before we split AI code from script)
+                ai_generated_code = project.get('overall_model_code', '')
+            
+            generation_success = project.get('overall_model_success')
+            if generation_success is None:
+                # Fallback: if we have STL file, it probably succeeded
+                generation_success = bool(project.get('overall_model_stl_path') or project.get('overall_model_stl_url'))
         else:
             # For parts, would need part_id
             return JsonResponse({
