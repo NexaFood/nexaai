@@ -120,7 +120,7 @@ def api_generate_overall_model(request, project_id):
                         🔄 Retry Generation
                     </button>
                 </div>
-            ''', status=500)
+            ''')  # Return 200 so HTMX displays the error HTML
         
         # Update project with model data
         media_root = str(Path(settings.MEDIA_ROOT))
