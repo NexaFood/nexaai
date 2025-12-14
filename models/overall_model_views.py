@@ -66,12 +66,14 @@ def api_generate_overall_model(request, project_id):
             else:
                 actual_script = failed_code  # Fallback to generated code
             
-            # Save the broken code to database so user can see and fix it
+            # Save both AI code and script path to database
             db.design_projects.update_one(
                 {'_id': to_object_id(project_id)},
                 {'$set': {
-                    'overall_model_code': actual_script,  # Save actual script
+                    'overall_model_ai_code': failed_code,  # Just AI-generated code
+                    'overall_model_script_path': script_path,  # Path to full script
                     'overall_model_error': error_msg,
+                    'overall_model_success': False,  # Track if generation succeeded
                     'status': 'failed',
                     'updated_at': datetime.utcnow()
                 }}
@@ -130,9 +132,11 @@ def api_generate_overall_model(request, project_id):
         db.design_projects.update_one(
             {'_id': to_object_id(project_id)},
             {'$set': {
-                'overall_model_code': result['code'],
+                'overall_model_ai_code': result['code'],  # Just AI-generated code
+                'overall_model_script_path': result.get('script_path'),  # Path to full script
                 'overall_model_step_path': result['step_file'],
                 'overall_model_stl_path': result['stl_file'],
+                'overall_model_success': True,  # Track if generation succeeded
                 'status': 'pending',
                 'updated_at': datetime.utcnow()
             }}

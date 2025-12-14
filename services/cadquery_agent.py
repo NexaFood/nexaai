@@ -132,19 +132,31 @@ class CadQueryAgent:
         """Generate code using the custom fine-tuned model"""
         from transformers import StoppingCriteria, StoppingCriteriaList
         
-        # Custom stopping criterion: stop when we see "### Prompt:" (next example)
+        # Custom stopping criterion: stop when we see markers of next example
         class StopOnNextExample(StoppingCriteria):
-            def __init__(self, tokenizer, stop_string="### Prompt:"):
+            def __init__(self, tokenizer):
                 self.tokenizer = tokenizer
-                self.stop_string = stop_string
-                self.stop_ids = tokenizer.encode(stop_string, add_special_tokens=False)
+                # Multiple stop patterns to catch different separators
+                self.stop_patterns = [
+                    "### Prompt:",  # Next training example
+                    "\n---\n",      # Markdown horizontal rule
+                    "\n## ",        # Markdown heading level 2
+                    "\n# ",         # Markdown heading level 1
+                ]
+                self.stop_ids_list = [
+                    tokenizer.encode(pattern, add_special_tokens=False)
+                    for pattern in self.stop_patterns
+                ]
             
             def __call__(self, input_ids, scores, **kwargs):
-                # Check if the last N tokens match our stop string
+                # Check if the last N tokens match any stop pattern
                 for i in range(len(input_ids)):
-                    last_tokens = input_ids[i, -len(self.stop_ids):].tolist()
-                    if last_tokens == self.stop_ids:
-                        return True
+                    for stop_ids in self.stop_ids_list:
+                        if len(stop_ids) == 0:
+                            continue
+                        last_tokens = input_ids[i, -len(stop_ids):].tolist()
+                        if last_tokens == stop_ids:
+                            return True
                 return False
         
         # Format prompt to match training format: "### Prompt: {prompt}\n### Code:\n{code}"
@@ -160,7 +172,7 @@ class CadQueryAgent:
         
         # Create stopping criteria
         stopping_criteria = StoppingCriteriaList([
-            StopOnNextExample(self.tokenizer)
+            StopOnNextExample(self.tokenizer)  # Now handles multiple stop patterns
         ])
         
         # Generate
@@ -312,10 +324,15 @@ Return ONLY the Python code, no explanations or markdown."""
                 cleaned_lines.append(line)
                 continue
             
+            # Stop at markdown separators
+            if stripped in ['---', '===', '***']:
+                # Markdown horizontal rule, stop here
+                break
+            
             # Keep single-line comments (but stop at markdown headings)
             if stripped.startswith('#'):
-                # Check if this is a markdown heading (### followed by prose)
-                if stripped.startswith('###') and len(stripped) > 4:
+                # Check if this is a markdown heading (### or ## followed by prose)
+                if (stripped.startswith('###') or stripped.startswith('##')) and len(stripped) > 4:
                     # This is likely a markdown heading, stop here
                     break
                 # Regular comment, keep it

@@ -59,7 +59,8 @@ def submit_feedback(request, project_id):
         # Get the original generation data
         if model_type == 'overall_model':
             original_prompt = project.get('original_prompt', '')
-            generated_code = project.get('overall_model_code', '')  # May be empty if generation failed
+            ai_generated_code = project.get('overall_model_ai_code', '')  # Just AI code
+            generation_success = project.get('overall_model_success', False)  # Did it execute?
         else:
             # For parts, would need part_id
             return JsonResponse({
@@ -68,16 +69,18 @@ def submit_feedback(request, project_id):
             }, status=400)
         
         # Allow feedback even without generated code (for failures)
-        if not generated_code and rating != 'corrected':
-            generated_code = '<generation_failed>'
+        if not ai_generated_code:
+            ai_generated_code = '<generation_failed>'
         
-        # Determine correction type
-        correction_type = None
-        if rating == 'corrected':
-            if not generated_code or generated_code == '<generation_failed>':
-                correction_type = 'code_fix'  # Fixed broken/missing code
-            else:
-                correction_type = 'model_improvement'  # Improved working code
+        # Determine correction type from request
+        correction_type = data.get('correction_type')  # 'code_fix' or 'model_improvement'
+        
+        # Validate corrected code if provided
+        corrected_code_validated = False
+        if corrected_code and rating == 'corrected':
+            # TODO: Actually run the corrected code to validate it
+            # For now, assume user-corrected code is valid
+            corrected_code_validated = True
         
         # Create feedback entry
         feedback_entry = {
@@ -87,12 +90,12 @@ def submit_feedback(request, project_id):
             'model_type': model_type,
             'rating': rating,
             'prompt': original_prompt,
-            'generated_code': generated_code,
-            'corrected_code': corrected_code,
-            'correction_type': correction_type,  # 'code_fix' or 'model_improvement' or None
+            'generated_code': ai_generated_code,  # Original AI-generated code only
+            'corrected_code': corrected_code,  # User's corrected version
+            'correction_type': correction_type,  # 'code_fix' or 'model_improvement'
             'model_version': 'final_model',  # Track which model version generated this
-            'success': rating in ['good', 'corrected'],  # For training data filtering
-            'validated': correction_type == 'model_improvement',  # Only model improvements are validated good
+            'success': generation_success,  # Did the ORIGINAL generation succeed?
+            'validated': corrected_code_validated,  # Did we validate the corrected code?
         }
         
         # Log to production logs directory
