@@ -168,7 +168,44 @@ def api_generate_overall_model(request, project_id):
                     <pre class="mt-2 bg-gray-900 text-green-300 p-4 rounded overflow-x-auto text-xs max-h-96 overflow-y-auto">{actual_script}</pre>
                 </details>
                 
-                <div class="flex gap-2">
+                <div class="mt-4 p-4 bg-gray-50 border border-gray-200 rounded-lg">
+                    <p class="text-sm font-semibold mb-2">📊 Help improve the AI:</p>
+                    <div class="flex gap-2 mb-3">
+                        <button 
+                            onclick="submitFeedback('{project_id}', 'overall_model', 'good')"
+                            class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm font-semibold">
+                            ✅ Perfect!
+                        </button>
+                        <button 
+                            onclick="submitFeedback('{project_id}', 'overall_model', 'needs_work')"
+                            class="px-4 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 text-sm font-semibold">
+                            ⚠️ Needs Work
+                        </button>
+                        <button 
+                            onclick="submitFeedback('{project_id}', 'overall_model', 'bad')"
+                            class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 text-sm font-semibold">
+                            ❌ Failed
+                        </button>
+                    </div>
+                    
+                    <details class="mt-3">
+                        <summary class="cursor-pointer text-sm text-blue-600 hover:text-blue-700 font-semibold">✏️ I can improve this code</summary>
+                        <div class="mt-2 p-3 bg-blue-50 rounded">
+                            <p class="text-xs text-gray-600 mb-2">Edit the code below to improve it, then submit:</p>
+                            <textarea 
+                                id="correction-overall_model-{project_id}"
+                                class="w-full h-64 p-2 border rounded font-mono text-xs"
+                                placeholder="import cadquery as cq\n\nresult = ...">{actual_script}</textarea>
+                            <button 
+                                onclick="submitCorrection('{project_id}', 'overall_model')"
+                                class="mt-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-semibold">
+                                Submit Correction
+                            </button>
+                        </div>
+                    </details>
+                </div>
+                
+                <div class="flex gap-2 mt-4">
                     <button 
                         hx-post="/api/design/approve-overall-model/{project_id}/"
                         hx-target="#overall-model-result"
