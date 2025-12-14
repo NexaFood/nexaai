@@ -47,6 +47,16 @@ def api_generate_overall_model(request, project_id):
         
         logger.info(f"Generating overall model for project {project_id}")
         
+        # Mark as generating
+        db.design_projects.update_one(
+            {'_id': to_object_id(project_id)},
+            {'$set': {
+                'overall_model_status': 'generating',
+                'overall_model_started_at': datetime.utcnow(),
+                'updated_at': datetime.utcnow()
+            }}
+        )
+        
         # Generate overall model
         result = generate_overall_model(
             concept=concept,
@@ -74,6 +84,8 @@ def api_generate_overall_model(request, project_id):
                     'overall_model_script_path': script_path,  # Path to full script
                     'overall_model_error': error_msg,
                     'overall_model_success': False,  # Track if generation succeeded
+                    'overall_model_status': 'failed',  # Generation status
+                    'overall_model_completed_at': datetime.utcnow(),
                     'status': 'failed',
                     'updated_at': datetime.utcnow()
                 }}
@@ -139,6 +151,8 @@ def api_generate_overall_model(request, project_id):
                 'overall_model_stl_path': result['stl_file'],  # File path
                 'overall_model_stl_url': stl_url,  # Web URL for 3D viewer
                 'overall_model_success': True,  # Track if generation succeeded
+                'overall_model_status': 'completed',  # Generation status
+                'overall_model_completed_at': datetime.utcnow(),
                 'status': 'pending',
                 'updated_at': datetime.utcnow()
             }}
