@@ -87,7 +87,7 @@
             {% endif %}
         </div>
         
-        {% if project.stage == 'overall_model' and not project.overall_model_code %}
+        {% if project.stage == 'overall_model' and project.overall_model_status != 'completed' %}
         
             {% if project.overall_model_status == 'generating' %}
             <!-- Show generating status -->
@@ -139,7 +139,7 @@
             <div id="overall-model-result" class="mt-4"></div>
             {% endif %}
         
-        {% elif project.overall_model_code or project.overall_model_status == 'completed' %}
+        {% elif project.overall_model_status == 'completed' %}
         <!-- Show generated model -->
         <div id="overall-model-result">
             <div class="bg-green-50 border border-green-200 rounded-lg p-6">
@@ -167,7 +167,7 @@
                 
                 <details class="mb-4">
                     <summary class="cursor-pointer text-gray-600 hover:text-gray-800 font-semibold text-sm">View Generated Code</summary>
-                    <pre class="mt-2 bg-gray-800 text-green-400 p-3 rounded overflow-x-auto text-xs">{{ project.overall_model_code }}</pre>
+                    <pre class="mt-2 bg-gray-800 text-green-400 p-3 rounded overflow-x-auto text-xs">{{ project.overall_model_ai_code }}</pre>
                 </details>
                 
                 <!-- Feedback Section -->
@@ -198,7 +198,7 @@
                             <textarea 
                                 id="correction-overall-{{ project.id }}"
                                 class="w-full h-40 p-2 border rounded font-mono text-xs"
-                                placeholder="import cadquery as cq\n\nresult = ...">{{ project.overall_model_code }}</textarea>
+                                placeholder="import cadquery as cq\n\nresult = ...">{{ project.overall_model_ai_code }}</textarea>
                             <button 
                                 onclick="submitCorrection('{{ project.id }}', 'overall_model')"
                                 class="mt-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-semibold">
