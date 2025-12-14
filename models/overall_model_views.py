@@ -100,7 +100,7 @@ def api_generate_overall_model(request, project_id):
                             <div class="mt-2 p-3 bg-blue-50 rounded">
                                 <p class="text-xs text-gray-600 mb-2">Edit the code below to fix it, then submit:</p>
                                 <textarea 
-                                    id="correction-overall-{project_id}"
+                                    id="correction-overall_model-{project_id}"
                                     class="w-full h-64 p-2 border rounded font-mono text-xs"
                                     placeholder="import cadquery as cq\n\nresult = ...">{actual_script if actual_script else 'import cadquery as cq\n\nresult = '}</textarea>
                                 <button 
