@@ -133,6 +133,7 @@ Use union() to combine shapes. Keep it simple but distinctive!
             return {
                 'success': False,
                 'code': code_result['code'],
+                'script_path': exec_result.get('script_path'),  # Include script path even on failure
                 'error': exec_result.get('error', 'Execution failed')
             }
         
@@ -148,7 +149,8 @@ Use union() to combine shapes. Keep it simple but distinctive!
             'success': True,
             'code': code_result['code'],
             'step_file': step_file,
-            'stl_file': stl_file
+            'stl_file': stl_file,
+            'script_path': exec_result.get('script_path')  # Include script path for debugging/display
         }
         
     except Exception as e:

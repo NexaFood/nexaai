@@ -134,8 +134,10 @@ def api_generate_overall_model(request, project_id):
             {'$set': {
                 'overall_model_ai_code': result['code'],  # Just AI-generated code
                 'overall_model_script_path': result.get('script_path'),  # Path to full script
-                'overall_model_step_path': result['step_file'],
-                'overall_model_stl_path': result['stl_file'],
+                'overall_model_step_path': result['step_file'],  # File path
+                'overall_model_step_url': step_url,  # Web URL
+                'overall_model_stl_path': result['stl_file'],  # File path
+                'overall_model_stl_url': stl_url,  # Web URL for 3D viewer
                 'overall_model_success': True,  # Track if generation succeeded
                 'status': 'pending',
                 'updated_at': datetime.utcnow()
