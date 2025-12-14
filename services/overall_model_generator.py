@@ -34,7 +34,31 @@ def generate_overall_model(concept, output_dir, model_id="overall_model"):
         # Extract just the essential shape/form from the prompt
         original_prompt = concept.get('original_prompt', '')
         
-        description = f"""
+        # Check if this is a basic geometric primitive
+        prompt_lower = original_prompt.lower()
+        is_basic_shape = any(word in prompt_lower for word in [
+            'cube', 'box', 'square', 'rectangle', 'sphere', 'ball', 'cylinder', 
+            'tube', 'cone', 'pyramid', 'torus', 'ring'
+        ])
+        
+        if is_basic_shape:
+            # For basic shapes, be VERY explicit about simplicity
+            description = f"""
+Create EXACTLY the shape described: {original_prompt}
+
+This is a BASIC GEOMETRIC PRIMITIVE. Do NOT add extra features.
+
+For example:
+- "A cube 50x50x50" → JUST a box(50, 50, 50)
+- "A cylinder 30mm diameter, 100mm tall" → JUST circle(15).extrude(100)
+- "A sphere 40mm diameter" → JUST sphere(20)
+
+Use the SIMPLEST possible code. Usually just 1-2 lines.
+Do NOT add fins, motors, decorations, or any extra features.
+"""
+        else:
+            # For complex objects, use the detailed guidelines
+            description = f"""
 Create a SIMPLE but RECOGNIZABLE 3D model of: {original_prompt}
 
 Your goal: Make a model that someone would immediately recognize as "{original_prompt}".

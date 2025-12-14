@@ -130,6 +130,22 @@ class CadQueryAgent:
     
     def _generate_with_custom_model(self, prompt: str) -> str:
         """Generate code using the custom fine-tuned model"""
+        from transformers import StoppingCriteria, StoppingCriteriaList
+        
+        # Custom stopping criterion: stop when we see "### Prompt:" (next example)
+        class StopOnNextExample(StoppingCriteria):
+            def __init__(self, tokenizer, stop_string="### Prompt:"):
+                self.tokenizer = tokenizer
+                self.stop_string = stop_string
+                self.stop_ids = tokenizer.encode(stop_string, add_special_tokens=False)
+            
+            def __call__(self, input_ids, scores, **kwargs):
+                # Check if the last N tokens match our stop string
+                for i in range(len(input_ids)):
+                    last_tokens = input_ids[i, -len(self.stop_ids):].tolist()
+                    if last_tokens == self.stop_ids:
+                        return True
+                return False
         
         # Format prompt to match training format: "### Prompt: {prompt}\n### Code:\n{code}"
         formatted_prompt = f"### Prompt: {prompt}\n### Code:\n"
@@ -142,17 +158,23 @@ class CadQueryAgent:
             max_length=512
         ).to(self.custom_model.device)
         
+        # Create stopping criteria
+        stopping_criteria = StoppingCriteriaList([
+            StopOnNextExample(self.tokenizer)
+        ])
+        
         # Generate
         with torch.no_grad():
             outputs = self.custom_model.generate(
                 **inputs,
-                max_new_tokens=1024,  # Increased from 512 to allow longer code
-                temperature=0.7,
-                top_p=0.95,
+                max_new_tokens=1024,  # Allow longer code
+                temperature=0.3,  # Lower temperature for more focused output
+                top_p=0.9,  # Slightly more focused sampling
                 do_sample=True,
                 pad_token_id=self.tokenizer.eos_token_id,
                 eos_token_id=self.tokenizer.eos_token_id,
-                repetition_penalty=1.1,  # Prevent repetitive code
+                repetition_penalty=1.2,  # Higher penalty to prevent repetitive code
+                stopping_criteria=stopping_criteria,  # Stop at next example
             )
         
         # Decode
