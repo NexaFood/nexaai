@@ -11,8 +11,13 @@ import torch
 from openai import OpenAI
 from typing import Dict, Any, List, Optional
 from pathlib import Path
+from services.cadquery_prompts import get_system_prompt_gpt, get_user_prompt_gpt, MULTIPART_SYSTEM_PROMPT, get_multipart_user_prompt
 
 logger = logging.getLogger(__name__)
+
+# Global singleton storage
+_SHARED_MODEL = None
+_SHARED_TOKENIZER = None
 
 class CadQueryAgent:
     """AI agent that generates CadQuery Python code for 3D models."""
@@ -33,7 +38,7 @@ class CadQueryAgent:
         if use_custom_model:
             try:
                 self._load_custom_model()
-                logger.info("✅ Custom CadQuery model loaded successfully")
+                logger.info("✅ Custom CadQuery model ready")
             except Exception as e:
                 logger.warning(f"⚠️ Failed to load custom model: {e}")
                 logger.info("Falling back to GPT-4")
@@ -44,9 +49,21 @@ class CadQueryAgent:
             logger.info(f"CadQuery AI Agent initialized with GPT model: {model}")
     
     def _load_custom_model(self):
-        """Load the custom fine-tuned CadQuery model"""
+        """Load the custom fine-tuned CadQuery model (using Singleton pattern)"""
+        global _SHARED_MODEL, _SHARED_TOKENIZER
+        
+        # specific to this method: import only when needed to save memory if not using custom model
         from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig
         from peft import PeftModel
+        
+        # 1. Check if already loaded
+        if _SHARED_MODEL is not None and _SHARED_TOKENIZER is not None:
+            self.custom_model = _SHARED_MODEL
+            self.tokenizer = _SHARED_TOKENIZER
+            logger.info("Using cached custom model instance")
+            return
+            
+        logger.info("Loading custom CadQuery model for the first time...")
         
         # Find the trained model
         checkpoint_dir = Path(__file__).parent.parent / "training" / "cadquery_model"
@@ -94,7 +111,11 @@ class CadQueryAgent:
         self.tokenizer.pad_token = self.tokenizer.eos_token
         self.tokenizer.padding_side = "right"
         
-        logger.info("✅ Custom model loaded successfully")
+        # Update global cache
+        _SHARED_MODEL = self.custom_model
+        _SHARED_TOKENIZER = self.tokenizer
+        
+        logger.info("✅ Custom model loaded successfully and cached")
     
     def generate_code(self, prompt: str) -> Dict[str, Any]:
         """
@@ -206,77 +227,8 @@ class CadQueryAgent:
     def _generate_with_gpt(self, prompt: str) -> str:
         """Generate code using GPT-4"""
         
-        # Import examples library
-        from services.cadquery_examples import get_examples_for_prompt
-        
-        examples_text = get_examples_for_prompt(max_examples=15)
-        
-        system_prompt = f"""You are an expert CAD engineer who writes CadQuery Python code.
-
-CadQuery is a Python library for building parametric 3D CAD models.
-
-## CRITICAL RULES (MUST FOLLOW):
-
-1. **ALWAYS create a solid shape FIRST** before using .faces()
-   - Use .box(), .circle().extrude(), or .polygon().extrude()
-   - NEVER call .faces() on an empty workplane
-
-2. **Face selection only works on solids**
-   - .faces(">Z") selects top face
-   - .faces("<Z") selects bottom face
-   - .faces("|Z") selects faces parallel to Z axis
-
-3. **Use realistic dimensions**
-   - Small parts: 10-100mm
-   - Medium parts: 100-500mm
-   - Large parts: 500-2000mm
-
-4. **Keep designs simple and manufacturable**
-   - Avoid complex curves unless necessary
-   - Use standard shapes (boxes, cylinders, holes)
-   - Think about how it would be 3D printed or CNC machined
-
-5. **Variable naming**
-   - Final model MUST be in variable named 'result'
-   - Use descriptive intermediate variable names
-
-6. **Common patterns**
-   - Box with holes: .box() → .faces(">Z") → .workplane() → .hole()
-   - Cylinder: .circle() → .extrude()
-   - Hollow tube: .circle(outer) → .circle(inner) → .extrude()
-   - L-bracket: create two boxes → .union()
-
-## HIGH-QUALITY EXAMPLES:
-
-{examples_text}
-
-## COMMON MISTAKES TO AVOID:
-
-❌ BAD: .faces(">Z") before creating solid
-✅ GOOD: .box() THEN .faces(">Z")
-
-❌ BAD: Complex splines and curves for simple parts
-✅ GOOD: Use basic shapes (box, cylinder, polygon)
-
-❌ BAD: Unrealistic dimensions (1mm thick plate, 10000mm long beam)
-✅ GOOD: Realistic dimensions based on part function
-
-Generate clean, well-commented CadQuery code. Think about manufacturability.
-"""
-
-        user_prompt = f"""Generate CadQuery Python code for: {prompt}
-
-Requirements:
-1. Use 'import cadquery as cq'
-2. Final model MUST be in variable named 'result'
-3. Add comments explaining each step
-4. Use millimeters for all dimensions
-5. ALWAYS create a solid shape FIRST (use .box() or .extrude())
-6. ONLY use .faces() AFTER creating a solid
-7. Keep the design simple and manufacturable
-8. Use realistic dimensions based on the part description
-
-Return ONLY the Python code, no explanations or markdown."""
+        system_prompt = get_system_prompt_gpt()
+        user_prompt = get_user_prompt_gpt(prompt)
 
         response = self.client.chat.completions.create(
             model=self.gpt_model,
@@ -395,38 +347,8 @@ Return ONLY the Python code, no explanations or markdown."""
         if not hasattr(self, 'client'):
             self.client = OpenAI()
         
-        system_prompt = """You are an expert CAD engineer who designs multi-part assemblies.
-
-Analyze the design request and break it into individual parts.
-For each part, generate CadQuery Python code.
-
-Return a JSON object with this structure:
-{
-    "parts": [
-        {
-            "name": "Part name",
-            "description": "What this part does",
-            "manufacturing": "3D Print" or "CNC",
-            "material": "Suggested material",
-            "code": "CadQuery Python code"
-        }
-    ],
-    "assembly_notes": "How to assemble the parts together"
-}
-
-Each part's code must:
-1. Import cadquery as cq
-2. Store final model in 'result' variable
-3. Use millimeters for dimensions
-4. Be complete and runnable
-"""
-
-        user_prompt = f"""Design a multi-part assembly for: {prompt}
-
-Break it into individual parts that can be manufactured separately.
-For each part, generate complete CadQuery code.
-
-Return ONLY valid JSON, no other text."""
+        system_prompt = MULTIPART_SYSTEM_PROMPT
+        user_prompt = get_multipart_user_prompt(prompt)
 
         response = self.client.chat.completions.create(
             model=self.gpt_model,

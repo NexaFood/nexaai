@@ -33,3 +33,10 @@ db.sqlite3
 Thumbs.db
 venv_cadquery/
 training/data/
+
+# ML Artifacts
+training/cadquery_model/
+*.pt
+*.bin
+*.safetensors
+*.ckpt
