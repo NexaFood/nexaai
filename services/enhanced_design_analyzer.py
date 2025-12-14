@@ -98,16 +98,48 @@ def break_down_into_parts(design_concept, original_prompt):
     Returns:
         list: List of part dicts with manufacturing recommendations
     """
+    
+    # Check if this is a simple single-part object
+    prompt_lower = original_prompt.lower()
+    single_part_keywords = [
+        'cube', 'box', 'square', 'rectangle', 'sphere', 'ball', 'cylinder',
+        'tube', 'cone', 'pyramid', 'torus', 'ring', 'plate', 'block',
+        'disc', 'disk', 'rod', 'bar', 'beam'
+    ]
+    
+    # Check if it's a basic geometric primitive
+    is_single_part = any(keyword in prompt_lower for keyword in single_part_keywords)
+    
+    # Also check if the design concept indicates it's simple
+    estimated_parts = design_concept.get('estimated_parts_count', 10)
+    complexity = design_concept.get('estimated_complexity', 'medium')
+    
+    # If it's a single-part design OR very simple prompt, return single part
+    if is_single_part or (estimated_parts <= 2 and complexity == 'low'):
+        logger.info(f"Detected single-part design: {original_prompt}")
+        return [{
+            'part_number': 1,
+            'name': original_prompt.strip(),
+            'description': f'Single-part design: {original_prompt}',
+            'manufacturing_method': '3d_print',
+            'material_recommendation': 'PLA',
+            'estimated_dimensions': {'x': 100, 'y': 100, 'z': 100},
+            'complexity': 'low',
+            'quantity': 1,
+            'notes': 'This is a single-part design that does not need to be broken down further.'
+        }]
+    
     system_prompt = """You are an expert manufacturing engineer specializing in 3D printing and CNC machining.
 
 Your task is to break down a design into INDIVIDUAL MANUFACTURABLE PARTS.
 
 CRITICAL RULES FOR PART SPLITTING:
-1. Each part must fit on a 3D printer (max ~250x250x250mm) or CNC machine (max ~400x400x100mm)
-2. Split large assemblies into smaller components that can be assembled
-3. Separate parts that need different manufacturing methods
-4. Consider assembly - parts should bolt/snap/glue together
-5. Don't be afraid to create 50-200+ parts for complex designs!
+1. **IF THE DESIGN IS ALREADY A SINGLE PART, RETURN JUST ONE PART!** (e.g., a simple bracket, plate, or enclosure)
+2. Each part must fit on a 3D printer (max ~250x250x250mm) or CNC machine (max ~400x400x100mm)
+3. Split large assemblies into smaller components that can be assembled
+4. Separate parts that need different manufacturing methods
+5. Consider assembly - parts should bolt/snap/glue together
+6. For complex assemblies, create 50-200+ parts as needed
 
 MANUFACTURING METHOD SELECTION:
 **3D Print** - Use for:
