@@ -196,7 +196,7 @@
                         <div class="mt-3 p-3 bg-blue-50 rounded-lg">
                             <p class="text-xs text-gray-600 mb-2">Your corrections help train the AI! Paste the corrected code below:</p>
                             <textarea 
-                                id="correction-overall-{{ project.id }}"
+                                id="correction-overall_model-{{ project.id }}"
                                 class="w-full h-40 p-2 border rounded font-mono text-xs"
                                 placeholder="import cadquery as cq\n\nresult = ...">{{ project.overall_model_ai_code }}</textarea>
                             <button 
