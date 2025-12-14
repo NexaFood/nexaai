@@ -30,14 +30,52 @@ def generate_design_concept(original_prompt):
             'estimated_parts_count': int
         }
     """
+    
+    # Check if this is a basic geometric primitive
+    prompt_lower = original_prompt.lower()
+    basic_shapes = {
+        'cube': 'cubic shape',
+        'box': 'rectangular box',
+        'square': 'square shape',
+        'rectangle': 'rectangular shape',
+        'sphere': 'spherical shape',
+        'ball': 'spherical shape',
+        'cylinder': 'cylindrical shape',
+        'tube': 'tubular shape',
+        'cone': 'conical shape',
+        'pyramid': 'pyramidal shape',
+        'torus': 'toroidal shape',
+        'ring': 'ring shape',
+        'plate': 'flat plate',
+        'disc': 'circular disc',
+        'disk': 'circular disc'
+    }
+    
+    # Detect if it's a simple geometric primitive
+    for keyword, shape_desc in basic_shapes.items():
+        if keyword in prompt_lower:
+            logger.info(f"Detected basic geometric primitive: {keyword}")
+            return {
+                'refined_description': f"A simple {shape_desc} as specified: {original_prompt}. This is a basic geometric primitive that requires no additional features or complexity.",
+                'design_type': 'geometric_primitive',
+                'key_features': [f'Simple {shape_desc}', 'Single solid part', 'No moving components'],
+                'estimated_complexity': 'low',
+                'estimated_parts_count': 1
+            }
+    
     system_prompt = """You are an expert mechanical engineer and product designer. 
 Your task is to take a user's design idea and create a detailed, comprehensive design concept.
 
+**CRITICAL: If the user asks for a simple geometric shape (cube, sphere, cylinder, etc.), DO NOT add complexity!**
+- A "sphere 50mm" is just a sphere - don't add motors, bearings, or electronics
+- A "cube 100x100x100" is just a cube - don't add compartments or mechanisms
+- Keep it simple unless the user explicitly asks for features
+
 Focus on:
 1. Overall structure and architecture
-2. Key functional components
+2. Key functional components (ONLY if the user mentioned them)
 3. Materials and construction methods
-4. Assembly approach
+4. Assembly approach (ONLY if multiple parts are needed)
 5. Realistic engineering considerations
 
 Be specific and technical. Think about how this would actually be built."""
@@ -46,18 +84,22 @@ Be specific and technical. Think about how this would actually be built."""
 
 Please provide a detailed design concept including:
 1. A comprehensive description of the overall design (2-3 paragraphs)
-2. Design type/category (e.g., "vehicle", "robot", "structure", "tool", "enclosure")
-3. Key features and components (list 5-10 major features)
+2. Design type/category (e.g., "vehicle", "robot", "structure", "tool", "enclosure", "geometric_primitive")
+3. Key features and components (list 3-10 major features, fewer for simple shapes)
 4. Estimated complexity (low/medium/high)
-5. Estimated number of parts needed (be realistic - complex designs may need 50-200+ parts)
+5. Estimated number of parts needed:
+   - Simple shapes (cube, sphere, cylinder): 1 part
+   - Simple assemblies (bracket, mount): 1-5 parts
+   - Medium complexity (drone, robot arm): 10-50 parts
+   - High complexity (vehicle, machine): 50-200+ parts
 
 Return ONLY a JSON object with this structure:
 {{
     "refined_description": "detailed description here",
     "design_type": "category",
     "key_features": ["feature1", "feature2", ...],
-    "estimated_complexity": "medium",
-    "estimated_parts_count": 50
+    "estimated_complexity": "low",
+    "estimated_parts_count": 1
 }}"""
 
     try:
