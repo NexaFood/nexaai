@@ -143,10 +143,21 @@ def api_generate_overall_model(request, project_id):
         # Read the actual executed script file
         script_path = result.get('script_path')
         actual_script = ""
-        if script_path and Path(script_path).exists():
-            actual_script = Path(script_path).read_text()
+        
+        logger.info(f"Script path from result: {script_path}")
+        
+        if script_path:
+            script_file_path = Path(script_path)
+            logger.info(f"Checking if script exists: {script_file_path.exists()}")
+            if script_file_path.exists():
+                actual_script = script_file_path.read_text()
+                logger.info(f"Read {len(actual_script)} characters from script file")
+            else:
+                logger.warning(f"Script file not found at {script_path}, using generated code")
+                actual_script = result.get('code', 'No code available')
         else:
-            actual_script = result['code']  # Fallback to generated code
+            logger.warning("No script_path in result, using generated code")
+            actual_script = result.get('code', 'No code available')
         
         # Return success HTML with download links and approve button
         return HttpResponse(f'''
