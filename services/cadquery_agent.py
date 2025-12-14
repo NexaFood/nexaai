@@ -285,8 +285,18 @@ Return ONLY the Python code, no explanations or markdown."""
         for i, line in enumerate(lines):
             stripped = line.strip()
             
-            # Keep empty lines and comments
-            if not stripped or stripped.startswith('#'):
+            # Keep empty lines
+            if not stripped:
+                cleaned_lines.append(line)
+                continue
+            
+            # Keep single-line comments (but stop at markdown headings)
+            if stripped.startswith('#'):
+                # Check if this is a markdown heading (### followed by prose)
+                if stripped.startswith('###') and len(stripped) > 4:
+                    # This is likely a markdown heading, stop here
+                    break
+                # Regular comment, keep it
                 cleaned_lines.append(line)
                 continue
             
@@ -298,8 +308,12 @@ Return ONLY the Python code, no explanations or markdown."""
             # - Forms a complete sentence
             
             words = stripped.split()
+            if len(words) == 0:
+                cleaned_lines.append(line)
+                continue
+                
             has_python_syntax = any(char in stripped for char in ['=', '(', ')', '.', '[', ']', ':', ','])
-            starts_with_keyword = stripped.split()[0].lower() in ['import', 'from', 'def', 'class', 'if', 'for', 'while', 'try', 'with', 'return', 'result']
+            starts_with_keyword = words[0].lower() in ['import', 'from', 'def', 'class', 'if', 'for', 'while', 'try', 'with', 'return', 'result']
             
             is_prose = (
                 len(words) >= 3 and
