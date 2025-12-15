@@ -18,7 +18,7 @@ from transformers import (
     Trainer,
     DataCollatorForLanguageModeling,
 )
-from peft import LoraConfig, get_peft_model, prepare_model_for_kbit_training
+from peft import LoraConfig, get_peft_model, prepare_model_for_kbit_training, PeftModel
 from datasets import load_dataset
 import wandb
 from tqdm import tqdm
@@ -137,7 +137,7 @@ def load_cadquery_dataset(train_path, val_path, tokenizer, max_length=2048):
 # MODEL SETUP
 # ============================================================================
 
-def setup_model_and_tokenizer(model_config, lora_config):
+def setup_model_and_tokenizer(model_config, lora_config, adapter_path=None):
     """Set up model and tokenizer with 4-bit quantization and LoRA"""
     
     print("\n🤖 Loading base model...")
@@ -162,18 +162,25 @@ def setup_model_and_tokenizer(model_config, lora_config):
     # Prepare model for k-bit training
     model = prepare_model_for_kbit_training(model)
     
-    # Configure LoRA
-    peft_config = LoraConfig(
-        r=lora_config.lora_r,
-        lora_alpha=lora_config.lora_alpha,
-        lora_dropout=lora_config.lora_dropout,
-        target_modules=lora_config.target_modules,
-        bias="none",
-        task_type="CAUSAL_LM",
-    )
-    
-    # Add LoRA adapters
-    model = get_peft_model(model, peft_config)
+    if adapter_path:
+        print(f"\n🔄 Resuming from existing adapter: {adapter_path}")
+        # Load existing adapter
+        model = PeftModel.from_pretrained(model, adapter_path, is_trainable=True)
+        # Verify it's trainable
+        model.print_trainable_parameters()
+    else:
+        # Configure LoRA from scratch
+        peft_config = LoraConfig(
+            r=lora_config.lora_r,
+            lora_alpha=lora_config.lora_alpha,
+            lora_dropout=lora_config.lora_dropout,
+            target_modules=lora_config.target_modules,
+            bias="none",
+            task_type="CAUSAL_LM",
+        )
+        
+        # Add LoRA adapters
+        model = get_peft_model(model, peft_config)
     
     # Load tokenizer
     tokenizer = AutoTokenizer.from_pretrained(
@@ -293,6 +300,11 @@ def main():
     print(f"  Learning rate: {train_config.learning_rate}")
     print(f"  Output dir: {train_config.output_dir}")
     
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--resume_from_model", type=str, help="Path to existing adapter to resume training from")
+    args = parser.parse_args()
+    
     # Check GPU
     if torch.cuda.is_available():
         gpu_name = torch.cuda.get_device_name(0)
@@ -302,7 +314,7 @@ def main():
         print("\n⚠️  WARNING: No GPU detected! Training will be very slow.")
     
     # Set up model and tokenizer
-    model, tokenizer = setup_model_and_tokenizer(model_config, lora_config)
+    model, tokenizer = setup_model_and_tokenizer(model_config, lora_config, adapter_path=args.resume_from_model)
     
     # Load dataset
     dataset = load_cadquery_dataset(

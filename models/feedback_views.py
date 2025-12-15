@@ -70,12 +70,40 @@ def submit_feedback(request, project_id):
             if generation_success is None:
                 # Fallback: if we have STL file, it probably succeeded
                 generation_success = bool(project.get('overall_model_stl_path') or project.get('overall_model_stl_url'))
-        else:
-            # For parts, would need part_id
-            return JsonResponse({
-                'success': False,
-                'error': 'Part feedback not yet implemented'
-            }, status=400)
+        elif model_type == 'part':
+            part_number = data.get('part_number')
+            if part_number is None:
+                return JsonResponse({
+                    'success': False,
+                    'error': 'part_number is required for part feedback'
+                }, status=400)
+                
+            # Find the part in the breakdown
+            breakdown = db.part_breakdowns.find_one({'project_id': to_object_id(project_id)})
+            if not breakdown:
+                return JsonResponse({
+                    'success': False,
+                    'error': 'Part breakdown not found'
+                }, status=404)
+            
+            part_data = None
+            for p in breakdown.get('parts', []):
+                if p.get('part_number') == int(part_number):
+                    part_data = p
+                    break
+            
+            if not part_data:
+                return JsonResponse({
+                    'success': False,
+                    'error': f'Part {part_number} not found'
+                }, status=404)
+                
+            # Construct prompt and get code
+            description = part_data.get('description', '')
+            original_prompt = f"{project.get('original_prompt', '')} - Part: {description}"
+            ai_generated_code = part_data.get('cadquery_code', '')
+            
+            generation_success = part_data.get('status') == 'completed'
         
         # Allow feedback even without generated code (for failures)
         if not ai_generated_code:

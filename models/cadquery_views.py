@@ -188,6 +188,38 @@ def api_generate_part_cadquery(request, project_id, part_number):
                 </details>
                 
                 <p class="text-xs text-gray-500 mt-2">Progress: {completed_parts}/{total_parts} parts completed</p>
+                
+                <div class="mt-4 border-t border-green-200 pt-3">
+                    <p class="text-sm font-semibold mb-2">📊 Help improve the AI:</p>
+                    <div class="flex gap-2 mb-3">
+                        <button 
+                            onclick="submitFeedback('{project_id}', 'part', 'good', {part_number})"
+                            class="px-3 py-1 bg-green-100 text-green-800 rounded hover:bg-green-200 transition text-xs font-semibold">
+                            ✅ Good
+                        </button>
+                        <button 
+                            onclick="submitFeedback('{project_id}', 'part', 'bad', {part_number})"
+                            class="px-3 py-1 bg-red-100 text-red-800 rounded hover:bg-red-200 transition text-xs font-semibold">
+                            ❌ Bad
+                        </button>
+                    </div>
+                    
+                    <details class="mt-2">
+                        <summary class="cursor-pointer text-xs text-blue-600 hover:text-blue-700 font-semibold">✏️ Fix this code</summary>
+                        <div class="mt-2 p-3 bg-blue-50 rounded">
+                            <p class="text-xs text-gray-600 mb-2">Edit the code below to fix it, then submit:</p>
+                            <textarea 
+                                id="correction-part-{part_number}-{project_id}"
+                                class="w-full h-48 p-2 border rounded font-mono text-xs"
+                                placeholder="import cadquery as cq\n\nresult = ...">{code_result['code']}</textarea>
+                            <button 
+                                onclick="submitCorrection('{project_id}', 'part', {part_number})"
+                                class="mt-2 px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 text-xs font-semibold">
+                                Submit Correction
+                            </button>
+                        </div>
+                    </details>
+                </div>
             </div>
         ''')
     

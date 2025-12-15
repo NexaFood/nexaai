@@ -12,7 +12,7 @@
             </svg>
             <span>Back to Projects</span>
         </a>
-        
+
         <div class="flex items-center justify-between">
             <div>
                 <h1 class="text-4xl font-bold mb-2">{{ project.name }}</h1>
@@ -45,7 +45,7 @@
         </div>
         <div class="w-full bg-gray-200 rounded-full h-3">
             <div class="bg-gradient-to-r from-purple-500 to-blue-500 h-3 rounded-full transition-all duration-500"
-                 style="width: {% if project.stage == 'concept' %}25%{% elif project.stage == 'overall_model' %}50%{% elif project.stage == 'parts' %}75%{% elif project.stage == 'generation' or project.stage == 'completed' %}100%{% endif %}">
+                style="width: {% if project.stage == 'concept' %}25%{% elif project.stage == 'overall_model' %}50%{% elif project.stage == 'parts' %}75%{% elif project.stage == 'generation' or project.stage == 'completed' %}100%{% endif %}">
             </div>
         </div>
     </div>
@@ -57,18 +57,18 @@
             <h2 class="text-2xl font-bold">📝 Stage 1: Design Concept</h2>
             <span class="text-green-600 font-semibold">✓ Approved</span>
         </div>
-        
+
         <div class="prose max-w-none">
             <h3 class="text-lg font-semibold text-gray-800 mb-2">Overview</h3>
             <p class="text-gray-700 whitespace-pre-wrap">{{ concept.overview }}</p>
-            
+
             <h3 class="text-lg font-semibold text-gray-800 mt-4 mb-2">Key Features</h3>
             <ul class="list-disc list-inside text-gray-700">
                 {% for feature in concept.key_features %}
                 <li>{{ feature }}</li>
                 {% endfor %}
             </ul>
-            
+
             <h3 class="text-lg font-semibold text-gray-800 mt-4 mb-2">Technical Specifications</h3>
             <p class="text-gray-700 whitespace-pre-wrap">{{ concept.technical_specs }}</p>
         </div>
@@ -76,7 +76,8 @@
     {% endif %}
 
     <!-- Stage 2: Overall 3D Model -->
-    {% if project.stage == 'overall_model' or project.stage == 'parts' or project.stage == 'generation' or project.stage == 'completed' %}
+    {% if project.stage == 'overall_model' or project.stage == 'parts' or project.stage == 'generation' or project.stage
+    == 'completed' %}
     <div class="bg-white rounded-2xl shadow-lg p-8 mb-6">
         <div class="flex items-center justify-between mb-4">
             <h2 class="text-2xl font-bold">🏛️ Stage 2: Overall 3D Model</h2>
@@ -86,141 +87,153 @@
             <span class="text-blue-600 font-semibold">⏳ Pending</span>
             {% endif %}
         </div>
-        
+
         {% if project.stage == 'overall_model' and project.overall_model_status != 'completed' %}
-        
-            {% if project.overall_model_status == 'generating' %}
-            <!-- Show generating status -->
-            <div id="overall-model-result" class="mt-4">
-                <div class="bg-blue-100 border border-blue-400 text-blue-700 px-4 py-3 rounded">
-                    <p class="font-semibold">⏳ Generating overall model...</p>
-                    <p class="text-sm mt-1">This may take 30-60 seconds. You can navigate away and come back.</p>
-                    <p class="text-xs mt-2 text-blue-600">Auto-refreshing every 5 seconds...</p>
-                    <button 
-                        onclick="location.reload()"
-                        class="mt-3 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-semibold">
-                        🔄 Refresh Now
-                    </button>
-                </div>
+
+        {% if project.overall_model_status == 'generating' %}
+        <!-- Show generating status -->
+        <div id="overall-model-result" class="mt-4">
+            <div class="bg-blue-100 border border-blue-400 text-blue-700 px-4 py-3 rounded">
+                <p class="font-semibold">⏳ Generating overall model...</p>
+                <p class="text-sm mt-1">This may take 30-60 seconds. You can navigate away and come back.</p>
+                <p class="text-xs mt-2 text-blue-600">Auto-refreshing every 5 seconds...</p>
+                <button onclick="location.reload()"
+                    class="mt-3 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-semibold">
+                    🔄 Refresh Now
+                </button>
             </div>
-            <script>
-                // Auto-refresh every 5 seconds when generating
-                setTimeout(function() {
-                    location.reload();
-                }, 5000);
-            </script>
-            
-            {% elif project.overall_model_status == 'failed' %}
-            <!-- Show failed status with retry -->
-            <div id="overall-model-result" class="mt-4">
-                <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
-                    <p class="font-semibold">✗ Overall model generation failed</p>
-                    <p class="text-sm mt-1">{{ project.overall_model_error|default:"Unknown error" }}</p>
-                    <button 
-                        hx-post="/api/design/generate-overall-model/{{ project.id }}/"
-                        hx-target="#overall-model-result"
-                        hx-swap="innerHTML"
-                        class="mt-3 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 text-sm font-semibold">
-                        🔄 Retry Generation
-                    </button>
-                </div>
+        </div>
+        <script>
+            // Auto-refresh every 5 seconds when generating
+            setTimeout(function () {
+                location.reload();
+            }, 5000);
+        </script>
+
+        {% elif project.overall_model_status == 'failed' %}
+        <!-- Show failed status with retry -->
+        <div id="overall-model-result" class="mt-4">
+            <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+                <p class="font-semibold">✗ Overall model generation failed</p>
+                <p class="text-sm mt-1">{{ project.overall_model_error|default:"Unknown error" }}</p>
+                <button hx-post="/api/design/generate-overall-model/{{ project.id }}/" hx-target="#overall-model-result"
+                    hx-swap="innerHTML"
+                    class="mt-3 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 text-sm font-semibold">
+                    🔄 Retry Generation
+                </button>
             </div>
-            
-            {% else %}
-            <!-- Generate button -->
-            <p class="text-gray-600 mb-4">Generate a complete 3D model of your design before breaking it into parts.</p>
-            <button 
-                hx-post="/api/design/generate-overall-model/{{ project.id }}/"
-                hx-target="#overall-model-result"
-                hx-swap="innerHTML"
-                class="bg-purple-600 text-white px-8 py-4 rounded-lg font-bold text-lg hover:bg-purple-700 transition">
-                Generate Overall Model →
-            </button>
-            <div id="overall-model-result" class="mt-4"></div>
-            {% endif %}
-        
+
+            <!-- Allow correction even on failure -->
+            <div class="mt-4 border-t pt-4">
+                <details>
+                    <summary class="cursor-pointer text-sm text-blue-600 hover:text-blue-700 font-semibold">✏️ I fixed
+                        the code (click to submit correction)</summary>
+                    <div class="mt-3 p-3 bg-blue-50 rounded-lg">
+                        <p class="text-xs text-gray-600 mb-2">Your corrections help train the AI! Paste the corrected
+                            code below:</p>
+                        <textarea id="correction-overall_model-{{ project.id }}"
+                            class="w-full h-40 p-2 border rounded font-mono text-xs"
+                            placeholder="import cadquery as cq\n\nresult = ...">{{ project.overall_model_ai_code }}</textarea>
+                        <button onclick="submitCorrection('{{ project.id }}', 'overall_model')"
+                            class="mt-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-semibold">
+                            Submit Correction
+                        </button>
+                    </div>
+                </details>
+            </div>
+
+        </div>
+
+        {% else %}
+        <!-- Generate button -->
+        <p class="text-gray-600 mb-4">Generate a complete 3D model of your design before breaking it into parts.</p>
+        <button hx-post="/api/design/generate-overall-model/{{ project.id }}/" hx-target="#overall-model-result"
+            hx-swap="innerHTML"
+            class="bg-purple-600 text-white px-8 py-4 rounded-lg font-bold text-lg hover:bg-purple-700 transition">
+            Generate Overall Model →
+        </button>
+        <div id="overall-model-result" class="mt-4"></div>
+        {% endif %}
+
         {% elif project.overall_model_status == 'completed' %}
         <!-- Show generated model -->
         <div id="overall-model-result">
             <div class="bg-green-50 border border-green-200 rounded-lg p-6">
                 <p class="text-green-800 font-semibold mb-2">✓ Overall model generated!</p>
-                
+
                 <!-- 3D Viewer -->
                 {% if project.overall_model_stl_url %}
                 <div class="mb-4 bg-gray-900 rounded-lg overflow-hidden" style="height: 400px;">
                     <div id="model-viewer-overall" class="w-full h-full"></div>
                 </div>
                 {% endif %}
-                
+
                 <div class="flex gap-2 mb-4">
                     {% if project.overall_model_step_url %}
-                    <a href="{{ project.overall_model_step_url }}" download class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-semibold">
+                    <a href="{{ project.overall_model_step_url }}" download
+                        class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-semibold">
                         📥 Download STEP
                     </a>
                     {% endif %}
                     {% if project.overall_model_stl_url %}
-                    <a href="{{ project.overall_model_stl_url }}" download class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 text-sm font-semibold">
+                    <a href="{{ project.overall_model_stl_url }}" download
+                        class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 text-sm font-semibold">
                         📥 Download STL
                     </a>
                     {% endif %}
                 </div>
-                
+
                 <details class="mb-4">
-                    <summary class="cursor-pointer text-gray-600 hover:text-gray-800 font-semibold text-sm">View Generated Code</summary>
-                    <pre class="mt-2 bg-gray-800 text-green-400 p-3 rounded overflow-x-auto text-xs">{{ project.overall_model_ai_code }}</pre>
+                    <summary class="cursor-pointer text-gray-600 hover:text-gray-800 font-semibold text-sm">View
+                        Generated Code</summary>
+                    <pre
+                        class="mt-2 bg-gray-800 text-green-400 p-3 rounded overflow-x-auto text-xs">{{ project.overall_model_ai_code }}</pre>
                 </details>
-                
+
                 <!-- Feedback Section -->
                 <div class="mb-4 border-t pt-4">
                     <p class="text-sm font-semibold text-gray-700 mb-2">📊 Help improve the AI:</p>
                     <div class="flex gap-2 mb-3">
-                        <button 
-                            onclick="submitFeedback('{{ project.id }}', 'overall_model', 'good')"
+                        <button onclick="submitFeedback('{{ project.id }}', 'overall_model', 'good')"
                             class="flex-1 px-4 py-2 bg-green-100 text-green-700 rounded-lg hover:bg-green-200 transition text-sm font-semibold">
                             ✅ Perfect!
                         </button>
-                        <button 
-                            onclick="submitFeedback('{{ project.id }}', 'overall_model', 'ok')"
+                        <button onclick="submitFeedback('{{ project.id }}', 'overall_model', 'ok')"
                             class="flex-1 px-4 py-2 bg-yellow-100 text-yellow-700 rounded-lg hover:bg-yellow-200 transition text-sm font-semibold">
                             ⚠️ Needs Work
                         </button>
-                        <button 
-                            onclick="submitFeedback('{{ project.id }}', 'overall_model', 'bad')"
+                        <button onclick="submitFeedback('{{ project.id }}', 'overall_model', 'bad')"
                             class="flex-1 px-4 py-2 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition text-sm font-semibold">
                             ❌ Failed
                         </button>
                     </div>
-                    
+
                     <details>
-                        <summary class="cursor-pointer text-sm text-blue-600 hover:text-blue-700 font-semibold">✏️ I fixed the code (click to submit correction)</summary>
+                        <summary class="cursor-pointer text-sm text-blue-600 hover:text-blue-700 font-semibold">✏️ I
+                            fixed the code (click to submit correction)</summary>
                         <div class="mt-3 p-3 bg-blue-50 rounded-lg">
-                            <p class="text-xs text-gray-600 mb-2">Your corrections help train the AI! Paste the corrected code below:</p>
-                            <textarea 
-                                id="correction-overall_model-{{ project.id }}"
+                            <p class="text-xs text-gray-600 mb-2">Your corrections help train the AI! Paste the
+                                corrected code below:</p>
+                            <textarea id="correction-overall_model-{{ project.id }}"
                                 class="w-full h-40 p-2 border rounded font-mono text-xs"
                                 placeholder="import cadquery as cq\n\nresult = ...">{{ project.overall_model_ai_code }}</textarea>
-                            <button 
-                                onclick="submitCorrection('{{ project.id }}', 'overall_model')"
+                            <button onclick="submitCorrection('{{ project.id }}', 'overall_model')"
                                 class="mt-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-semibold">
                                 Submit Correction
                             </button>
                         </div>
                     </details>
                 </div>
-                
+
                 {% if not project.overall_model_approved_at %}
                 <div class="flex gap-2">
-                    <button 
-                        hx-post="/api/design/approve-overall-model/{{ project.id }}/"
-                        hx-target="#overall-model-result"
-                        hx-swap="innerHTML"
+                    <button hx-post="/api/design/approve-overall-model/{{ project.id }}/"
+                        hx-target="#overall-model-result" hx-swap="innerHTML"
                         class="flex-1 bg-green-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-green-700 transition">
                         ✓ Approve & Break Into Parts
                     </button>
-                    <button 
-                        hx-post="/api/design/generate-overall-model/{{ project.id }}/"
-                        hx-target="#overall-model-result"
-                        hx-swap="innerHTML"
+                    <button hx-post="/api/design/generate-overall-model/{{ project.id }}/"
+                        hx-target="#overall-model-result" hx-swap="innerHTML"
                         class="bg-yellow-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-yellow-700 transition">
                         🔄 Regenerate
                     </button>
@@ -229,237 +242,234 @@
             </div>
         </div>
         {% endif %}
-    </div>
-    {% endif %}
 
-    <!-- Stage 3: Part Breakdown -->
-    {% if breakdown %}
-    <div class="bg-white rounded-2xl shadow-lg p-8 mb-6">
-        <div class="flex items-center justify-between mb-4">
-            <h2 class="text-2xl font-bold">🔧 Stage 3: Part Breakdown</h2>
-            <span class="text-green-600 font-semibold">✓ Approved</span>
-        </div>
-        
-        <p class="text-gray-600 mb-4">{{ breakdown.parts|length }} parts identified</p>
-        
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {% for part in breakdown.parts %}
-            <div class="border border-gray-200 rounded-lg p-4">
-                <div class="flex items-start justify-between mb-2">
-                    <h3 class="font-bold text-gray-800">Part {{ part.part_number }}</h3>
-                    <span class="text-xs px-2 py-1 rounded
+
+        <!-- Stage 3: Part Breakdown -->
+        {% if breakdown %}
+        <div class="bg-white rounded-2xl shadow-lg p-8 mb-6">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-2xl font-bold">🔧 Stage 3: Part Breakdown</h2>
+                <span class="text-green-600 font-semibold">✓ Approved</span>
+            </div>
+
+            <p class="text-gray-600 mb-4">{{ breakdown.parts|length }} parts identified</p>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {% for part in breakdown.parts %}
+                <div class="border border-gray-200 rounded-lg p-4">
+                    <div class="flex items-start justify-between mb-2">
+                        <h3 class="font-bold text-gray-800">Part {{ part.part_number }}</h3>
+                        <span class="text-xs px-2 py-1 rounded
                         {% if part.status == 'completed' %}bg-green-100 text-green-800
                         {% elif part.status == 'generating' %}bg-blue-100 text-blue-800
                         {% elif part.status == 'failed' %}bg-red-100 text-red-800
                         {% else %}bg-gray-100 text-gray-800{% endif %}">
-                        {{ part.status|default:"pending" }}
-                    </span>
+                            {{ part.status|default:"pending" }}
+                        </span>
+                    </div>
+                    <p class="text-sm font-semibold text-gray-700 mb-2">{{ part.name }}</p>
+                    <p class="text-xs text-gray-600 mb-2">{{ part.description }}</p>
+                    <div class="text-xs text-gray-500">
+                        <span class="font-semibold">Method:</span> {{ part.manufacturing_method }}
+                    </div>
                 </div>
-                <p class="text-sm font-semibold text-gray-700 mb-2">{{ part.name }}</p>
-                <p class="text-xs text-gray-600 mb-2">{{ part.description }}</p>
-                <div class="text-xs text-gray-500">
-                    <span class="font-semibold">Method:</span> {{ part.manufacturing_method }}
-                </div>
+                {% endfor %}
             </div>
-            {% endfor %}
-        </div>
-        
-        <!-- Generate All Button -->
-        {% if project.stage == 'parts' %}
-        <div class="mt-6 text-center">
-            <form hx-post="/api/design/approve-parts/{{ project.id }}/" 
-                  hx-target="#generation-status"
-                  hx-swap="innerHTML"
-                  class="inline-block">
-                {% csrf_token %}
-                <button type="submit" 
+
+            <!-- Generate All Button -->
+            {% if project.stage == 'parts' %}
+            <div class="mt-6 text-center">
+                <form hx-post="/api/design/approve-parts/{{ project.id }}/" hx-target="#generation-status"
+                    hx-swap="innerHTML" class="inline-block">
+                    {% csrf_token %}
+                    <button type="submit"
                         class="bg-purple-600 text-white px-8 py-4 rounded-lg font-bold text-lg hover:bg-purple-700 transition">
-                    Start CAD Generation →
-                </button>
-            </form>
-            <div id="generation-status" class="mt-4"></div>
+                        Start CAD Generation →
+                    </button>
+                </form>
+                <div id="generation-status" class="mt-4"></div>
+            </div>
+            {% endif %}
         </div>
         {% endif %}
-    </div>
-    {% endif %}
 
-    <!-- Stage 4: CAD Generation -->
-    {% if project.stage == 'generation' or project.stage == 'completed' %}
-    <div class="bg-white rounded-2xl shadow-lg p-8 mb-6">
-        <div class="flex items-center justify-between mb-4">
-            <h2 class="text-2xl font-bold">⚙️ Stage 4: CAD Generation</h2>
-            {% if project.stage == 'completed' %}
-            <span class="text-green-600 font-semibold">✓ Complete</span>
-            {% else %}
-            <span class="text-blue-600 font-semibold">In Progress...</span>
-            {% endif %}
-        </div>
-        
-        <p class="text-gray-600 mb-6">
-            Progress: {{ project.generated_parts|default:0 }} / {{ breakdown.parts|length }} parts generated
-        </p>
-        
-        <!-- Part Generation Cards -->
-        <div class="space-y-4">
-            {% for part in breakdown.parts %}
-            <div class="border border-gray-200 rounded-lg p-4">
-                <div class="flex items-center justify-between mb-2">
-                    <h3 class="font-bold text-gray-800">Part {{ part.part_number }}: {{ part.name }}</h3>
-                    {% if part.status == 'completed' %}
-                    <span class="text-green-600 font-semibold">✓ Generated</span>
-                    {% elif part.status == 'generating' %}
-                    <span class="text-blue-600 font-semibold">⏳ Generating...</span>
-                    {% elif part.status == 'failed' %}
-                    <span class="text-red-600 font-semibold">✗ Failed</span>
-                    {% else %}
-                    <button 
-                        hx-post="/api/design/generate/{{ project.id }}/{{ part.part_number }}/"
-                        hx-target="#part-{{ part.part_number }}-result"
-                        hx-swap="innerHTML"
-                        class="bg-purple-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-purple-700 transition text-sm">
-                        Generate CAD Model
-                    </button>
-                    {% endif %}
-                </div>
-                
-                <div id="part-{{ part.part_number }}-result">
-                    {% if part.status == 'completed' %}
-                    <div class="bg-green-50 border border-green-200 rounded-lg p-4 mt-2">
-                        <p class="text-green-800 font-semibold mb-2">✓ Part {{ part.part_number }} generated successfully!</p>
-                        
-                        <div class="flex gap-2 mb-3">
-                            {% if part.step_url %}
-                            <a href="{{ part.step_url }}" download 
-                               class="px-3 py-1 bg-blue-600 text-white text-sm rounded hover:bg-blue-700">
-                                📥 Download STEP
-                            </a>
+        <!-- Stage 4: CAD Generation -->
+        {% if project.stage == 'generation' or project.stage == 'completed' %}
+        <div class="bg-white rounded-2xl shadow-lg p-8 mb-6">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-2xl font-bold">⚙️ Stage 4: CAD Generation</h2>
+                {% if project.stage == 'completed' %}
+                <span class="text-green-600 font-semibold">✓ Complete</span>
+                {% else %}
+                <span class="text-blue-600 font-semibold">In Progress...</span>
+                {% endif %}
+            </div>
+
+            <p class="text-gray-600 mb-6">
+                Progress: {{ project.generated_parts|default:0 }} / {{ breakdown.parts|length }} parts generated
+            </p>
+
+            <!-- Part Generation Cards -->
+            <div class="space-y-4">
+                {% for part in breakdown.parts %}
+                <div class="border border-gray-200 rounded-lg p-4">
+                    <div class="flex items-center justify-between mb-2">
+                        <h3 class="font-bold text-gray-800">Part {{ part.part_number }}: {{ part.name }}</h3>
+                        {% if part.status == 'completed' %}
+                        <span class="text-green-600 font-semibold">✓ Generated</span>
+                        {% elif part.status == 'generating' %}
+                        <span class="text-blue-600 font-semibold">⏳ Generating...</span>
+                        {% elif part.status == 'failed' %}
+                        <span class="text-red-600 font-semibold">✗ Failed</span>
+                        {% else %}
+                        <button hx-post="/api/design/generate/{{ project.id }}/{{ part.part_number }}/"
+                            hx-target="#part-{{ part.part_number }}-result" hx-swap="innerHTML"
+                            class="bg-purple-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-purple-700 transition text-sm">
+                            Generate CAD Model
+                        </button>
+                        {% endif %}
+                    </div>
+
+                    <div id="part-{{ part.part_number }}-result">
+                        {% if part.status == 'completed' %}
+                        <div class="bg-green-50 border border-green-200 rounded-lg p-4 mt-2">
+                            <p class="text-green-800 font-semibold mb-2">✓ Part {{ part.part_number }} generated
+                                successfully!</p>
+
+                            <div class="flex gap-2 mb-3">
+                                {% if part.step_url %}
+                                <a href="{{ part.step_url }}" download
+                                    class="px-3 py-1 bg-blue-600 text-white text-sm rounded hover:bg-blue-700">
+                                    📥 Download STEP
+                                </a>
+                                {% endif %}
+                                {% if part.stl_url %}
+                                <a href="{{ part.stl_url }}" download
+                                    class="px-3 py-1 bg-purple-600 text-white text-sm rounded hover:bg-purple-700">
+                                    📥 Download STL
+                                </a>
+                                {% endif %}
+                                <button
+                                    onclick="showPrinterSelector('{{ project.id }}', {{ part.part_number }}, '{{ part.name }}')"
+                                    class="px-3 py-1 bg-green-600 text-white text-sm rounded hover:bg-green-700">
+                                    🖨️ Send to Printer
+                                </button>
+                            </div>
+
+                            {% if part.cadquery_code %}
+                            <details class="text-sm">
+                                <summary class="cursor-pointer text-gray-600 hover:text-gray-800 font-semibold">View
+                                    Generated Code</summary>
+                                <pre
+                                    class="mt-2 bg-gray-800 text-green-400 p-3 rounded overflow-x-auto text-xs">{{ part.cadquery_code }}</pre>
+                            </details>
                             {% endif %}
-                            {% if part.stl_url %}
-                            <a href="{{ part.stl_url }}" download 
-                               class="px-3 py-1 bg-purple-600 text-white text-sm rounded hover:bg-purple-700">
-                                📥 Download STL
-                            </a>
+                        </div>
+                        {% elif part.status == 'failed' %}
+                        <div class="bg-red-50 border border-red-200 rounded-lg p-4 mt-2">
+                            <p class="text-red-800 font-semibold mb-2">✗ Generation failed</p>
+                            {% if part.generation_error %}
+                            <p class="text-sm text-red-600 mb-3">{{ part.generation_error }}</p>
                             {% endif %}
-                            <button 
-                                onclick="showPrinterSelector('{{ project.id }}', {{ part.part_number }}, '{{ part.name }}')"
-                                class="px-3 py-1 bg-green-600 text-white text-sm rounded hover:bg-green-700">
-                                🖨️ Send to Printer
+                            <button hx-post="/api/design/generate/{{ project.id }}/{{ part.part_number }}/"
+                                hx-target="#part-{{ part.part_number }}-result" hx-swap="innerHTML"
+                                class="bg-purple-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-purple-700 transition text-sm">
+                                🔄 Retry Generation
                             </button>
                         </div>
-                        
-                        {% if part.cadquery_code %}
-                        <details class="text-sm">
-                            <summary class="cursor-pointer text-gray-600 hover:text-gray-800 font-semibold">View Generated Code</summary>
-                            <pre class="mt-2 bg-gray-800 text-green-400 p-3 rounded overflow-x-auto text-xs">{{ part.cadquery_code }}</pre>
-                        </details>
                         {% endif %}
                     </div>
-                    {% elif part.status == 'failed' %}
-                    <div class="bg-red-50 border border-red-200 rounded-lg p-4 mt-2">
-                        <p class="text-red-800 font-semibold mb-2">✗ Generation failed</p>
-                        {% if part.generation_error %}
-                        <p class="text-sm text-red-600 mb-3">{{ part.generation_error }}</p>
-                        {% endif %}
-                        <button 
-                            hx-post="/api/design/generate/{{ project.id }}/{{ part.part_number }}/"
-                            hx-target="#part-{{ part.part_number }}-result"
-                            hx-swap="innerHTML"
-                            class="bg-purple-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-purple-700 transition text-sm">
-                            🔄 Retry Generation
-                        </button>
-                    </div>
-                    {% endif %}
                 </div>
+                {% endfor %}
             </div>
-            {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- Project Info -->
+        <div class="bg-gray-50 rounded-lg p-6">
+            <h3 class="font-bold text-gray-800 mb-4">Project Information</h3>
+            <div class="grid grid-cols-2 gap-4 text-sm">
+                <div>
+                    <span class="text-gray-600">Created:</span>
+                    <span class="font-semibold">{{ project.created_at|date:"M d, Y H:i" }}</span>
+                </div>
+                <div>
+                    <span class="text-gray-600">Last Updated:</span>
+                    <span class="font-semibold">{{ project.updated_at|date:"M d, Y H:i" }}</span>
+                </div>
+                <div>
+                    <span class="text-gray-600">Status:</span>
+                    <span class="font-semibold">{{ project.status|title }}</span>
+                </div>
+                {% if project.completed_at %}
+                <div>
+                    <span class="text-gray-600">Completed:</span>
+                    <span class="font-semibold">{{ project.completed_at|date:"M d, Y H:i" }}</span>
+                </div>
+                {% endif %}
+            </div>
         </div>
     </div>
-    {% endif %}
 
-    <!-- Project Info -->
-    <div class="bg-gray-50 rounded-lg p-6">
-        <h3 class="font-bold text-gray-800 mb-4">Project Information</h3>
-        <div class="grid grid-cols-2 gap-4 text-sm">
-            <div>
-                <span class="text-gray-600">Created:</span>
-                <span class="font-semibold">{{ project.created_at|date:"M d, Y H:i" }}</span>
+    <!-- Printer Selector Modal (reuse from design_projects.html) -->
+    <div id="printerModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50">
+        <div class="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+            <h3 class="text-xl font-bold mb-4">Send to Printer</h3>
+            <p class="text-sm text-gray-600 mb-4">Part: <span id="modalPartName"></span></p>
+
+            <div id="printerList" class="space-y-2 mb-4">
+                <!-- Printers will be loaded here -->
             </div>
-            <div>
-                <span class="text-gray-600">Last Updated:</span>
-                <span class="font-semibold">{{ project.updated_at|date:"M d, Y H:i" }}</span>
+
+            <div id="sendResult" class="mb-4"></div>
+
+            <div class="flex gap-2">
+                <button onclick="closePrinterModal()"
+                    class="flex-1 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">
+                    Cancel
+                </button>
             </div>
-            <div>
-                <span class="text-gray-600">Status:</span>
-                <span class="font-semibold">{{ project.status|title }}</span>
-            </div>
-            {% if project.completed_at %}
-            <div>
-                <span class="text-gray-600">Completed:</span>
-                <span class="font-semibold">{{ project.completed_at|date:"M d, Y H:i" }}</span>
-            </div>
-            {% endif %}
         </div>
     </div>
-</div>
 
-<!-- Printer Selector Modal (reuse from design_projects.html) -->
-<div id="printerModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50">
-    <div class="bg-white rounded-lg p-6 max-w-md w-full mx-4">
-        <h3 class="text-xl font-bold mb-4">Send to Printer</h3>
-        <p class="text-sm text-gray-600 mb-4">Part: <span id="modalPartName"></span></p>
-        
-        <div id="printerList" class="space-y-2 mb-4">
-            <!-- Printers will be loaded here -->
-        </div>
-        
-        <div id="sendResult" class="mb-4"></div>
-        
-        <div class="flex gap-2">
-            <button onclick="closePrinterModal()" class="flex-1 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">
-                Cancel
-            </button>
-        </div>
-    </div>
-</div>
+    <script>
+        // Configure HTMX
+        document.body.addEventListener('htmx:configRequest', (event) => {
+            event.detail.headers['X-CSRFToken'] = '{{ csrf_token }}';
+        });
 
-<script>
-    // Configure HTMX
-    document.body.addEventListener('htmx:configRequest', (event) => {
-        event.detail.headers['X-CSRFToken'] = '{{ csrf_token }}';
-    });
-    
-    let currentProjectId = null;
-    let currentPartNumber = null;
-    
-    function showPrinterSelector(projectId, partNumber, partName) {
-        currentProjectId = projectId;
-        currentPartNumber = partNumber;
-        
-        document.getElementById('modalPartName').textContent = partName;
-        document.getElementById('printerModal').classList.remove('hidden');
-        document.getElementById('sendResult').innerHTML = '';
-        
-        // Load available printers
-        fetch('/api/printers')
-            .then(response => response.text())
-            .then(html => {
-                const parser = new DOMParser();
-                const doc = parser.parseFromString(html, 'text/html');
-                const printerCards = doc.querySelectorAll('[href*="/printers/edit/"]');
-                const printerList = document.getElementById('printerList');
-                
-                if (printerCards.length === 0) {
-                    printerList.innerHTML = '<p class="text-gray-500 text-sm">No printers configured. <a href="/printers/add" class="text-purple-600 hover:underline">Add a printer</a></p>';
-                    return;
-                }
-                
-                let buttons = '';
-                printerCards.forEach(card => {
-                    const href = card.getAttribute('href');
-                    const printerId = href.split('/').pop();
-                    const printerName = card.closest('.bg-white').querySelector('h3').textContent;
-                    
-                    buttons += `
+        let currentProjectId = null;
+        let currentPartNumber = null;
+
+        function showPrinterSelector(projectId, partNumber, partName) {
+            currentProjectId = projectId;
+            currentPartNumber = partNumber;
+
+            document.getElementById('modalPartName').textContent = partName;
+            document.getElementById('printerModal').classList.remove('hidden');
+            document.getElementById('sendResult').innerHTML = '';
+
+            // Load available printers
+            fetch('/api/printers')
+                .then(response => response.text())
+                .then(html => {
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(html, 'text/html');
+                    const printerCards = doc.querySelectorAll('[href*="/printers/edit/"]');
+                    const printerList = document.getElementById('printerList');
+
+                    if (printerCards.length === 0) {
+                        printerList.innerHTML = '<p class="text-gray-500 text-sm">No printers configured. <a href="/printers/add" class="text-purple-600 hover:underline">Add a printer</a></p>';
+                        return;
+                    }
+
+                    let buttons = '';
+                    printerCards.forEach(card => {
+                        const href = card.getAttribute('href');
+                        const printerId = href.split('/').pop();
+                        const printerName = card.closest('.bg-white').querySelector('h3').textContent;
+
+                        buttons += `
                         <button 
                             onclick="sendToPrinter('${printerId}', '${printerName}')"
                             class="w-full px-4 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 text-left"
@@ -467,188 +477,188 @@
                             🖨️ ${printerName}
                         </button>
                     `;
+                    });
+
+                    printerList.innerHTML = buttons;
+                })
+                .catch(error => {
+                    document.getElementById('printerList').innerHTML = '<p class="text-red-500 text-sm">Failed to load printers</p>';
                 });
-                
-                printerList.innerHTML = buttons;
-            })
-            .catch(error => {
-                document.getElementById('printerList').innerHTML = '<p class="text-red-500 text-sm">Failed to load printers</p>';
-            });
-    }
-    
-    function sendToPrinter(printerId, printerName) {
-        const resultDiv = document.getElementById('sendResult');
-        resultDiv.innerHTML = '<p class="text-gray-500 text-sm">Sending to ' + printerName + '...</p>';
-        
-        fetch(`/api/design/send-to-printer/${currentProjectId}/${currentPartNumber}/`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
-                'X-CSRFToken': '{{ csrf_token }}'
-            },
-            body: `printer_id=${printerId}`
-        })
-        .then(response => response.text())
-        .then(html => {
-            resultDiv.innerHTML = html;
-        })
-        .catch(error => {
-            resultDiv.innerHTML = '<div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">Error: ' + error + '</div>';
-        });
-    }
-    
-    function closePrinterModal() {
-        document.getElementById('printerModal').classList.add('hidden');
-    }
-    
-    // 3D Model Viewer using Three.js
-    function init3DViewer(containerId, modelUrl) {
-        const container = document.getElementById(containerId);
-        if (!container || !modelUrl) return;
-        
-        // Scene setup
-        const scene = new THREE.Scene();
-        scene.background = new THREE.Color(0x1a1a1a);
-        
-        // Camera
-        const camera = new THREE.PerspectiveCamera(
-            45,
-            container.clientWidth / container.clientHeight,
-            0.1,
-            10000
-        );
-        camera.position.set(200, 200, 200);
-        
-        // Renderer
-        const renderer = new THREE.WebGLRenderer({ antialias: true });
-        renderer.setSize(container.clientWidth, container.clientHeight);
-        container.appendChild(renderer.domElement);
-        
-        // Lights
-        const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
-        scene.add(ambientLight);
-        
-        const directionalLight1 = new THREE.DirectionalLight(0xffffff, 0.8);
-        directionalLight1.position.set(1, 1, 1);
-        scene.add(directionalLight1);
-        
-        const directionalLight2 = new THREE.DirectionalLight(0xffffff, 0.4);
-        directionalLight2.position.set(-1, -1, -1);
-        scene.add(directionalLight2);
-        
-        // Grid
-        const gridHelper = new THREE.GridHelper(500, 50, 0x444444, 0x222222);
-        scene.add(gridHelper);
-        
-        // Load STL
-        const loader = new THREE.STLLoader();
-        loader.load(modelUrl, function(geometry) {
-            const material = new THREE.MeshPhongMaterial({
-                color: 0x6366f1,
-                specular: 0x111111,
-                shininess: 200
-            });
-            
-            const mesh = new THREE.Mesh(geometry, material);
-            
-            // Center the model
-            geometry.computeBoundingBox();
-            const center = new THREE.Vector3();
-            geometry.boundingBox.getCenter(center);
-            mesh.position.sub(center);
-            
-            scene.add(mesh);
-            
-            // Adjust camera to fit model
-            const size = new THREE.Vector3();
-            geometry.boundingBox.getSize(size);
-            const maxDim = Math.max(size.x, size.y, size.z);
-            const fov = camera.fov * (Math.PI / 180);
-            let cameraZ = Math.abs(maxDim / 2 / Math.tan(fov / 2));
-            cameraZ *= 1.5; // Add some padding
-            camera.position.set(cameraZ, cameraZ, cameraZ);
-            camera.lookAt(0, 0, 0);
-        });
-        
-        // Controls
-        const controls = new THREE.OrbitControls(camera, renderer.domElement);
-        controls.enableDamping = true;
-        controls.dampingFactor = 0.05;
-        
-        // Animation loop
-        function animate() {
-            requestAnimationFrame(animate);
-            controls.update();
-            renderer.render(scene, camera);
         }
-        animate();
-        
-        // Handle window resize
-        window.addEventListener('resize', function() {
-            camera.aspect = container.clientWidth / container.clientHeight;
-            camera.updateProjectionMatrix();
+
+        function sendToPrinter(printerId, printerName) {
+            const resultDiv = document.getElementById('sendResult');
+            resultDiv.innerHTML = '<p class="text-gray-500 text-sm">Sending to ' + printerName + '...</p>';
+
+            fetch(`/api/design/send-to-printer/${currentProjectId}/${currentPartNumber}/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                body: `printer_id=${printerId}`
+            })
+                .then(response => response.text())
+                .then(html => {
+                    resultDiv.innerHTML = html;
+                })
+                .catch(error => {
+                    resultDiv.innerHTML = '<div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">Error: ' + error + '</div>';
+                });
+        }
+
+        function closePrinterModal() {
+            document.getElementById('printerModal').classList.add('hidden');
+        }
+
+        // 3D Model Viewer using Three.js
+        function init3DViewer(containerId, modelUrl) {
+            const container = document.getElementById(containerId);
+            if (!container || !modelUrl) return;
+
+            // Scene setup
+            const scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x1a1a1a);
+
+            // Camera
+            const camera = new THREE.PerspectiveCamera(
+                45,
+                container.clientWidth / container.clientHeight,
+                0.1,
+                10000
+            );
+            camera.position.set(200, 200, 200);
+
+            // Renderer
+            const renderer = new THREE.WebGLRenderer({ antialias: true });
             renderer.setSize(container.clientWidth, container.clientHeight);
-        });
-    }
-    
-    // Initialize viewer when page loads
-    document.addEventListener('DOMContentLoaded', function() {
-        {% if project.overall_model_stl_url %}
-        init3DViewer('model-viewer-overall', '{{ project.overall_model_stl_url }}');
-        {% endif %}
-    });
-    
-    // Feedback submission
-    function submitFeedback(projectId, modelType, rating) {
-        fetch(`/api/design/feedback/${projectId}/`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': '{{ csrf_token }}'
-            },
-            body: JSON.stringify({
-                model_type: modelType,
-                rating: rating
-            })
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                alert('✅ Thank you for your feedback! This helps improve the AI.');
+            container.appendChild(renderer.domElement);
+
+            // Lights
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+            scene.add(ambientLight);
+
+            const directionalLight1 = new THREE.DirectionalLight(0xffffff, 0.8);
+            directionalLight1.position.set(1, 1, 1);
+            scene.add(directionalLight1);
+
+            const directionalLight2 = new THREE.DirectionalLight(0xffffff, 0.4);
+            directionalLight2.position.set(-1, -1, -1);
+            scene.add(directionalLight2);
+
+            // Grid
+            const gridHelper = new THREE.GridHelper(500, 50, 0x444444, 0x222222);
+            scene.add(gridHelper);
+
+            // Load STL
+            const loader = new THREE.STLLoader();
+            loader.load(modelUrl, function (geometry) {
+                const material = new THREE.MeshPhongMaterial({
+                    color: 0x6366f1,
+                    specular: 0x111111,
+                    shininess: 200
+                });
+
+                const mesh = new THREE.Mesh(geometry, material);
+
+                // Center the model
+                geometry.computeBoundingBox();
+                const center = new THREE.Vector3();
+                geometry.boundingBox.getCenter(center);
+                mesh.position.sub(center);
+
+                scene.add(mesh);
+
+                // Adjust camera to fit model
+                const size = new THREE.Vector3();
+                geometry.boundingBox.getSize(size);
+                const maxDim = Math.max(size.x, size.y, size.z);
+                const fov = camera.fov * (Math.PI / 180);
+                let cameraZ = Math.abs(maxDim / 2 / Math.tan(fov / 2));
+                cameraZ *= 1.5; // Add some padding
+                camera.position.set(cameraZ, cameraZ, cameraZ);
+                camera.lookAt(0, 0, 0);
+            });
+
+            // Controls
+            const controls = new THREE.OrbitControls(camera, renderer.domElement);
+            controls.enableDamping = true;
+            controls.dampingFactor = 0.05;
+
+            // Animation loop
+            function animate() {
+                requestAnimationFrame(animate);
+                controls.update();
+                renderer.render(scene, camera);
             }
-        })
-        .catch(error => {
-            console.error('Feedback error:', error);
+            animate();
+
+            // Handle window resize
+            window.addEventListener('resize', function () {
+                camera.aspect = container.clientWidth / container.clientHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(container.clientWidth, container.clientHeight);
+            });
+        }
+
+        // Initialize viewer when page loads
+        document.addEventListener('DOMContentLoaded', function () {
+            {% if project.overall_model_stl_url %}
+            init3DViewer('model-viewer-overall', '{{ project.overall_model_stl_url }}');
+            {% endif %}
         });
-    }
-    
-    function submitCorrection(projectId, modelType) {
-        const textarea = document.getElementById(`correction-${modelType}-${projectId}`);
-        
-        if (!textarea) {
-            console.error(`Textarea not found: correction-${modelType}-${projectId}`);
-            alert('❌ Error: Could not find correction textarea.');
-            return;
+
+        // Feedback submission
+        function submitFeedback(projectId, modelType, rating) {
+            fetch(`/api/design/feedback/${projectId}/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                body: JSON.stringify({
+                    model_type: modelType,
+                    rating: rating
+                })
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('✅ Thank you for your feedback! This helps improve the AI.');
+                    }
+                })
+                .catch(error => {
+                    console.error('Feedback error:', error);
+                });
         }
-        
-        const correctedCode = textarea.value;
-        
-        if (!correctedCode.trim()) {
-            alert('Please enter the corrected code.');
-            return;
+
+        function submitCorrection(projectId, modelType) {
+            const textarea = document.getElementById(`correction-${modelType}-${projectId}`);
+
+            if (!textarea) {
+                console.error(`Textarea not found: correction-${modelType}-${projectId}`);
+                alert('❌ Error: Could not find correction textarea.');
+                return;
+            }
+
+            const correctedCode = textarea.value;
+
+            if (!correctedCode.trim()) {
+                alert('Please enter the corrected code.');
+                return;
+            }
+
+            // Show modal to choose correction type
+            showCorrectionTypeDialog(projectId, modelType, correctedCode);
         }
-        
-        // Show modal to choose correction type
-        showCorrectionTypeDialog(projectId, modelType, correctedCode);
-    }
-    
-    function showCorrectionTypeDialog(projectId, modelType, correctedCode) {
-        // Create modal overlay
-        const modal = document.createElement('div');
-        modal.style.cssText = 'position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 9999;';
-        
-        // Create modal content
-        modal.innerHTML = `
+
+        function showCorrectionTypeDialog(projectId, modelType, correctedCode) {
+            // Create modal overlay
+            const modal = document.createElement('div');
+            modal.style.cssText = 'position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 9999;';
+
+            // Create modal content
+            modal.innerHTML = `
             <div style="background: white; border-radius: 12px; padding: 24px; max-width: 500px; box-shadow: 0 20px 60px rgba(0,0,0,0.3);">
                 <h3 style="margin: 0 0 16px 0; font-size: 20px; font-weight: 600; color: #1f2937;">
                     🎯 What type of correction is this?
@@ -674,71 +684,66 @@
                 </button>
             </div>
         `;
-        
-        modal.id = 'correction-type-modal';
-        modal.onclick = (e) => { if (e.target === modal) closeCorrectionDialog(); };
-        document.body.appendChild(modal);
-        
-        // Store corrected code for later
-        window.currentCorrectedCode = correctedCode;
-    }
-    
-    function closeCorrectionDialog() {
-        const modal = document.getElementById('correction-type-modal');
-        if (modal) modal.remove();
-        window.currentCorrectedCode = null;
-    }
-    
-    function submitWithType(projectId, modelType, correctionType) {
-        const correctedCode = window.currentCorrectedCode;
-        
-        if (!correctedCode) {
-            alert('❌ Error: Corrected code not found.');
-            return;
+
+            modal.id = 'correction-type-modal';
+            modal.onclick = (e) => { if (e.target === modal) closeCorrectionDialog(); };
+            document.body.appendChild(modal);
+
+            // Store corrected code for later
+            window.currentCorrectedCode = correctedCode;
         }
-        
-        // Close dialog
-        closeCorrectionDialog();
-        
-        // Submit feedback
-        fetch(`/api/design/feedback/${projectId}/`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': '{{ csrf_token }}'
-            },
-            body: JSON.stringify({
-                model_type: modelType,
-                rating: 'corrected',
-                corrected_code: correctedCode,
-                correction_type: correctionType
-            })
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                const message = correctionType === 'model_improvement' 
-                    ? '🎉 Thank you! Model improvements are worth 10x for training!' 
-                    : '✅ Thank you! Code fixes help improve execution quality!';
-                alert(message);
-                
-                // Clear textarea
-                const textarea = document.getElementById(`correction-${modelType}-${projectId}`);
-                if (textarea) textarea.value = '';
-            } else {
-                alert('❌ Error: ' + (data.error || 'Unknown error'));
+
+        function closeCorrectionDialog() {
+            const modal = document.getElementById('correction-type-modal');
+            if (modal) modal.remove();
+            window.currentCorrectedCode = null;
+        }
+
+        function submitWithType(projectId, modelType, correctionType) {
+            const correctedCode = window.currentCorrectedCode;
+
+            if (!correctedCode) {
+                alert('❌ Error: Corrected code not found.');
+                return;
             }
-        })
-        .catch(error => {
-            console.error('Correction error:', error);
-            alert('❌ Error submitting correction. Please try again.');
-        });
-    }
-</script>
 
-<!-- Three.js Library -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/STLLoader.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+            // Close dialog
+            closeCorrectionDialog();
 
-{% endblock %}
+            // Submit feedback
+            fetch(`/api/design/feedback/${projectId}/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                body: JSON.stringify({
+                    model_type: modelType,
+                    rating: 'corrected',
+                    corrected_code: correctedCode,
+                    correction_type: correctionType
+                })
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+
+                        const textarea = document.getElementById(`correction-${modelType}-${projectId}`);
+                        if (textarea) textarea.value = '';
+                    } else {
+                        alert('❌ Error: ' + (data.error || 'Unknown error'));
+                    }
+                })
+                .catch(error => {
+                    console.error('Correction error:', error);
+                    alert('❌ Error submitting correction. Please try again.');
+                });
+        }
+    </script>
+
+    <!-- Three.js Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/STLLoader.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+
+    {% endblock %}
