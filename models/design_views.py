@@ -62,7 +62,7 @@ def design_project_detail(request, project_id):
     breakdown = None
     models = []
     
-    if project['stage'] in ['concept', 'parts', 'generation', 'completed']:
+    if project['stage'] in ['concept', 'overall_model', 'parts', 'generation', 'completed']:
         concept = db.design_concepts.find_one({'project_id': to_object_id(project_id)})
         if concept:
             concept = doc_to_dict(concept)
