@@ -203,7 +203,38 @@ def api_generate_part_cadquery(request, project_id, part_number):
                     'parts.$.generation_error': str(e)
                 }}
             )
-        except:
+            
+            # Auto-log generation failure for training
+            from services.data_logger import DataLogger
+            
+            # Re-fetch project to get prompt if we can
+            project = db.design_projects.find_one({'_id': to_object_id(project_id)})
+            prompt = project.get('original_prompt', 'Unknown Prompt') if project else 'Unknown Prompt'
+            
+            # Try to get specific part description
+            part_desc = ''
+            try:
+                breakdown = db.part_breakdowns.find_one({'project_id': to_object_id(project_id)})
+                for p in breakdown['parts']:
+                    if p['part_number'] == int(part_number):
+                        part_desc = p['description']
+                        break
+            except:
+                pass
+                
+            full_prompt = f"{prompt} - Part: {part_desc}" if part_desc else prompt
+            
+            DataLogger.log_entry(
+                project_id=project_id,
+                user_id=request.user.id,
+                model_type='part',
+                prompt=full_prompt,
+                rating='failure',
+                error_message=str(e),
+                success=False
+            )
+        except Exception as log_err:
+            logger.error(f"Failed to auto-log process failure: {log_err}")
             pass
         
         return HttpResponse(f'Error: {e}', status=500)

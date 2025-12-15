@@ -13,67 +13,75 @@ CadQuery is a Python library for building parametric 3D CAD models.
 
 ## CRITICAL RULES (MUST FOLLOW):
 
-1. **ALWAYS create a solid shape FIRST** before using .faces()
-   - Use .box(), .circle().extrude(), or .polygon().extrude()
-   - NEVER call .faces() on an empty workplane
+1. **THINK BEFORE CODING** (Chain of Thought):
+   - Analyze the request: shape, dimensions, features.
+   - Plan the strategy: Base shape -> Main features -> Details.
+   - select the best orientation (XY, XZ, YZ).
 
-2. **Face selection only works on solids**
-   - .faces(">Z") selects top face
-   - .faces("<Z") selects bottom face
-   - .faces("|Z") selects faces parallel to Z axis
+2. **ALWAYS create a solid shape FIRST**:
+   - .box(), .circle().extrude(), .polygon().extrude()
+   - NEVER call .faces() on an empty workplane.
 
-3. **Use realistic dimensions**
-   - Small parts: 10-100mm
-   - Medium parts: 100-500mm
-   - Large parts: 500-2000mm
+3. **Origin & Positioning**:
+   - CENTER your main part at (0,0,0) unless specified otherwise.
+   - `cq.Workplane("XY").box(10, 10, 10)` creates a box centered at origin.
+   - Use `centered=(True, True, False)` if you need the base at Z=0.
 
-4. **Keep designs simple and manufacturable**
-   - Avoid complex curves unless necessary
-   - Use standard shapes (boxes, cylinders, holes)
-   - Think about how it would be 3D printed or CNC machined
+4. **Face Selection (The Trickiest Part)**:
+   - .faces(">Z") = Top face (highest Z)
+   - .faces("<Z") = Bottom face (lowest Z)
+   - .faces(">X") = Right face
+   - .faces("<X") = Left face
+   - **Validation**: Ensure the solid exists before selecting faces.
 
-5. **Variable naming**
-   - Final model MUST be in variable named 'result'
-   - Use descriptive intermediate variable names
+5. **Dimensions**:
+   - Use millimeters (mm).
+   - Use realistic sizes (e.g., a chair is 500-1000mm, not 10mm).
 
-6. **Common patterns**
-   - Box with holes: .box() → .faces(">Z") → .workplane() → .hole()
-   - Cylinder: .circle() → .extrude()
-   - Hollow tube: .circle(outer) → .circle(inner) → .extrude()
-   - L-bracket: create two boxes → .union()
+6. **Variable Naming**:
+   - Final model MUST be assigned to variable `result`.
+   - `result = ...`
 
 ## HIGH-QUALITY EXAMPLES:
 
 {examples_text}
 
-## COMMON MISTAKES TO AVOID:
+## CHAIN OF THOUGHT EXAMPLE:
 
-❌ BAD: .faces(">Z") before creating solid
-✅ GOOD: .box() THEN .faces(">Z")
+Prompt: "A hollow cylinder"
+Code:
+```python
+import cadquery as cq
 
-❌ BAD: Complex splines and curves for simple parts
-✅ GOOD: Use basic shapes (box, cylinder, polygon)
+# 1. PLAN:
+#    - Base: Cylinder radius 20, height 50
+#    - Feature: Hole radius 15 (hollow)
+#    - Orientation: XY plane
 
-❌ BAD: Unrealistic dimensions (1mm thick plate, 10000mm long beam)
-✅ GOOD: Realistic dimensions based on part function
+# 2. EXECUTE:
+result = (
+    cq.Workplane("XY")
+    .circle(20)  # Base shape
+    .extrude(50) # Make it solid
+    .faces(">Z") # Select top face
+    .workplane() # New workplane on top
+    .hole(30)    # Cut hole (diameter 30 = radius 15)
+)
+```
 
-Generate clean, well-commented CadQuery code. Think about manufacturability.
+Generate clean, robust CadQuery code.
 """
 
 def get_user_prompt_gpt(prompt):
     return f"""Generate CadQuery Python code for: {prompt}
 
-Requirements:
-1. Use 'import cadquery as cq'
-2. Final model MUST be in variable named 'result'
-3. Add comments explaining each step
-4. Use millimeters for all dimensions
-5. ALWAYS create a solid shape FIRST (use .box() or .extrude())
-6. ONLY use .faces() AFTER creating a solid
-7. Keep the design simple and manufacturable
-8. Use realistic dimensions based on the part description
+1. Import cadquery as cq
+2. **Comment your plan first** (Chain of Thought).
+3. Create the geometry step-by-step.
+4. Ensure `result` variable holds the final object.
+5. Use millimeters.
 
-Return ONLY the Python code, no explanations or markdown."""
+Return ONLY the Python code (with comments)."""
 
 MULTIPART_SYSTEM_PROMPT = """You are an expert CAD engineer who designs multi-part assemblies.
 

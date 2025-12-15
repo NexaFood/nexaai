@@ -91,30 +91,27 @@ def submit_feedback(request, project_id):
             # For now, assume user-corrected code is valid
             corrected_code_validated = True
         
-        # Create feedback entry
-        feedback_entry = {
-            'timestamp': datetime.now().isoformat(),
-            'project_id': project_id,
-            'user_id': str(request.user.id),
-            'model_type': model_type,
-            'rating': rating,
-            'prompt': original_prompt,
-            'generated_code': ai_generated_code,  # Original AI-generated code only
-            'corrected_code': corrected_code,  # User's corrected version
-            'correction_type': correction_type,  # 'code_fix' or 'model_improvement'
-            'model_version': 'final_model',  # Track which model version generated this
-            'success': generation_success,  # Did the ORIGINAL generation succeed?
-            'validated': corrected_code_validated,  # Did we validate the corrected code?
-        }
+        # Create feedback entry using DataLogger
+        from services.data_logger import DataLogger
         
-        # Log to production logs directory
-        log_dir = Path(settings.BASE_DIR) / 'training' / 'data' / 'production_logs'
-        log_dir.mkdir(parents=True, exist_ok=True)
+        # Extract error message and feedback text if present
+        error_message = data.get('error_message')
+        feedback_text = data.get('feedback_text')
         
-        # Append to monthly log file
-        log_file = log_dir / f"production_{datetime.now().strftime('%Y%m')}.jsonl"
-        with open(log_file, 'a') as f:
-            f.write(json.dumps(feedback_entry) + '\n')
+        DataLogger.log_entry(
+            project_id=project_id,
+            user_id=request.user.id,
+            model_type=model_type,
+            prompt=original_prompt,
+            generated_code=ai_generated_code,
+            rating=rating,
+            error_message=error_message,
+            corrected_code=corrected_code,
+            correction_type=correction_type,
+            feedback_text=feedback_text,
+            success=generation_success,
+            validated=corrected_code_validated
+        )
         
         logger.info(f"Feedback logged: {rating} for {model_type} in project {project_id}")
         
