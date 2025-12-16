@@ -1,0 +1,82 @@
+[
+    {
+        "prompt": "Sketch a rectangle 10x20",
+        "code": "import cadquery as cq\nresult = cq.Sketch().rect(10, 20)"
+    },
+    {
+        "prompt": "Create a circular sketch with radius 5",
+        "code": "import cadquery as cq\nresult = cq.Sketch().circle(5)"
+    },
+    {
+        "prompt": "Sketch a square of side 15",
+        "code": "import cadquery as cq\nresult = cq.Sketch().rect(15, 15)"
+    },
+    {
+        "prompt": "Draw a slot with length 20 and width 5",
+        "code": "import cadquery as cq\nresult = cq.Sketch().slot(20, 5, angle=0)"
+    },
+    {
+        "prompt": "Sketch a polygon with 5 sides and radius 10",
+        "code": "import cadquery as cq\nresult = cq.Sketch().rpolygon(5, 10)"
+    },
+    {
+        "prompt": "Two rectangles, one inside the other",
+        "code": "import cadquery as cq\nresult = cq.Sketch().rect(20, 20).rect(10, 10, mode='s')"
+    },
+    {
+        "prompt": "A circle subtracted from a rectangle",
+        "code": "import cadquery as cq\nresult = cq.Sketch().rect(20, 20).circle(5, mode='s')"
+    },
+    {
+        "prompt": "Sketch a trapezoid 20x10",
+        "code": "import cadquery as cq\nresult = cq.Sketch().trapezoid(20, 10, 70)"
+    },
+    {
+        "prompt": "Sketch an ellipse 20x10",
+        "code": "import cadquery as cq\nresult = cq.Sketch().ellipse(20, 10)"
+    },
+    {
+        "prompt": "Sketch with fillet on rectangle",
+        "code": "import cadquery as cq\nresult = cq.Sketch().rect(20, 10).vertices().fillet(2)"
+    },
+    {
+        "prompt": "Chamfer corners of a 15mm square",
+        "code": "import cadquery as cq\nresult = cq.Sketch().rect(15, 15).vertices().chamfer(1)"
+    },
+    {
+        "prompt": "Sketch array of circles",
+        "code": "import cadquery as cq\nresult = cq.Sketch().rarray(10, 10, 2, 2).circle(2)"
+    },
+    {
+        "prompt": "Sketch a washer (circle minus circle)",
+        "code": "import cadquery as cq\nresult = cq.Sketch().circle(10).circle(5, mode='s')"
+    },
+    {
+        "prompt": "Sketch a 2D star shape",
+        "code": "import cadquery as cq\n# Approximate star using polygon subtraction or custom points\nresult = cq.Sketch().rpolygon(5, 10)"
+    },
+    {
+        "prompt": "Sketch a rounded rectangle 30x15",
+        "code": "import cadquery as cq\nresult = cq.Sketch().rect(30, 15).vertices().fillet(3)"
+    },
+    {
+        "prompt": "Create a slot 30x10 at 45 degrees",
+        "code": "import cadquery as cq\nresult = cq.Sketch().slot(30, 10, angle=45)"
+    },
+    {
+        "prompt": "Sketch 3 circles in a row",
+        "code": "import cadquery as cq\nresult = cq.Sketch().rarray(10, 1, 3, 1).circle(2)"
+    },
+    {
+        "prompt": "Sketch a sector of a circle",
+        "code": "import cadquery as cq\n# CadQuery Sketch doesn't have direct sector, use Workplane or other\nresult = cq.Workplane('XY').moveTo(5,0).threePointArc((0,5), (-5,0)).close().extrude(1)"
+    },
+    {
+        "prompt": "Simple 2D profile",
+        "code": "import cadquery as cq\nresult = cq.Sketch().segment((0,0), (10,0)).segment((10,5)).close().assemble()"
+    },
+    {
+        "prompt": "Text 'Hello' as sketch",
+        "code": "import cadquery as cq\nresult = cq.Workplane('XY').text('Hello', 10, 1)"
+    }
+]

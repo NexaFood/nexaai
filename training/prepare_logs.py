@@ -54,10 +54,41 @@ def main():
     valid_examples = []
     print(f"Reading {log_file}...")
     
+    # NEW: Load existing data to check for duplicates
+    seen_ids = set()
+    seen_content = set() # (prompt, code) hash
+    
+    for existing_file in [train_file, val_file]:
+        if existing_file.exists():
+            print(f"  Indexing {existing_file.name} for deduplication...")
+            with open(existing_file, 'r') as f:
+                for line in f:
+                    try:
+                        ex = json.loads(line)
+                        # Check metadata for ID
+                        if 'metadata' in ex and 'project_id' in ex['metadata']:
+                            seen_ids.add(ex['metadata']['project_id'])
+                        
+                        # Also track content in case ID is missing
+                        if 'prompt' in ex and 'code' in ex:
+                            seen_content.add( (ex['prompt'], ex['code']) )
+                    except json.JSONDecodeError:
+                        pass
+    
+    print(f"  ✓ Indexed {len(seen_ids)} existing IDs and {len(seen_content)} content pairs")
+    
+    duplicates_count = 0
+    
     with open(log_file, 'r') as f:
         for i, line in enumerate(f):
             try:
                 entry = json.loads(line)
+                project_id = entry.get('project_id')
+                
+                # Deduplication Check 1: ID
+                if project_id and project_id in seen_ids:
+                    duplicates_count += 1
+                    continue
                 
                 # Determine if we should use this entry
                 should_use = False
@@ -74,28 +105,45 @@ def main():
                     code_to_use = entry['generated_code']
                 
                 if should_use and code_to_use:
+                    prompt = entry.get('prompt', '')
+                    
+                    # Deduplication Check 2: Content
+                    if (prompt, code_to_use) in seen_content:
+                         duplicates_count += 1
+                         continue
+                        
                     if has_cadquery:
                         # Validate
                         is_valid, error = validator.validate_code(code_to_use, f"log_{i}")
                         
                         if is_valid:
                             valid_examples.append({
-                                'prompt': entry.get('prompt', ''),
-                                'code': code_to_use
+                                'prompt': prompt,
+                                'code': code_to_use,
+                                'metadata': {'project_id': project_id} if project_id else {}
                             })
+                            # Add to seen sets to handle duplicates within the same log file
+                            if project_id: seen_ids.add(project_id)
+                            seen_content.add((prompt, code_to_use))
                         else:
                             print(f"  Line {i+1}: Skipped (Invalid code: {error})")
                     else:
                         # Trust the log without validation
                         valid_examples.append({
-                            'prompt': entry.get('prompt', ''),
-                            'code': code_to_use
+                            'prompt': prompt,
+                            'code': code_to_use,
+                             'metadata': {'project_id': project_id} if project_id else {}
                         })
+                        if project_id: seen_ids.add(project_id)
+                        seen_content.add((prompt, code_to_use))
                         
             except json.JSONDecodeError:
                 continue
     
-    print(f"\n✓ Found {len(valid_examples)} valid examples from logs")
+    if duplicates_count > 0:
+        print(f"  ✓ Skipped {duplicates_count} duplicate entries")
+    
+    print(f"\n✓ Found {len(valid_examples)} new valid examples from logs")
     
     if len(valid_examples) == 0:
         print("No new examples to add.")

@@ -1,76 +1,67 @@
 import json
 import random
 
-# Templates for prompts
-sphere_prompts = [
-    "A sphere with diameter {D}mm",
-    "{D}mm diameter sphere",
-    "Sphere d={D}",
-    "Create a sphere of {D}mm diameter",
-    "Simple sphere {D}mm",
-    "Sphere with a diameter of {D}mm"
-]
-
-cylinder_prompts = [
-    "A cylinder with diameter {D}mm and height {H}mm",
-    "Cylinder d={D} h={H}",
-    "{D}mm diameter {H}mm tall cylinder",
-    "Cylinder {D}x{H}mm",
-    "Create a cylinder {D}mm wide and {H}mm high"
-]
-
-cube_prompts = [
-    "A cube with side {S}mm",
-    "{S}mm cube",
-    "Cube s={S}",
-    "Box {S}x{S}x{S}",
-    "Create a cube of {S}mm"
-]
-
-examples = []
-
-# Generate 33 Spheres
-for _ in range(33):
-    d = random.choice([5, 10, 15, 20, 25, 30, 40, 50, 60, 80, 100])
-    prompt_template = random.choice(sphere_prompts)
-    prompt = prompt_template.format(D=d)
-    radius = d / 2
-    if radius.is_integer():
-        radius = int(radius)
+def generate_plan():
+    shapes = []
     
-    code = f'import cadquery as cq\nresult = cq.Workplane("XY").sphere({radius})'
-    examples.append({"prompt": prompt, "code": code, "type": "sphere"})
+    # 1. Spheres (34 items)
+    # Prompts: "Sphere {d}mm", "Sphere with diameter {d}mm", "{d}mm Sphere"
+    for _ in range(34):
+        d = random.randint(5, 50)
+        r = d / 2
+        if d % 2 == 0:
+            r = int(r) # Clean integer if possible
+        
+        prompt_fmt = random.choice([
+            f"Sphere {d}mm",
+            f"Sphere with diameter {d}mm",
+            f"{d}mm Sphere",
+            f"Create a sphere of {d}mm diameter"
+        ])
+        
+        code = f'import cadquery as cq\nresult = cq.Workplane("XY").sphere({r})'
+        shapes.append({"prompt": prompt_fmt, "code": code, "type": "sphere"})
 
-# Generate 33 Cylinders
-for _ in range(33):
-    d = random.choice([5, 10, 15, 20, 25, 30, 40, 50, 60, 80, 100])
-    h = random.choice([5, 10, 15, 20, 30, 40, 50, 80, 100])
-    prompt_template = random.choice(cylinder_prompts)
-    prompt = prompt_template.format(D=d, H=h)
-    radius = d / 2
-    if radius.is_integer():
-        radius = int(radius)
+    # 2. Cylinders (33 items)
+    # Prompts: "Cylinder {d}mm dia {h}mm high", "Cylinder d={d} h={h}", etc.
+    for _ in range(33):
+        d = random.randint(5, 40)
+        h = random.randint(10, 60)
+        r = d / 2
+        if d % 2 == 0:
+            r = int(r)
+            
+        prompt_fmt = random.choice([
+            f"Cylinder {d}mm dia {h}mm high",
+            f"Cylinder diameter {d}mm height {h}mm",
+            f"{d}mm diameter cylinder, {h}mm tall",
+            f"Cylinder d={d} h={h}"
+        ])
+        
+        code = f'import cadquery as cq\nresult = cq.Workplane("XY").circle({r}).extrude({h})'
+        shapes.append({"prompt": prompt_fmt, "code": code, "type": "cylinder"})
+
+    # 3. Cubes (33 items)
+    # Prompts: "Cube {s}mm", "Box {s}x{s}x{s}", etc.
+    for _ in range(33):
+        s = random.randint(5, 50)
+        
+        prompt_fmt = random.choice([
+            f"Cube {s}mm",
+            f"Cube side {s}mm",
+            f"Box {s}x{s}x{s}mm",
+            f"{s}mm Cube"
+        ])
+        
+        code = f'import cadquery as cq\nresult = cq.Workplane("XY").box({s}, {s}, {s})'
+        shapes.append({"prompt": prompt_fmt, "code": code, "type": "cube"})
+
+    random.shuffle(shapes)
     
-    code = f'import cadquery as cq\nresult = cq.Workplane("XY").circle({radius}).extrude({h})'
-    examples.append({"prompt": prompt, "code": code, "type": "cylinder"})
-
-# Generate 34 Cubes
-for _ in range(34):
-    s = random.choice([5, 10, 15, 20, 25, 30, 40, 50, 60, 80, 100])
-    prompt_template = random.choice(cube_prompts)
-    prompt = prompt_template.format(S=s)
+    with open('training_plan.json', 'w') as f:
+        json.dump(shapes, f, indent=2)
     
-    code = f'import cadquery as cq\nresult = cq.Workplane("XY").box({s}, {s}, {s})'
-    examples.append({"prompt": prompt, "code": code, "type": "cube"})
+    print(f"Generated {len(shapes)} items in training_plan.json")
 
-# Shuffle
-random.shuffle(examples)
-
-# Add IDs
-for i, ex in enumerate(examples):
-    ex['id'] = i + 1
-
-with open('training_plan.json', 'w') as f:
-    json.dump(examples, f, indent=2)
-
-print(f"Generated {len(examples)} examples.")
+if __name__ == "__main__":
+    generate_plan()
