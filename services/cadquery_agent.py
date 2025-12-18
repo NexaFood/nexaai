@@ -7,7 +7,6 @@ Supports both custom fine-tuned model and GPT-4 fallback.
 
 import os
 import logging
-import torch
 from openai import OpenAI
 from typing import Dict, Any, List, Optional
 from pathlib import Path
@@ -53,6 +52,7 @@ class CadQueryAgent:
         global _SHARED_MODEL, _SHARED_TOKENIZER
         
         # specific to this method: import only when needed to save memory if not using custom model
+        import torch
         from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig
         from peft import PeftModel
         
@@ -279,6 +279,10 @@ class CadQueryAgent:
             # Stop at markdown separators
             if stripped in ['---', '===', '***']:
                 # Markdown horizontal rule, stop here
+                break
+            
+            # Stop if we hit something that looks like HTML
+            if stripped.startswith('<') and any(tag in stripped for tag in ['div', 'span', 'p', '/div', '/span', '/p', 'html', 'body']):
                 break
             
             # Keep single-line comments (but stop at markdown headings)
