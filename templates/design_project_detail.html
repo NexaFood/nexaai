@@ -518,7 +518,8 @@
 
             // Scene setup
             const scene = new THREE.Scene();
-            scene.background = new THREE.Color(0x1a1a1a);
+            scene.background = new THREE.Color(0xf0f4f8); // Modern light background
+            scene.fog = new THREE.Fog(0xf0f4f8, 1000, 3000); // Subtle depth fog
 
             // Camera
             const camera = new THREE.PerspectiveCamera(
@@ -529,35 +530,79 @@
             );
             camera.position.set(200, 200, 200);
 
-            // Renderer
-            const renderer = new THREE.WebGLRenderer({ antialias: true });
+            // Modern renderer with shadows and tone mapping
+            const renderer = new THREE.WebGLRenderer({ 
+                antialias: true,
+                alpha: true,
+                preserveDrawingBuffer: true
+            });
             renderer.setSize(container.clientWidth, container.clientHeight);
+            renderer.setPixelRatio(window.devicePixelRatio);
+            renderer.shadowMap.enabled = true;
+            renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+            renderer.toneMapping = THREE.ACESFilmicToneMapping;
+            renderer.toneMappingExposure = 1.0;
+            renderer.outputEncoding = THREE.sRGBEncoding;
             container.appendChild(renderer.domElement);
 
-            // Lights
-            const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+            // Modern lighting setup
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.4);
             scene.add(ambientLight);
 
-            const directionalLight1 = new THREE.DirectionalLight(0xffffff, 0.8);
-            directionalLight1.position.set(1, 1, 1);
-            scene.add(directionalLight1);
+            // Key light (main)
+            const keyLight = new THREE.DirectionalLight(0xffffff, 1.0);
+            keyLight.position.set(5, 10, 7.5);
+            keyLight.castShadow = true;
+            keyLight.shadow.mapSize.width = 2048;
+            keyLight.shadow.mapSize.height = 2048;
+            scene.add(keyLight);
 
-            const directionalLight2 = new THREE.DirectionalLight(0xffffff, 0.4);
-            directionalLight2.position.set(-1, -1, -1);
-            scene.add(directionalLight2);
+            // Fill light (soften shadows)
+            const fillLight = new THREE.DirectionalLight(0xffffff, 0.5);
+            fillLight.position.set(-5, 0, -5);
+            scene.add(fillLight);
 
-            // Grid
-            const gridHelper = new THREE.GridHelper(500, 50, 0x444444, 0x222222);
+            // Rim light (edge highlight)
+            const rimLight = new THREE.DirectionalLight(0xffffff, 0.3);
+            rimLight.position.set(0, -10, -5);
+            scene.add(rimLight);
+
+            // Hemisphere light for natural ambient
+            const hemiLight = new THREE.HemisphereLight(0xffffff, 0x444444, 0.3);
+            scene.add(hemiLight);
+
+            // Modern grid and axes
+            const gridHelper = new THREE.GridHelper(500, 50, 0xcccccc, 0xe0e0e0);
+            gridHelper.material.opacity = 0.3;
+            gridHelper.material.transparent = true;
             scene.add(gridHelper);
+
+            // Axes helper for orientation
+            const axesHelper = new THREE.AxesHelper(100);
+            axesHelper.material.linewidth = 2;
+            scene.add(axesHelper);
 
             // Load STL
             const loader = new THREE.STLLoader();
             loader.load(modelUrl, function (geometry) {
-                const material = new THREE.MeshPhongMaterial({
+                // Modern PBR material for realistic rendering
+                const material = new THREE.MeshStandardMaterial({
                     color: 0x6366f1,
-                    specular: 0x111111,
-                    shininess: 200
+                    metalness: 0.3,
+                    roughness: 0.4,
+                    envMapIntensity: 1.0,
+                    flatShading: false
                 });
+
+                // Add subtle edge glow
+                const edgeMaterial = new THREE.LineBasicMaterial({ 
+                    color: 0x4f46e5, 
+                    linewidth: 1,
+                    opacity: 0.5,
+                    transparent: true
+                });
+                const edges = new THREE.EdgesGeometry(geometry, 15);
+                const edgeLines = new THREE.LineSegments(edges, edgeMaterial);
 
                 const mesh = new THREE.Mesh(geometry, material);
 
@@ -567,7 +612,11 @@
                 geometry.boundingBox.getCenter(center);
                 mesh.position.sub(center);
 
+                mesh.castShadow = true;
+                mesh.receiveShadow = true;
                 scene.add(mesh);
+                scene.add(edgeLines);
+                edgeLines.position.copy(mesh.position);
 
                 // Adjust camera to fit model
                 const size = new THREE.Vector3();
@@ -580,10 +629,17 @@
                 camera.lookAt(0, 0, 0);
             });
 
-            // Controls
+            // Smooth modern controls
             const controls = new THREE.OrbitControls(camera, renderer.domElement);
             controls.enableDamping = true;
-            controls.dampingFactor = 0.05;
+            controls.dampingFactor = 0.08;
+            controls.rotateSpeed = 0.5;
+            controls.zoomSpeed = 0.8;
+            controls.panSpeed = 0.5;
+            controls.minDistance = 10;
+            controls.maxDistance = 2000;
+            controls.enablePan = true;
+            controls.screenSpacePanning = true;
 
             // Animation loop
             function animate() {
