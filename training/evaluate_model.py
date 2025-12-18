@@ -8,7 +8,7 @@ import os
 import json
 import torch
 import argparse
-from transformers import AutoModelForCausalLM, AutoTokenizer
+from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig
 from peft import PeftModel
 from tqdm import tqdm
 from datasets import load_dataset
@@ -17,16 +17,33 @@ sys.path.append(os.path.dirname(__file__))
 from code_validator import CodeValidator
 
 
-def load_model(model_path):
+def load_model(model_path, base_model_name="codellama/CodeLlama-7b-hf", use_4bit=True):
     """Load trained model and tokenizer"""
-    print(f"\n📥 Loading model from: {model_path}")
-    
+    print(f"\n📥 Loading tokenizer from: {model_path}")
     tokenizer = AutoTokenizer.from_pretrained(model_path)
-    model = AutoModelForCausalLM.from_pretrained(
-        model_path,
+    
+    print(f"📥 Loading base model: {base_model_name} (4-bit={use_4bit})")
+    
+    bnb_config = None
+    if use_4bit:
+        bnb_config = BitsAndBytesConfig(
+            load_in_4bit=True,
+            bnb_4bit_compute_dtype=torch.float16,
+            bnb_4bit_quant_type="nf4",
+            bnb_4bit_use_double_quant=True,
+        )
+
+    base_model = AutoModelForCausalLM.from_pretrained(
+        base_model_name,
+        quantization_config=bnb_config,
         device_map="auto",
         torch_dtype=torch.float16,
+        trust_remote_code=True
     )
+    
+    print(f"📥 Loading PEFT adapter from: {model_path}")
+    model = PeftModel.from_pretrained(base_model, model_path)
+    model.eval()
     
     return model, tokenizer
 
@@ -75,14 +92,15 @@ def calculate_metrics(predictions, references):
     
     validator = CodeValidator()
     
-    for pred, ref in zip(predictions, references):
+    for i, (pred, ref) in enumerate(zip(predictions, references)):
         # Exact match
         if pred.strip() == ref.strip():
             metrics['exact_match'] += 1
         
         # Execution success
-        result = validator.validate_code(pred)
-        if result['valid']:
+        # Pass index i as example_id to satisfy and help track
+        is_valid, error = validator.validate_code(pred, f"eval_{i}")
+        if is_valid:
             metrics['execution_success'] += 1
     
     # Convert to percentages
@@ -92,7 +110,7 @@ def calculate_metrics(predictions, references):
     return metrics
 
 
-def evaluate(model_path, test_data_path, output_file=None, num_samples=None):
+def evaluate(model_path, test_data_path, output_file=None, num_samples=None, use_4bit=True):
     """Run full evaluation"""
     
     print("\n" + "="*70)
@@ -100,7 +118,7 @@ def evaluate(model_path, test_data_path, output_file=None, num_samples=None):
     print("="*70)
     
     # Load model
-    model, tokenizer = load_model(model_path)
+    model, tokenizer = load_model(model_path, use_4bit=use_4bit)
     
     # Load test data
     print(f"\n📥 Loading test data from: {test_data_path}")
@@ -119,7 +137,7 @@ def evaluate(model_path, test_data_path, output_file=None, num_samples=None):
     
     for example in tqdm(test_data, desc="Evaluating"):
         prompt = example['prompt']
-        reference_code = example['code']
+        reference_code = example.get('code', "") # Use empty string if missing
         
         # Generate
         predicted_code = generate_code(model, tokenizer, prompt)
@@ -130,6 +148,11 @@ def evaluate(model_path, test_data_path, output_file=None, num_samples=None):
     # Calculate metrics
     print("\n📊 Calculating metrics...")
     metrics = calculate_metrics(predictions, references)
+    
+    # If no references were provided, clear the reference-based metrics
+    if all(r == "" for r in references):
+        metrics['exact_match'] = 0.0
+        print("  ⚠️ No reference code found in test data. Skipping comparison metrics.")
     
     # Print results
     print("\n" + "="*70)
@@ -168,6 +191,8 @@ def main():
     parser.add_argument('--test_data', type=str, required=True, help='Path to test data (JSONL)')
     parser.add_argument('--output', type=str, default='evaluation_results.json', help='Output file for results')
     parser.add_argument('--num_samples', type=int, default=None, help='Number of samples to evaluate (default: all)')
+    parser.add_argument('--no_4bit', action='store_false', dest='use_4bit', help='Disable 4-bit quantization')
+    parser.set_defaults(use_4bit=True)
     
     args = parser.parse_args()
     
@@ -175,7 +200,8 @@ def main():
         model_path=args.model_path,
         test_data_path=args.test_data,
         output_file=args.output,
-        num_samples=args.num_samples
+        num_samples=args.num_samples,
+        use_4bit=args.use_4bit
     )
 
 

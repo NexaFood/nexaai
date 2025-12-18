@@ -1,0 +1,10 @@
+{"prompt": "A storage tank with a radius of 1500mm, a height of 4000mm, and 10mm wall thickness, featuring a hemispherical domed top."}
+{"prompt": "A piping manifold with a central pipe (dia 200mm) and four perpendicular branch pipes (dia 100mm) spaced 500mm apart."}
+{"prompt": "A precision CNC tooling plate 300x300x25mm with a grid of 16 holes (dia 10mm) spaced 50mm apart, and filleted edges r=10mm."}
+{"prompt": "An L-shaped mounting bracket for a 3D printer motor, 50x50mm faces, 5mm thick, with 4 mounting holes for M3 screws."}
+{"prompt": "A factory layout section with two parallel 5000mm long conveyor belts spaced 2000mm apart, represented as long rectangular blocks."}
+{"prompt": "A spur gear with 24 teeth, a pitch diameter of 60mm, and a 10mm central bore with a 3mm keyway."}
+{"prompt": "A parametric enclosure for electronics, 120x80x40mm, with 2mm walls, a recessed lip for a lid, and four internal mounting standoffs."}
+{"prompt": "A heat sink with a base of 100x100x5mm and 20 vertical fins that are 20mm high and 2mm thick."}
+{"prompt": "A circular flange with an outer diameter of 200mm, inner diameter of 100mm, 15mm thick, and 8 bolt holes (dia 12mm) on a 160mm bolt circle."}
+{"prompt": "A complex 3D shape created by lofting a 20mm square at Z=0 to a 40mm circle at Z=50."}

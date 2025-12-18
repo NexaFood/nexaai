@@ -24,9 +24,9 @@ def main():
     print("="*70 + "\n")
     
     # Configuration
-    log_file = Path("data/production_logs/production_202512.jsonl")
-    train_file = Path("data/final_dataset/train.jsonl")
-    val_file = Path("data/final_dataset/validation.jsonl")
+    log_file = Path("training/data/production_logs/production_202512.jsonl")
+    train_file = Path("training/data/final_dataset/train.jsonl")
+    val_file = Path("training/data/final_dataset/validation.jsonl")
     
     if not log_file.exists():
         print(f"✗ Log file not found: {log_file}")
