@@ -87,7 +87,7 @@ class CadQueryAgent:
             raise FileNotFoundError("No trained checkpoint found")
         
         # Load base model with 4-bit quantization
-        logger.info("Loading CodeLlama base model...")
+        logger.info("Loading Qwen2.5-Coder base model...")
         bnb_config = BitsAndBytesConfig(
             load_in_4bit=True,
             bnb_4bit_quant_type="nf4",
@@ -96,7 +96,7 @@ class CadQueryAgent:
         )
         
         base_model = AutoModelForCausalLM.from_pretrained(
-            "codellama/CodeLlama-7b-hf",
+            "Qwen/Qwen2.5-Coder-7B-Instruct",
             quantization_config=bnb_config,
             device_map="auto",
             trust_remote_code=True,
@@ -107,7 +107,7 @@ class CadQueryAgent:
         self.custom_model = PeftModel.from_pretrained(base_model, str(checkpoint_path))
         
         # Load tokenizer
-        self.tokenizer = AutoTokenizer.from_pretrained("codellama/CodeLlama-7b-hf")
+        self.tokenizer = AutoTokenizer.from_pretrained("Qwen/Qwen2.5-Coder-7B-Instruct")
         self.tokenizer.pad_token = self.tokenizer.eos_token
         self.tokenizer.padding_side = "right"
         
