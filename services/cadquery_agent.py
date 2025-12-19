@@ -96,7 +96,7 @@ class CadQueryAgent:
         )
         
         base_model = AutoModelForCausalLM.from_pretrained(
-            "Qwen/Qwen2.5-Coder-7B-Instruct",
+            "Qwen/Qwen2.5-7B-Instruct",
             quantization_config=bnb_config,
             device_map="auto",
             trust_remote_code=True,
@@ -107,7 +107,7 @@ class CadQueryAgent:
         self.custom_model = PeftModel.from_pretrained(base_model, str(checkpoint_path))
         
         # Load tokenizer
-        self.tokenizer = AutoTokenizer.from_pretrained("Qwen/Qwen2.5-Coder-7B-Instruct")
+        self.tokenizer = AutoTokenizer.from_pretrained("Qwen/Qwen2.5-7B-Instruct")
         self.tokenizer.pad_token = self.tokenizer.eos_token
         self.tokenizer.padding_side = "right"
         
@@ -151,6 +151,7 @@ class CadQueryAgent:
     
     def _generate_with_custom_model(self, prompt: str) -> str:
         """Generate code using the custom fine-tuned model"""
+        import torch
         from transformers import StoppingCriteria, StoppingCriteriaList
         
         # Custom stopping criterion: stop when we see markers of next example

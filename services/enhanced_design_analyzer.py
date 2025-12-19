@@ -52,8 +52,12 @@ def generate_design_concept(original_prompt):
     }
     
     # Detect if it's a simple geometric primitive
+    # Detect if it's a simple geometric primitive, but EXCLUDE complex systems
+    complexity_markers = ['gear', 'system', 'assembly', 'mechanism', 'robot', 'drone', 'vehicle', 'machine', 'enclosure', 'case', 'housing', 'exchanger', 'engine']
+    is_complex = any(marker in prompt_lower for marker in complexity_markers)
+
     for keyword, shape_desc in basic_shapes.items():
-        if keyword in prompt_lower:
+        if keyword in prompt_lower and not is_complex:
             logger.info(f"Detected basic geometric primitive: {keyword}")
             return {
                 'refined_description': f"A simple {shape_desc} as specified: {original_prompt}. This is a basic geometric primitive that requires no additional features or complexity.",
@@ -66,40 +70,45 @@ def generate_design_concept(original_prompt):
     system_prompt = """You are an expert mechanical engineer and product designer. 
 Your task is to take a user's design idea and create a detailed, comprehensive design concept.
 
-**CRITICAL: If the user asks for a simple geometric shape (cube, sphere, cylinder, etc.), DO NOT add complexity!**
-- A "sphere 50mm" is just a sphere - don't add motors, bearings, or electronics
-- A "cube 100x100x100" is just a cube - don't add compartments or mechanisms
-- Keep it simple unless the user explicitly asks for features
+**CRITICAL: Distinguish between "Primitives" and "Systems"!**
+- **Primitives**: Simple shapes (cube, sphere, cylinder). Keep these SIMPLE.
+- **Systems**: Assemblies with multiple interacting parts (gears, heat exchangers, enclosures, robots). Break these down into SUBSYSTEMS.
+
+Examples:
+- User: "Planetary gear system" -> Concept: "Sun gear, 3 planet gears, ring gear, carrier. Interlocking teeth." (NOT "a simple ring shape")
+- User: "Heat exchanger" -> Concept: "Shell vessel, 7 internal tubes in hex pattern, baffles." (NOT "a simple tube")
+- User: "Enclosure with posts" -> Concept: "Main box shell, lid, 4 corner mounting posts, cable cutouts."
 
 Focus on:
 1. Overall structure and architecture
-2. Key functional components (ONLY if the user mentioned them)
-3. Materials and construction methods
-4. Assembly approach (ONLY if multiple parts are needed)
-5. Realistic engineering considerations
-
-Be specific and technical. Think about how this would actually be built."""
+2. Key functional components (LIST THEM EXPLICITLY)
+3. Assembly approach (how parts interacting)
+4. Realistic engineering features (fillets, chamfers, mounts)
+"""
 
     user_prompt = f"""Design Concept Request: {original_prompt}
 
 Please provide a detailed design concept including:
 1. A comprehensive description of the overall design (2-3 paragraphs)
-2. Design type/category (e.g., "vehicle", "robot", "structure", "tool", "enclosure", "geometric_primitive")
-3. Key features and components (list 3-10 major features, fewer for simple shapes)
+2. Design type/category:
+   - "geometric_primitive" (only for simple shapes)
+   - "mechanical_system" (gears, linkages, machines)
+   - "enclosure" (cases, housings)
+   - "structural" (brackets, frames)
+3. Key features and components (list 3-10 major features)
 4. Estimated complexity (low/medium/high)
 5. Estimated number of parts needed:
-   - Simple shapes (cube, sphere, cylinder): 1 part
-   - Simple assemblies (bracket, mount): 1-5 parts
-   - Medium complexity (drone, robot arm): 10-50 parts
-   - High complexity (vehicle, machine): 50-200+ parts
+   - Simple shapes: 1 part
+   - Enclosures/Brackets: 2-10 parts
+   - Systems/Machines: 10-50+ parts
 
 Return ONLY a JSON object with this structure:
 {{
     "refined_description": "detailed description here",
     "design_type": "category",
     "key_features": ["feature1", "feature2", ...],
-    "estimated_complexity": "low",
-    "estimated_parts_count": 1
+    "estimated_complexity": "low/medium/high",
+    "estimated_parts_count": 5
 }}"""
 
     try:
@@ -114,6 +123,21 @@ Return ONLY a JSON object with this structure:
         )
         
         result = json.loads(response.choices[0].message.content)
+        
+        # LOGGING FOR FINE-TUNING
+        try:
+            from pathlib import Path
+            log_entry = {
+                "original_prompt": original_prompt,
+                "gpt_response": result,
+                "timestamp": __import__('datetime').datetime.now().isoformat()
+            }
+            log_file = Path("/home/dobbeltop/ai_pathfinding/nexaai/training/data/concept_logs.jsonl")
+            with open(log_file, "a") as f:
+                f.write(json.dumps(log_entry) + "\n")
+        except Exception as log_e:
+            logger.warning(f"Failed to log concept: {log_e}")
+
         logger.info(f"Generated design concept: {result.get('design_type')}, {result.get('estimated_parts_count')} parts")
         return result
     

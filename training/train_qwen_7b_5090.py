@@ -20,7 +20,7 @@ class ModelConfig:
     use_nested_quant: bool = True
 
 @dataclass
-class LoRAConfig:
+class MyLoRAConfig:
     lora_r: int = 128 
     lora_alpha: int = 256
     lora_dropout: float = 0.05
@@ -49,7 +49,7 @@ class TrainConfig:
     max_seq_length: int = 2048 
     report_to: str = "tensorboard"
 
-lora_config_inst = LoRAConfig()
+lora_config_inst = MyLoRAConfig()
 train_config_inst = TrainConfig()
 model_config_inst = ModelConfig()
 
