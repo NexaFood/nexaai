@@ -143,12 +143,12 @@
         scene = new THREE.Scene();
         scene.background = new THREE.Color(0x1a1a2e);
         
-        // Camera
+        // Camera - increased far plane for large models
         camera = new THREE.PerspectiveCamera(
             75,
             container.clientWidth / container.clientHeight,
-            0.1,
-            1000
+            0.01,  // Reduced near plane for close-up views
+            10000  // Increased far plane for large models
         );
         camera.position.set(0, 0, 5);
         
@@ -172,10 +172,12 @@
         directionalLight2.position.set(-5, -5, -5);
         scene.add(directionalLight2);
         
-        // Controls
+        // Controls - will be configured after model loads
         controls = new OrbitControls(camera, renderer.domElement);
         controls.enableDamping = true;
         controls.dampingFactor = 0.05;
+        controls.minDistance = 0.1;  // Allow very close zoom
+        controls.maxDistance = 1000; // Allow very far zoom
         
         // Load model via proxy to avoid CORS issues
         const modelUrl = "/api/models/{{ model.id }}/glb";
@@ -187,18 +189,34 @@
                 function(gltf) {
                     model = gltf.scene;
                     
-                    // Center and scale model
+                    // Calculate bounding box
                     const box = new THREE.Box3().setFromObject(model);
                     const center = box.getCenter(new THREE.Vector3());
                     const size = box.getSize(new THREE.Vector3());
                     const maxDim = Math.max(size.x, size.y, size.z);
-                    const scale = 3 / maxDim;
                     
-                    model.scale.multiplyScalar(scale);
-                    model.position.sub(center.multiplyScalar(scale));
+                    // Center the model
+                    model.position.sub(center);
+                    
+                    // Position camera based on model size
+                    const distance = maxDim * 1.5; // 1.5x the max dimension for good initial view
+                    camera.position.set(distance, distance * 0.5, distance);
+                    camera.lookAt(0, 0, 0);
+                    
+                    // Update controls based on model size
+                    controls.target.set(0, 0, 0);
+                    controls.minDistance = maxDim * 0.1;  // Can zoom to 10% of model size
+                    controls.maxDistance = maxDim * 10;   // Can zoom out to 10x model size
+                    controls.update();
+                    
+                    // Update lights to cover larger models
+                    directionalLight1.position.set(maxDim, maxDim, maxDim);
+                    directionalLight2.position.set(-maxDim, -maxDim, -maxDim);
                     
                     scene.add(model);
                     loadingOverlay.style.display = 'none';
+                    
+                    console.log('Model loaded - Size:', size, 'Max dimension:', maxDim);
                 },
                 function(xhr) {
                     const percent = (xhr.loaded / xhr.total * 100).toFixed(0);
