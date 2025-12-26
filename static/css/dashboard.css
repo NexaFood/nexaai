@@ -1,11 +1,35 @@
 /**
- * NexaAI Dashboard - Dark Theme Styles
+ * NexaAI Dashboard - Custom Dark Theme
+ * Primary: #13111a (dark purple-black)
+ * Secondary: #8400ff (vibrant purple)
+ * Second Secondary: #e600a5 (hot pink)
  */
+
+/* CSS Variables for easy theme management */
+:root {
+    --color-primary: #13111a;
+    --color-primary-light: #1a1722;
+    --color-primary-lighter: #242030;
+    --color-secondary: #8400ff;
+    --color-secondary-dark: #6b00cc;
+    --color-secondary-light: #9d33ff;
+    --color-accent: #e600a5;
+    --color-accent-dark: #b80084;
+    --color-accent-light: #ff33c1;
+    --color-border: #2d2838;
+    --color-border-light: #3d3848;
+    --color-text: #ffffff;
+    --color-text-muted: #b8b4c5;
+    --color-text-dim: #8a8694;
+    --color-success: #10b981;
+    --color-warning: #f59e0b;
+    --color-error: #ef4444;
+}
 
 /* Base Dashboard Styles */
 .dashboard-container {
     padding: 2rem;
-    background: #0f0f0f;
+    background: var(--color-primary);
     min-height: 100vh;
 }
 
@@ -16,14 +40,18 @@
     align-items: center;
     margin-bottom: 2rem;
     padding-bottom: 1rem;
-    border-bottom: 1px solid #2a2a2a;
+    border-bottom: 1px solid var(--color-border);
 }
 
 .dashboard-header h1 {
     font-size: 2rem;
     font-weight: 700;
-    color: #ffffff;
+    color: var(--color-text);
     margin: 0;
+    background: linear-gradient(135deg, var(--color-secondary) 0%, var(--color-accent) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
 }
 
 .header-actions {
@@ -32,9 +60,9 @@
 }
 
 .btn-icon {
-    background: #1a1a1a;
-    border: 1px solid #2a2a2a;
-    color: #ffffff;
+    background: var(--color-primary-light);
+    border: 1px solid var(--color-border);
+    color: var(--color-text);
     padding: 0.75rem;
     border-radius: 0.5rem;
     cursor: pointer;
@@ -45,8 +73,9 @@
 }
 
 .btn-icon:hover {
-    background: #2a2a2a;
-    border-color: #6366f1;
+    background: var(--color-primary-lighter);
+    border-color: var(--color-secondary);
+    box-shadow: 0 0 12px rgba(132, 0, 255, 0.3);
 }
 
 .btn-icon:active {
@@ -63,8 +92,8 @@
 
 /* Widget Base Styles */
 .widget {
-    background: #1a1a1a;
-    border: 1px solid #2a2a2a;
+    background: var(--color-primary-light);
+    border: 1px solid var(--color-border);
     border-radius: 0.75rem;
     padding: 1.5rem;
     transition: all 0.2s;
@@ -72,8 +101,8 @@
 }
 
 .widget:hover {
-    border-color: #3a3a3a;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    border-color: var(--color-border-light);
+    box-shadow: 0 4px 12px rgba(132, 0, 255, 0.15);
 }
 
 .widget.draggable {
@@ -85,8 +114,9 @@
 }
 
 .widget.drag-over {
-    border-color: #6366f1;
-    background: #1f1f2e;
+    border-color: var(--color-secondary);
+    background: var(--color-primary-lighter);
+    box-shadow: 0 0 20px rgba(132, 0, 255, 0.4);
 }
 
 /* Widget Sizes */
@@ -124,7 +154,7 @@
 .widget-title {
     font-size: 1.125rem;
     font-weight: 600;
-    color: #ffffff;
+    color: var(--color-text);
     margin: 0;
 }
 
@@ -136,7 +166,7 @@
 .widget-action-btn {
     background: transparent;
     border: none;
-    color: #888888;
+    color: var(--color-text-dim);
     cursor: pointer;
     padding: 0.25rem;
     border-radius: 0.25rem;
@@ -147,17 +177,21 @@
 }
 
 .widget-action-btn:hover {
-    color: #ffffff;
-    background: #2a2a2a;
+    color: var(--color-secondary);
+    background: var(--color-primary-lighter);
 }
 
 .widget-remove-btn {
     display: none;
 }
 
+.widget-remove-btn:hover {
+    color: var(--color-error);
+}
+
 /* Widget Content */
 .widget-content {
-    color: #cccccc;
+    color: var(--color-text-muted);
 }
 
 /* Widget List */
@@ -180,23 +214,24 @@
     align-items: center;
     padding: 0.5rem;
     border-radius: 0.375rem;
-    color: #6366f1;
+    color: var(--color-secondary);
     text-decoration: none;
-    transition: background 0.2s;
+    transition: all 0.2s;
 }
 
 .widget-link:hover {
-    background: #2a2a2a;
+    background: var(--color-primary-lighter);
+    color: var(--color-secondary-light);
 }
 
 /* Status Indicators */
 .status-on {
-    color: #10b981;
+    color: var(--color-success);
     font-weight: 600;
 }
 
 .status-off {
-    color: #6b7280;
+    color: var(--color-text-dim);
     font-weight: 600;
 }
 
@@ -206,11 +241,11 @@
 }
 
 .status-indicator.status-on {
-    color: #10b981;
+    color: var(--color-success);
 }
 
 .status-indicator.status-off {
-    color: #ef4444;
+    color: var(--color-error);
 }
 
 /* Climate Widget */
@@ -223,8 +258,12 @@
 .climate-temp {
     font-size: 3rem;
     font-weight: 700;
-    color: #ffffff;
+    color: var(--color-text);
     line-height: 1;
+    background: linear-gradient(135deg, var(--color-secondary) 0%, var(--color-accent) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
 }
 
 .climate-details {
@@ -243,7 +282,7 @@
 .printer-name {
     font-size: 1.125rem;
     font-weight: 600;
-    color: #ffffff;
+    color: var(--color-text);
 }
 
 /* Print Progress Widget */
@@ -256,20 +295,22 @@
 .print-filename {
     font-size: 1rem;
     font-weight: 600;
-    color: #ffffff;
+    color: var(--color-text);
 }
 
 .progress-bar-container {
-    background: #2a2a2a;
+    background: var(--color-primary-lighter);
     height: 12px;
     border-radius: 6px;
     overflow: hidden;
+    border: 1px solid var(--color-border);
 }
 
 .progress-bar {
-    background: linear-gradient(90deg, #6366f1 0%, #8b5cf6 100%);
+    background: linear-gradient(90deg, var(--color-secondary) 0%, var(--color-accent) 100%);
     height: 100%;
     transition: width 0.3s ease;
+    box-shadow: 0 0 10px rgba(132, 0, 255, 0.5);
 }
 
 .print-details {
@@ -281,9 +322,10 @@
 /* Camera Feed Widget */
 .camera-feed {
     aspect-ratio: 16/9;
-    background: #2a2a2a;
+    background: var(--color-primary-lighter);
     border-radius: 0.5rem;
     overflow: hidden;
+    border: 1px solid var(--color-border);
 }
 
 .camera-placeholder {
@@ -293,7 +335,7 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    color: #6b7280;
+    color: var(--color-text-dim);
     gap: 1rem;
 }
 
@@ -309,7 +351,7 @@
 /* Button Styles */
 .btn-primary-large {
     display: block;
-    background: #6366f1;
+    background: linear-gradient(135deg, var(--color-secondary) 0%, var(--color-accent) 100%);
     color: white;
     text-align: center;
     padding: 1rem;
@@ -320,12 +362,12 @@
     border: none;
     cursor: pointer;
     width: 100%;
+    box-shadow: 0 4px 12px rgba(132, 0, 255, 0.3);
 }
 
 .btn-primary-large:hover {
-    background: #5558e3;
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(132, 0, 255, 0.5);
 }
 
 .btn-primary-large:active {
@@ -340,7 +382,8 @@
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0, 0, 0, 0.8);
+    background: rgba(19, 17, 26, 0.9);
+    backdrop-filter: blur(8px);
     z-index: 1000;
     align-items: center;
     justify-content: center;
@@ -351,13 +394,14 @@
 }
 
 .modal-content {
-    background: #1a1a1a;
-    border: 1px solid #2a2a2a;
+    background: var(--color-primary-light);
+    border: 1px solid var(--color-border);
     border-radius: 1rem;
     width: 90%;
     max-width: 600px;
     max-height: 80vh;
     overflow-y: auto;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
 }
 
 .modal-header {
@@ -365,20 +409,20 @@
     justify-content: space-between;
     align-items: center;
     padding: 1.5rem;
-    border-bottom: 1px solid #2a2a2a;
+    border-bottom: 1px solid var(--color-border);
 }
 
 .modal-header h2 {
     font-size: 1.5rem;
     font-weight: 600;
-    color: #ffffff;
+    color: var(--color-text);
     margin: 0;
 }
 
 .modal-close {
     background: transparent;
     border: none;
-    color: #888888;
+    color: var(--color-text-dim);
     font-size: 2rem;
     cursor: pointer;
     line-height: 1;
@@ -387,7 +431,7 @@
 }
 
 .modal-close:hover {
-    color: #ffffff;
+    color: var(--color-accent);
 }
 
 .modal-body {
@@ -404,7 +448,7 @@
 .widget-category h3 {
     font-size: 1.125rem;
     font-weight: 600;
-    color: #ffffff;
+    color: var(--color-text);
     margin-bottom: 1rem;
 }
 
@@ -415,9 +459,9 @@
 }
 
 .widget-option {
-    background: #0f0f0f;
-    border: 1px solid #2a2a2a;
-    color: #ffffff;
+    background: var(--color-primary);
+    border: 1px solid var(--color-border);
+    color: var(--color-text);
     padding: 1rem;
     border-radius: 0.5rem;
     cursor: pointer;
@@ -427,9 +471,10 @@
 }
 
 .widget-option:hover {
-    background: #2a2a2a;
-    border-color: #6366f1;
+    background: var(--color-primary-lighter);
+    border-color: var(--color-secondary);
     transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(132, 0, 255, 0.3);
 }
 
 .widget-option:active {
@@ -441,9 +486,9 @@
     position: fixed;
     bottom: 2rem;
     right: 2rem;
-    background: #1a1a1a;
-    border: 1px solid #2a2a2a;
-    color: #ffffff;
+    background: var(--color-primary-light);
+    border: 1px solid var(--color-border);
+    color: var(--color-text);
     padding: 1rem 1.5rem;
     border-radius: 0.5rem;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
@@ -459,19 +504,19 @@
 }
 
 .notification-success {
-    border-left: 4px solid #10b981;
+    border-left: 4px solid var(--color-success);
 }
 
 .notification-warning {
-    border-left: 4px solid #f59e0b;
+    border-left: 4px solid var(--color-warning);
 }
 
 .notification-error {
-    border-left: 4px solid #ef4444;
+    border-left: 4px solid var(--color-error);
 }
 
 .notification-info {
-    border-left: 4px solid #6366f1;
+    border-left: 4px solid var(--color-secondary);
 }
 
 /* Responsive Design */
@@ -510,14 +555,30 @@
 }
 
 .modal-content::-webkit-scrollbar-track {
-    background: #0f0f0f;
+    background: var(--color-primary);
 }
 
 .modal-content::-webkit-scrollbar-thumb {
-    background: #2a2a2a;
+    background: var(--color-border);
     border-radius: 4px;
 }
 
 .modal-content::-webkit-scrollbar-thumb:hover {
-    background: #3a3a3a;
+    background: var(--color-secondary);
+}
+
+/* Glow effects for interactive elements */
+.widget:hover,
+.btn-icon:hover,
+.widget-option:hover {
+    animation: subtle-glow 2s ease-in-out infinite;
+}
+
+@keyframes subtle-glow {
+    0%, 100% {
+        box-shadow: 0 0 5px rgba(132, 0, 255, 0.2);
+    }
+    50% {
+        box-shadow: 0 0 15px rgba(132, 0, 255, 0.4);
+    }
 }

@@ -17,9 +17,15 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     
     <style>
+        :root {
+            --color-primary: #13111a;
+            --color-secondary: #8400ff;
+            --color-accent: #e600a5;
+        }
+        
         body {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background-color: #0f0f0f;
+            background-color: var(--color-primary);
             color: #ffffff;
         }
         
@@ -65,9 +71,9 @@
     {% block extra_css %}{% endblock %}
     {% block extra_head %}{% endblock %}
 </head>
-<body class="min-h-screen" style="background-color: #0f0f0f; color: #ffffff;">
+<body class="min-h-screen" style="background-color: #13111a; color: #ffffff;">
     <!-- Navigation -->
-    <nav class="text-white shadow-lg" style="background: linear-gradient(135deg, #4338ca 0%, #6366f1 100%);">
+    <nav class="text-white shadow-lg" style="background: linear-gradient(135deg, #8400ff 0%, #e600a5 100%);">
         <div class="container mx-auto px-4 py-4">
             <div class="flex items-center justify-between">
                 <div class="flex items-center space-x-4">
@@ -105,7 +111,7 @@
     </main>
     
     <!-- Footer -->
-    <footer class="text-white mt-16" style="background-color: #1a1a1a; border-top: 1px solid #2a2a2a;">
+    <footer class="text-white mt-16" style="background-color: #1a1722; border-top: 1px solid #2d2838;">
         <div class="container mx-auto px-4 py-8">
             <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
                 <div>
