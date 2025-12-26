@@ -188,7 +188,7 @@
 
                 <!-- 3D Viewer -->
                 {% if project.overall_model_stl_url %}
-                <div class="mb-4 bg-gray-900 rounded-lg overflow-hidden" style="height: 400px;">
+                <div class="mb-4 bg-gray-900 rounded-lg overflow-hidden" style="height: 700px; max-width: 700px;">
                     <div id="model-viewer-overall" class="w-full h-full"></div>
                 </div>
                 {% endif %}
@@ -597,14 +597,14 @@
             const hemiLight = new THREE.HemisphereLight(0xffffff, 0x444444, 0.3);
             scene.add(hemiLight);
 
-            // Modern grid and axes
-            const gridHelper = new THREE.GridHelper(500, 50, 0xcccccc, 0xe0e0e0);
+            // Modern grid and axes (will be scaled after model loads)
+            const gridHelper = new THREE.GridHelper(10000, 100, 0xcccccc, 0xe0e0e0);
             gridHelper.material.opacity = 0.3;
             gridHelper.material.transparent = true;
             scene.add(gridHelper);
 
             // Axes helper for orientation
-            const axesHelper = new THREE.AxesHelper(100);
+            const axesHelper = new THREE.AxesHelper(1000);
             axesHelper.material.linewidth = 2;
             scene.add(axesHelper);
 
@@ -650,9 +650,15 @@
                 const maxDim = Math.max(size.x, size.y, size.z);
                 const fov = camera.fov * (Math.PI / 180);
                 let cameraZ = Math.abs(maxDim / 2 / Math.tan(fov / 2));
-                cameraZ *= 1.5; // Add some padding
-                camera.position.set(cameraZ, cameraZ, cameraZ);
+                cameraZ *= 2.5; // More padding for better initial view
+                camera.position.set(cameraZ, cameraZ * 0.7, cameraZ);
                 camera.lookAt(0, 0, 0);
+                
+                // Update controls based on model size
+                controls.minDistance = maxDim * 0.1;
+                controls.maxDistance = maxDim * 20;
+                
+                console.log('Model size:', size, 'Max dimension:', maxDim, 'Camera distance:', cameraZ);
             });
 
             // Smooth modern controls
@@ -662,8 +668,8 @@
             controls.rotateSpeed = 0.5;
             controls.zoomSpeed = 0.8;
             controls.panSpeed = 0.5;
-            controls.minDistance = 10;
-            controls.maxDistance = 2000;
+            controls.minDistance = 1;
+            controls.maxDistance = 50000;  // Much larger for big models
             controls.enablePan = true;
             controls.screenSpacePanning = true;
 
