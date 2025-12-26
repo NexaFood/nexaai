@@ -188,7 +188,7 @@
 
                 <!-- 3D Viewer -->
                 {% if project.overall_model_stl_url %}
-                <div class="mb-4 bg-gray-900 rounded-lg overflow-hidden" style="height: 700px; max-width: 700px;">
+                <div class="mb-4 rounded-lg overflow-hidden" style="height: 700px; background: rgba(19, 17, 26, 0.8); border: 1px solid rgba(132, 0, 255, 0.2);">
                     <div id="model-viewer-overall" class="w-full h-full"></div>
                 </div>
                 {% endif %}
@@ -544,15 +544,15 @@
 
             // Scene setup
             const scene = new THREE.Scene();
-            scene.background = new THREE.Color(0xf0f4f8); // Modern light background
-            scene.fog = new THREE.Fog(0xf0f4f8, 1000, 3000); // Subtle depth fog
+            scene.background = new THREE.Color(0x13111a); // Dark theme background
+            scene.fog = new THREE.Fog(0x13111a, 10000, 100000); // Fog for very large models
 
             // Camera
             const camera = new THREE.PerspectiveCamera(
                 45,
                 container.clientWidth / container.clientHeight,
-                0.1,
-                10000
+                0.01,    // Very close near plane
+                500000   // Very far plane to prevent clipping
             );
             camera.position.set(200, 200, 200);
 
@@ -598,8 +598,8 @@
             scene.add(hemiLight);
 
             // Modern grid and axes (will be scaled after model loads)
-            const gridHelper = new THREE.GridHelper(10000, 100, 0xcccccc, 0xe0e0e0);
-            gridHelper.material.opacity = 0.3;
+            const gridHelper = new THREE.GridHelper(10000, 100, 0x8400ff, 0x3d1f5c);
+            gridHelper.material.opacity = 0.15;
             gridHelper.material.transparent = true;
             scene.add(gridHelper);
 
@@ -611,20 +611,20 @@
             // Load STL
             const loader = new THREE.STLLoader();
             loader.load(modelUrl, function (geometry) {
-                // Modern PBR material for realistic rendering
+                // Modern PBR material for realistic rendering (dark theme colors)
                 const material = new THREE.MeshStandardMaterial({
-                    color: 0x6366f1,
-                    metalness: 0.3,
-                    roughness: 0.4,
+                    color: 0x8400ff,      // Purple from theme
+                    metalness: 0.4,
+                    roughness: 0.3,
                     envMapIntensity: 1.0,
                     flatShading: false
                 });
 
-                // Add subtle edge glow
+                // Add subtle edge glow (pink accent)
                 const edgeMaterial = new THREE.LineBasicMaterial({ 
-                    color: 0x4f46e5, 
+                    color: 0xe600a5,      // Pink from theme
                     linewidth: 1,
-                    opacity: 0.5,
+                    opacity: 0.6,
                     transparent: true
                 });
                 const edges = new THREE.EdgesGeometry(geometry, 15);
