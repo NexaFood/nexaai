@@ -10,12 +10,15 @@ def generate_complex_assemblies(count=100):
     for _ in range(count // 3):
         sun_r = random.randint(10, 30)
         planet_r = random.randint(5, 15)
+        # Standard calculation: Ring = Sun + 2*Planet
         ring_r = sun_r + 2 * planet_r
         thickness = random.randint(5, 15)
         num_planets = random.choice([3, 4, 5])
         
         prompt = f"A planetary gear system with a central sun gear (radius {sun_r}mm), {num_planets} planet gears (radius {planet_r}mm), and a ring gear (radius {ring_r}mm). Thickness {thickness}mm."
         
+        # NOTE: Using simplified "teeth" via cutouts to avoid non-existent gear API
+        # STRICT MATH: Ensuring 'import math' and usage of 'math.cos' etc
         code = f"""import cadquery as cq
 import math
 
@@ -26,11 +29,15 @@ ring_radius = {ring_r}
 thickness = {thickness}
 num_planets = {num_planets}
 
-# 1. Sun Gear
-sun_gear = (
-    cq.Workplane("XY")
-    .gear(module=1, tooth_number=int(sun_radius*2), width=thickness, pressure_angle=20)
-)
+# Helper to look like a gear (cylinder with notch)
+def make_gear(radius, width):
+    c = cq.Workplane("XY").circle(radius).extrude(width)
+    # Add a mock tooth cut for visual indication
+    cut = cq.Workplane("XY").rect(2, 5).extrude(width)
+    return c.cut(cut)
+
+# 1. Sun Gear (Central)
+sun_gear = make_gear(sun_radius, thickness)
 
 # 2. Planet Gears
 planets = cq.Workplane("XY")
@@ -39,19 +46,19 @@ angle_step = 360 / num_planets
 
 for i in range(num_planets):
     angle = i * angle_step
-    # Calculate position
+    # Calculate position (Using standard math library)
     x = orbit_radius * math.cos(math.radians(angle))
     y = orbit_radius * math.sin(math.radians(angle))
     
     planet = (
         cq.Workplane("XY")
         .center(x, y)
-        .gear(module=1, tooth_number=int(planet_radius*2), width=thickness, pressure_angle=20)
+        .circle(planet_radius)
+        .extrude(thickness)
     )
     planets = planets.union(planet)
 
-# 3. Ring Gear
-# Simplified as a hollow cylinder with internal gear teeth (approximated here as a ring)
+# 3. Ring Gear (Outer Housing)
 ring_gear = (
     cq.Workplane("XY")
     .circle(ring_radius + 5) # Outer rim
@@ -119,48 +126,82 @@ cutout = (
 result = shell.union(posts).cut(cutout)"""
         exs.append({"prompt": prompt, "code": code})
 
-    # 3. Heat Exchangers
+    # 3. Heat Exchangers (FIXED v11: Additive Tubes + Baffles)
     for _ in range(count // 3):
         shell_d = random.randint(80, 150)
         length = random.randint(150, 300)
         tube_d = random.randint(8, 12)
+        baffle_spacing = 50
+        num_baffles = length // baffle_spacing
         
-        prompt = f"Shell and tube heat exchanger. Shell dia {shell_d}mm, length {length}mm. 7 internal tubes (dia {tube_d}mm)."
+        prompt = f"Shell and tube heat exchanger. Shell dia {shell_d}mm, length {length}mm. 7 internal tubes (dia {tube_d}mm) in hex pattern. Baffles every {baffle_spacing}mm."
         
         code = f"""import cadquery as cq
+import math
 
 # Dimensions
 shell_diameter = {shell_d}
 length = {length}
 tube_diameter = {tube_d}
+baffle_spacing = {baffle_spacing}
+num_baffles = {num_baffles}
 
-# 1. Main Shell
+# 1. Main Shell (Hollow Tube)
 shell = (
     cq.Workplane("XY")
     .circle(shell_diameter/2)
+    .circle(shell_diameter/2 - 2) # 2mm wall thickness
     .extrude(length)
 )
 
-# 2. Internal Tubes (Hex pattern roughly)
+# 2. Internal Tubes (Additive Hex pattern)
 tubes = cq.Workplane("XY")
-# Center + 6 surrounding
-offsets = [(0,0)]
+offsets = [(0,0)] # Center tube
 r_offset = shell_diameter / 4
 for i in range(6):
     angle = math.radians(i * 60)
     offsets.append((r_offset * math.cos(angle), r_offset * math.sin(angle)))
 
+# Create tubes
 for x, y in offsets:
     tube = (
         cq.Workplane("XY")
         .center(x, y)
         .circle(tube_diameter/2)
+        .circle(tube_diameter/2 - 1) # 1mm wall thickness
         .extrude(length)
     )
-    # Cut tubes from shell to make hollow channels
-    shell = shell.cut(tube)
+    tubes = tubes.union(tube)
 
-result = shell"""
+# 3. Baffles (Disks with holes for tubes)
+baffles = cq.Workplane("XY")
+for i in range(num_baffles):
+    z_pos = (i + 1) * baffle_spacing
+    if z_pos >= length: break
+    
+    # Create solid disk
+    baffle = (
+        cq.Workplane("XY")
+        .workplane(offset=z_pos)
+        .circle(shell_diameter/2 - 3) # Fit inside shell
+        .extrude(2) # 2mm thick
+    )
+    
+    # Cut holes for tubes in baffle
+    for x, y in offsets:
+        hole = (
+            cq.Workplane("XY")
+            .workplane(offset=z_pos)
+            .center(x, y)
+            .circle(tube_diameter/2 + 0.5) # Clearance
+            .extrude(2)
+        )
+        baffle = baffle.cut(hole)
+        
+    baffles = baffles.union(baffle)
+
+# Combine all: Shell + Tubes + Baffles
+result = shell.union(tubes).union(baffles)"""
         exs.append({"prompt": prompt, "code": code})
         
     return exs
