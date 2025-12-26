@@ -328,9 +328,13 @@ class CadQueryAgent:
         code = '\n'.join(cleaned_lines).strip()
         
         # Ensure it starts with import
-        if not code.startswith("import cadquery"):
-            code = "import cadquery as cq\n\n" + code
-        
+        if "import cadquery" not in code:
+            code = "import cadquery as cq\n" + code
+            
+        # Ensure math is imported if used (Common model slip-up)
+        if ("math." in code or "sin(" in code or "cos(" in code) and "import math" not in code:
+            code = "import math\n" + code
+
         return code
     
     def generate_multi_part_design(self, prompt: str) -> Dict[str, Any]:
