@@ -1,17 +1,22 @@
 {% extends "base.html" %}
+{% load static %}
 
 {% block title %}Design Projects - NexaAI{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/cad-designer.css' %}">
+{% endblock %}
 
 {% block content %}
 <div class="container mx-auto px-4 py-8">
     <div class="mb-8">
-        <h1 class="text-4xl font-bold text-gray-800 mb-2">AI CAD Designer</h1>
-        <p class="text-gray-600">Generate precise parametric CAD models from natural language descriptions</p>
+        <h1 class="text-4xl font-bold mb-2" style="background: linear-gradient(135deg, #8400ff 0%, #e600a5 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">AI CAD Designer</h1>
+        <p class="text-gray-400">Generate precise parametric CAD models from natural language descriptions</p>
     </div>
 
     <!-- New Project Form -->
-    <div class="bg-white rounded-lg shadow-lg p-6 mb-8">
-        <h2 class="text-2xl font-bold text-gray-800 mb-4">Start New Design Project</h2>
+    <div class="rounded-lg shadow-lg p-6 mb-8" style="background: rgba(26, 23, 34, 0.6); backdrop-filter: blur(20px); border: 1px solid rgba(132, 0, 255, 0.2);">
+        <h2 class="text-2xl font-bold mb-4" style="color: #ffffff;">Start New Design Project</h2>
         
         <form hx-post="/api/design/create-project/" 
               hx-target="#project-results" 
@@ -19,22 +24,24 @@
               class="space-y-4">
             {% csrf_token %}
             <div>
-                <label class="block text-sm font-semibold text-gray-700 mb-2">
+                <label class="block text-sm font-semibold mb-2" style="color: #b8b4c5;">
                     What do you want to design?
                 </label>
                 <textarea 
                     name="prompt" 
                     rows="3"
                     placeholder="e.g., A model rocket with parachute recovery system"
-                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    class="w-full px-4 py-3 rounded-lg transition"
+                    style="background: rgba(0, 0, 0, 0.3); border: 1px solid rgba(132, 0, 255, 0.3); color: #ffffff;"
                     required></textarea>
-                <p class="text-sm text-gray-500 mt-2">
+                <p class="text-sm mt-2" style="color: #8a8694;">
                     Describe your design idea. The AI will create a detailed concept, split it into parts, and generate manufacturing-ready CAD files (STEP/STL).
                 </p>
             </div>
             
             <button type="submit" 
-                    class="w-full bg-purple-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-purple-700 transition">
+                    class="w-full px-6 py-3 rounded-lg font-semibold transition"
+                    style="background: linear-gradient(135deg, #8400ff 0%, #e600a5 100%); color: white; box-shadow: 0 8px 24px rgba(132, 0, 255, 0.4);">
                 🚀 Start Design Project
             </button>
         </form>
@@ -46,31 +53,31 @@
     <!-- Existing Projects -->
     {% if projects %}
     <div class="mb-8">
-        <h2 class="text-2xl font-bold text-gray-800 mb-4">Your Projects</h2>
+        <h2 class="text-2xl font-bold mb-4" style="color: #ffffff;">Your Projects</h2>
         
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {% for project in projects %}
-            <div class="bg-white rounded-lg shadow-lg p-6 hover:shadow-xl transition">
+            <div class="rounded-lg shadow-lg p-6 transition" style="background: rgba(26, 23, 34, 0.6); backdrop-filter: blur(20px); border: 1px solid rgba(132, 0, 255, 0.2);">
                 <div class="flex items-center justify-between mb-4">
-                    <span class="px-3 py-1 rounded-full text-xs font-semibold
-                        {% if project.stage == 'concept' %}bg-blue-100 text-blue-800
-                        {% elif project.stage == 'parts' %}bg-green-100 text-green-800
-                        {% elif project.stage == 'generation' %}bg-purple-100 text-purple-800
-                        {% else %}bg-gray-100 text-gray-800{% endif %}">
+                    <span class="px-3 py-1 rounded-full text-xs font-semibold"
+                        style="{% if project.stage == 'concept' %}background: rgba(132, 0, 255, 0.2); color: #9d33ff;
+                        {% elif project.stage == 'parts' %}background: rgba(16, 185, 129, 0.2); color: #10b981;
+                        {% elif project.stage == 'generation' %}background: rgba(230, 0, 165, 0.2); color: #ff33c1;
+                        {% else %}background: rgba(255, 255, 255, 0.1); color: #8a8694;{% endif %}">
                         Stage: {{ project.stage|title }}
                     </span>
-                    <span class="text-sm text-gray-500">
+                    <span class="text-sm" style="color: #8a8694;">
                         {{ project.created_at|date:"M d, Y" }}
                     </span>
                 </div>
                 
-                <h3 class="text-lg font-bold text-gray-800 mb-2">
+                <h3 class="text-lg font-bold mb-2" style="color: #ffffff;">
                     {{ project.original_prompt|truncatewords:10 }}
                 </h3>
                 
                 {% if project.total_parts > 0 %}
                 <div class="mb-4">
-                    <p class="text-sm text-gray-600">
+                    <p class="text-sm" style="color: #b8b4c5;">
                         {{ project.total_parts }} parts 
                         ({{ project.generated_parts }} generated)
                     </p>
@@ -78,7 +85,8 @@
                 {% endif %}
                 
                 <a href="/design/projects/{{ project.id }}/" 
-                   class="inline-block bg-purple-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-purple-700 transition">
+                   class="inline-block px-4 py-2 rounded-lg font-semibold transition"
+                   style="background: linear-gradient(135deg, #8400ff 0%, #e600a5 100%); color: white;">
                     View Project →
                 </a>
             </div>
@@ -88,50 +96,50 @@
     {% endif %}
 
     <!-- How It Works -->
-    <div class="bg-gradient-to-r from-purple-50 to-blue-50 rounded-lg p-8">
-        <h2 class="text-2xl font-bold text-gray-800 mb-6">How the 4-Stage Workflow Works</h2>
+    <div class="rounded-lg p-8" style="background: linear-gradient(135deg, rgba(132, 0, 255, 0.1) 0%, rgba(230, 0, 165, 0.1) 100%); border: 1px solid rgba(132, 0, 255, 0.2);">
+        <h2 class="text-2xl font-bold mb-6" style="color: #ffffff;">How the 4-Stage Workflow Works</h2>
         
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <div class="bg-white rounded-lg p-6">
+            <div class="rounded-lg p-6" style="background: rgba(26, 23, 34, 0.8); backdrop-filter: blur(10px); border: 1px solid rgba(132, 0, 255, 0.2);">
                 <div class="text-3xl mb-4">📝</div>
-                <h3 class="text-lg font-bold text-gray-800 mb-2">Stage 1: Design Concept</h3>
-                <p class="text-gray-600 text-sm">
+                <h3 class="text-lg font-bold mb-2" style="color: #ffffff;">Stage 1: Design Concept</h3>
+                <p class="text-sm" style="color: #b8b4c5;">
                     AI generates a detailed design concept from your idea. Review and approve or request refinements.
                 </p>
             </div>
             
-            <div class="bg-white rounded-lg p-6">
+            <div class="rounded-lg p-6" style="background: rgba(26, 23, 34, 0.8); backdrop-filter: blur(10px); border: 1px solid rgba(132, 0, 255, 0.2);">
                 <div class="text-3xl mb-4">🏛️</div>
-                <h3 class="text-lg font-bold text-gray-800 mb-2">Stage 2: Overall Model</h3>
-                <p class="text-gray-600 text-sm">
+                <h3 class="text-lg font-bold mb-2" style="color: #ffffff;">Stage 2: Overall Model</h3>
+                <p class="text-sm" style="color: #b8b4c5;">
                     AI generates a complete 3D model of your design. Review the overall look before breaking into parts.
                 </p>
             </div>
             
-            <div class="bg-white rounded-lg p-6">
+            <div class="rounded-lg p-6" style="background: rgba(26, 23, 34, 0.8); backdrop-filter: blur(10px); border: 1px solid rgba(132, 0, 255, 0.2);">
                 <div class="text-3xl mb-4">🔧</div>
-                <h3 class="text-lg font-bold text-gray-800 mb-2">Stage 3: Part Breakdown</h3>
-                <p class="text-gray-600 text-sm">
+                <h3 class="text-lg font-bold mb-2" style="color: #ffffff;">Stage 3: Part Breakdown</h3>
+                <p class="text-sm" style="color: #b8b4c5;">
                     AI splits the design into manufacturable parts (up to 200+) and recommends 3D printing or CNC for each.
                 </p>
             </div>
             
-            <div class="bg-white rounded-lg p-6">
+            <div class="rounded-lg p-6" style="background: rgba(26, 23, 34, 0.8); backdrop-filter: blur(10px); border: 1px solid rgba(132, 0, 255, 0.2);">
                 <div class="text-3xl mb-4">⚙️</div>
-                <h3 class="text-lg font-bold text-gray-800 mb-2">Stage 4: CAD Generation</h3>
-                <p class="text-gray-600 text-sm">
+                <h3 class="text-lg font-bold mb-2" style="color: #ffffff;">Stage 4: CAD Generation</h3>
+                <p class="text-sm" style="color: #b8b4c5;">
                     AI generates precise parametric CAD models using CadQuery. Download STEP files (for CAD software) and STL files (for 3D printing). Fast generation in 5-10 seconds per part.
                 </p>
             </div>
         </div>
     </div>
-<</div>
+</div>
 
 <!-- Printer Selector Modal -->
-<div id="printerModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50">
-    <div class="bg-white rounded-lg p-6 max-w-md w-full mx-4">
-        <h3 class="text-xl font-bold mb-4">Send to Printer</h3>
-        <p class="text-sm text-gray-600 mb-4">Part: <span id="modalPartName"></span></p>
+<div id="printerModal" class="fixed inset-0 hidden flex items-center justify-center z-50" style="background: rgba(19, 17, 26, 0.95); backdrop-filter: blur(12px);">
+    <div class="rounded-lg p-6 max-w-md w-full mx-4" style="background: rgba(26, 23, 34, 0.95); backdrop-filter: blur(20px); border: 1px solid rgba(132, 0, 255, 0.3); box-shadow: 0 24px 64px rgba(0, 0, 0, 0.5);">
+        <h3 class="text-xl font-bold mb-4" style="color: #ffffff;">Send to Printer</h3>
+        <p class="text-sm mb-4" style="color: #b8b4c5;">Part: <span id="modalPartName"></span></p>
         
         <div id="printerList" class="space-y-2 mb-4">
             <!-- Printers will be loaded here -->
@@ -140,7 +148,7 @@
         <div id="sendResult" class="mb-4"></div>
         
         <div class="flex gap-2">
-            <button onclick="closePrinterModal()" class="flex-1 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">
+            <button onclick="closePrinterModal()" class="flex-1 px-4 py-2 rounded-lg transition" style="border: 1px solid rgba(132, 0, 255, 0.3); color: #ffffff; background: rgba(255, 255, 255, 0.05);">
                 Cancel
             </button>
         </div>
@@ -178,7 +186,7 @@
                 const printerList = document.getElementById('printerList');
                 
                 if (printerCards.length === 0) {
-                    printerList.innerHTML = '<p class="text-gray-500 text-sm">No printers configured. <a href="/printers/add" class="text-purple-600 hover:underline">Add a printer</a></p>';
+                    printerList.innerHTML = '<p class="text-sm" style="color: #8a8694;">No printers configured. <a href="/printers/add" style="color: #8400ff;">Add a printer</a></p>';
                     return;
                 }
                 
@@ -187,12 +195,13 @@
                 printerCards.forEach(card => {
                     const href = card.getAttribute('href');
                     const printerId = href.split('/').pop();
-                    const printerName = card.closest('.bg-white').querySelector('h3').textContent;
+                    const printerName = card.closest('.bg-white, [style*="background"]').querySelector('h3').textContent;
                     
                     buttons += `
                         <button 
                             onclick="sendToPrinter('${printerId}', '${printerName}')"
-                            class="w-full px-4 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 text-left"
+                            class="w-full px-4 py-3 rounded-lg text-left transition"
+                            style="background: linear-gradient(135deg, #8400ff 0%, #e600a5 100%); color: white;"
                         >
                             🖨️ ${printerName}
                         </button>
@@ -202,13 +211,13 @@
                 printerList.innerHTML = buttons;
             })
             .catch(error => {
-                document.getElementById('printerList').innerHTML = '<p class="text-red-500 text-sm">Failed to load printers</p>';
+                document.getElementById('printerList').innerHTML = '<p class="text-sm" style="color: #ef4444;">Failed to load printers</p>';
             });
     }
     
     function sendToPrinter(printerId, printerName) {
         const resultDiv = document.getElementById('sendResult');
-        resultDiv.innerHTML = '<p class="text-gray-500 text-sm">Sending to ' + printerName + '...</p>';
+        resultDiv.innerHTML = '<p class="text-sm" style="color: #8a8694;">Sending to ' + printerName + '...</p>';
         
         // Send to printer
         fetch(`/api/design/send-to-printer/${currentProjectId}/${currentPartNumber}/`, {
@@ -224,7 +233,7 @@
             resultDiv.innerHTML = html;
         })
         .catch(error => {
-            resultDiv.innerHTML = '<div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">Error: ' + error + '</div>';
+            resultDiv.innerHTML = '<div class="px-4 py-3 rounded" style="background: rgba(239, 68, 68, 0.2); border: 1px solid rgba(239, 68, 68, 0.4); color: #ef4444;">Error: ' + error + '</div>';
         });
     }
     
