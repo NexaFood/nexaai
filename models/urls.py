@@ -12,6 +12,7 @@ from . import dashboard_views
 from . import home_automation_views
 from . import printer_dashboard_views
 from . import cad_dashboard_views
+from . import dashboard_manager_views
 
 app_name = 'models'
 
@@ -19,6 +20,16 @@ urlpatterns = [
     # Template views (main application)
     path('', dashboard_views.dashboard, name='home'),
     path('dashboard/', dashboard_views.dashboard, name='dashboard'),
+    path('dashboard/<str:dashboard_id>/', dashboard_views.dashboard, name='dashboard_view'),
+    
+    # Dashboard Management API
+    path('api/dashboards/', dashboard_manager_views.api_get_dashboards, name='api_get_dashboards'),
+    path('api/dashboards/create/', dashboard_manager_views.api_create_dashboard, name='api_create_dashboard'),
+    path('api/dashboards/<str:dashboard_id>/update/', dashboard_manager_views.api_update_dashboard, name='api_update_dashboard'),
+    path('api/dashboards/<str:dashboard_id>/delete/', dashboard_manager_views.api_delete_dashboard, name='api_delete_dashboard'),
+    path('api/dashboards/<str:dashboard_id>/set-default/', dashboard_manager_views.api_set_default_dashboard, name='api_set_default_dashboard'),
+    path('api/dashboards/<str:dashboard_id>/layout/', dashboard_manager_views.api_get_dashboard_layout, name='api_get_dashboard_layout'),
+    path('api/dashboards/<str:dashboard_id>/save-layout/', dashboard_manager_views.api_save_dashboard_layout, name='api_save_dashboard_layout'),
     
     # Printer management
     path('printers/', views.printers, name='printers'),

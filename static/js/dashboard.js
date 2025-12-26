@@ -9,11 +9,14 @@ class DashboardManager {
         this.widgets = [];
         this.draggedWidget = null;
         this.draggedOverWidget = null;
+        this.currentDashboardId = window.currentDashboardId || null;
+        this.dashboards = [];
         
         this.init();
     }
     
     init() {
+        this.loadDashboards();
         this.loadDashboard();
         this.initializeEventListeners();
     }
@@ -40,6 +43,21 @@ class DashboardManager {
             if (confirm('Reset to default layout? This will remove all customizations.')) {
                 this.resetLayout();
             }
+        });
+        
+        // Dashboard switcher button
+        document.getElementById('dashboard-switcher-btn')?.addEventListener('click', () => {
+            this.showDashboardSwitcher();
+        });
+        
+        // Icon selector
+        document.querySelectorAll('.icon-option').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                document.querySelectorAll('.icon-option').forEach(b => b.classList.remove('selected'));
+                btn.classList.add('selected');
+                document.getElementById('dashboard-icon').value = btn.dataset.icon;
+            });
         });
         
         // Modal close
@@ -104,7 +122,10 @@ class DashboardManager {
     }
     
     async loadFromServer() {
-        const response = await fetch('/api/dashboard/layout/');
+        if (!this.currentDashboardId) {
+            throw new Error('No dashboard ID');
+        }
+        const response = await fetch(`/api/dashboards/${this.currentDashboardId}/layout/`);
         if (!response.ok) throw new Error('Failed to load layout');
         const data = await response.json();
         this.widgets = data.widgets || this.getDefaultLayout();
@@ -449,18 +470,26 @@ class DashboardManager {
     }
     
     async saveLayout() {
-        // Save to localStorage
-        localStorage.setItem('dashboard_layout', JSON.stringify(this.widgets));
+        // Save to localStorage (per dashboard)
+        if (this.currentDashboardId) {
+            localStorage.setItem(`dashboard_layout_${this.currentDashboardId}`, JSON.stringify(this.widgets));
+        }
         
         // Try to save to server
         try {
-            const response = await fetch('/api/dashboard/layout/', {
+            if (!this.currentDashboardId) {
+                throw new Error('No dashboard ID');
+            }
+            
+            const formData = new FormData();
+            formData.append('widgets', JSON.stringify(this.widgets));
+            
+            const response = await fetch(`/api/dashboards/${this.currentDashboardId}/save-layout/`, {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json',
                     'X-CSRFToken': this.getCsrfToken()
                 },
-                body: JSON.stringify({ widgets: this.widgets })
+                body: formData
             });
             
             if (response.ok) {
@@ -512,3 +541,243 @@ class DashboardManager {
 document.addEventListener('DOMContentLoaded', () => {
     window.dashboardManager = new DashboardManager();
 });
+
+    // Dashboard Management Methods
+    async loadDashboards() {
+        try {
+            const response = await fetch('/api/dashboards/');
+            if (!response.ok) throw new Error('Failed to load dashboards');
+            const data = await response.json();
+            this.dashboards = data.dashboards || [];
+        } catch (error) {
+            console.error('Failed to load dashboards:', error);
+            this.dashboards = [];
+        }
+    }
+    
+    showDashboardSwitcher() {
+        const modal = document.getElementById('dashboard-switcher-modal');
+        const listContainer = document.getElementById('dashboard-list');
+        
+        listContainer.innerHTML = '';
+        
+        this.dashboards.forEach(dashboard => {
+            const card = document.createElement('div');
+            card.className = `dashboard-card ${dashboard.id === this.currentDashboardId ? 'active' : ''}`;
+            card.innerHTML = `
+                <div class="dashboard-card-header">
+                    <div class="dashboard-card-title">
+                        <span>${dashboard.icon}</span>
+                        <span>${dashboard.name}</span>
+                        ${dashboard.is_default ? '<span style="font-size: 0.75rem; color: var(--color-accent);">★</span>' : ''}
+                    </div>
+                    <div class="dashboard-card-actions">
+                        <button class="dashboard-card-btn" onclick="dashboardManager.editDashboard('${dashboard.id}')" title="Edit">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                            </svg>
+                        </button>
+                        ${!dashboard.is_default ? `
+                            <button class="dashboard-card-btn" onclick="dashboardManager.setDefaultDashboard('${dashboard.id}')" title="Set as Default">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                                </svg>
+                            </button>
+                            <button class="dashboard-card-btn" onclick="dashboardManager.deleteDashboard('${dashboard.id}')" title="Delete">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polyline points="3 6 5 6 21 6"></polyline>
+                                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                                </svg>
+                            </button>
+                        ` : ''}
+                    </div>
+                </div>
+                <div style="color: var(--color-text-muted); font-size: 0.875rem; margin-top: 0.5rem;">
+                    ${dashboard.room ? dashboard.room + ' • ' : ''}${dashboard.widget_count} widgets
+                </div>
+            `;
+            
+            card.addEventListener('click', (e) => {
+                if (!e.target.closest('.dashboard-card-btn')) {
+                    this.switchDashboard(dashboard.id);
+                }
+            });
+            
+            listContainer.appendChild(card);
+        });
+        
+        modal.classList.add('active');
+    }
+    
+    switchDashboard(dashboardId) {
+        if (dashboardId === this.currentDashboardId) {
+            this.closeDashboardSwitcher();
+            return;
+        }
+        
+        window.location.href = `/dashboard/${dashboardId}/`;
+    }
+    
+    showCreateDashboard() {
+        document.getElementById('dashboard-switcher-modal').classList.remove('active');
+        document.getElementById('dashboard-edit-title').textContent = 'Create Dashboard';
+        document.getElementById('edit-dashboard-id').value = '';
+        document.getElementById('dashboard-name').value = '';
+        document.getElementById('dashboard-room').value = '';
+        document.getElementById('dashboard-icon').value = '🏠';
+        document.querySelectorAll('.icon-option').forEach(btn => {
+            btn.classList.toggle('selected', btn.dataset.icon === '🏠');
+        });
+        document.getElementById('dashboard-edit-modal').classList.add('active');
+    }
+    
+    async editDashboard(dashboardId) {
+        const dashboard = this.dashboards.find(d => d.id === dashboardId);
+        if (!dashboard) return;
+        
+        document.getElementById('dashboard-switcher-modal').classList.remove('active');
+        document.getElementById('dashboard-edit-title').textContent = 'Edit Dashboard';
+        document.getElementById('edit-dashboard-id').value = dashboard.id;
+        document.getElementById('dashboard-name').value = dashboard.name;
+        document.getElementById('dashboard-room').value = dashboard.room || '';
+        document.getElementById('dashboard-icon').value = dashboard.icon;
+        document.querySelectorAll('.icon-option').forEach(btn => {
+            btn.classList.toggle('selected', btn.dataset.icon === dashboard.icon);
+        });
+        document.getElementById('dashboard-edit-modal').classList.add('active');
+    }
+    
+    async saveDashboard() {
+        const dashboardId = document.getElementById('edit-dashboard-id').value;
+        const name = document.getElementById('dashboard-name').value.trim();
+        const room = document.getElementById('dashboard-room').value.trim();
+        const icon = document.getElementById('dashboard-icon').value;
+        
+        if (!name) {
+            this.showNotification('Dashboard name is required', 'error');
+            return;
+        }
+        
+        const formData = new FormData();
+        formData.append('name', name);
+        formData.append('room', room);
+        formData.append('icon', icon);
+        
+        try {
+            const url = dashboardId 
+                ? `/api/dashboards/${dashboardId}/update/`
+                : '/api/dashboards/create/';
+            
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': this.getCsrfToken()
+                },
+                body: formData
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                this.showNotification(dashboardId ? 'Dashboard updated!' : 'Dashboard created!', 'success');
+                this.closeDashboardEdit();
+                
+                if (!dashboardId && data.dashboard) {
+                    // Switch to new dashboard
+                    window.location.href = `/dashboard/${data.dashboard.id}/`;
+                } else {
+                    // Reload dashboards list
+                    await this.loadDashboards();
+                    if (dashboardId === this.currentDashboardId) {
+                        // Update current dashboard title
+                        document.getElementById('dashboard-title').textContent = `${icon} ${name}`;
+                    }
+                }
+            } else {
+                this.showNotification(data.error || 'Failed to save dashboard', 'error');
+            }
+        } catch (error) {
+            console.error('Failed to save dashboard:', error);
+            this.showNotification('Failed to save dashboard', 'error');
+        }
+    }
+    
+    async setDefaultDashboard(dashboardId) {
+        try {
+            const response = await fetch(`/api/dashboards/${dashboardId}/set-default/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': this.getCsrfToken()
+                }
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                this.showNotification('Default dashboard updated!', 'success');
+                await this.loadDashboards();
+                this.showDashboardSwitcher();
+            } else {
+                this.showNotification(data.error || 'Failed to set default', 'error');
+            }
+        } catch (error) {
+            console.error('Failed to set default dashboard:', error);
+            this.showNotification('Failed to set default dashboard', 'error');
+        }
+    }
+    
+    async deleteDashboard(dashboardId) {
+        if (!confirm('Are you sure you want to delete this dashboard?')) {
+            return;
+        }
+        
+        try {
+            const response = await fetch(`/api/dashboards/${dashboardId}/delete/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': this.getCsrfToken()
+                }
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                this.showNotification('Dashboard deleted!', 'success');
+                await this.loadDashboards();
+                
+                if (dashboardId === this.currentDashboardId) {
+                    // Redirect to default dashboard
+                    window.location.href = '/dashboard/';
+                } else {
+                    this.showDashboardSwitcher();
+                }
+            } else {
+                this.showNotification(data.error || 'Failed to delete dashboard', 'error');
+            }
+        } catch (error) {
+            console.error('Failed to delete dashboard:', error);
+            this.showNotification('Failed to delete dashboard', 'error');
+        }
+    }
+}
+
+// Global functions for modal controls
+function closeDashboardSwitcher() {
+    document.getElementById('dashboard-switcher-modal').classList.remove('active');
+}
+
+function closeDashboardEdit() {
+    document.getElementById('dashboard-edit-modal').classList.remove('active');
+}
+
+function showCreateDashboard() {
+    dashboardManager.showCreateDashboard();
+}
+
+function saveDashboard() {
+    dashboardManager.saveDashboard();
+}
+
+// Initialize dashboard manager
+const dashboardManager = new DashboardManager();

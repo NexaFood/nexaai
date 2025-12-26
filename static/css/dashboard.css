@@ -835,3 +835,84 @@
 .widget.loading {
     animation: loading-pulse 2s ease-in-out infinite;
 }
+
+/* Dashboard Management */
+.dashboard-card {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(132, 0, 255, 0.2);
+    border-radius: 0.75rem;
+    padding: 1.25rem;
+    transition: all 0.3s;
+    cursor: pointer;
+    position: relative;
+}
+
+.dashboard-card:hover {
+    background: rgba(132, 0, 255, 0.15);
+    border-color: var(--color-secondary);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(132, 0, 255, 0.4);
+}
+
+.dashboard-card.active {
+    border-color: var(--color-accent);
+    background: rgba(230, 0, 165, 0.15);
+}
+
+.dashboard-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+}
+
+.dashboard-card-title {
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: var(--color-text);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.dashboard-card-actions {
+    display: flex;
+    gap: 0.25rem;
+}
+
+.dashboard-card-btn {
+    background: transparent;
+    border: none;
+    color: var(--color-text-dim);
+    cursor: pointer;
+    padding: 0.25rem;
+    border-radius: 0.25rem;
+    transition: all 0.2s;
+}
+
+.dashboard-card-btn:hover {
+    color: var(--color-secondary);
+    background: rgba(132, 0, 255, 0.2);
+}
+
+.icon-option {
+    background: rgba(255, 255, 255, 0.05);
+    border: 2px solid rgba(132, 0, 255, 0.2);
+    border-radius: 0.5rem;
+    padding: 0.75rem;
+    font-size: 1.5rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.icon-option:hover {
+    background: rgba(132, 0, 255, 0.15);
+    border-color: var(--color-secondary);
+    transform: scale(1.1);
+}
+
+.icon-option.selected {
+    background: rgba(132, 0, 255, 0.3);
+    border-color: var(--color-accent);
+    box-shadow: 0 0 12px rgba(230, 0, 165, 0.5);
+}
