@@ -96,10 +96,7 @@ def api_generate_overall_model(request, project_id):
                     <p class="font-semibold">✗ Overall model generation failed</p>
                     <p class="text-sm mt-1">{error_msg}</p>
                     
-                    {f'''<div class="mt-3 border-t border-red-300 pt-3">
-                        <p class="text-sm font-semibold mb-2">📄 Executed Script (overall_model_script.py):</p>
-                        <pre class="bg-gray-900 text-yellow-300 p-3 rounded text-xs overflow-x-auto max-h-60 overflow-y-auto">{actual_script}</pre>
-                    </div>''' if actual_script else '<p class="text-sm mt-2 italic">No code was generated.</p>'}
+                    {('<div class="mt-3 border-t border-red-300 pt-3"><p class="text-sm font-semibold mb-2">📄 Executed Script (overall_model_script.py):</p><pre class="bg-gray-900 text-yellow-300 p-3 rounded text-xs overflow-x-auto max-h-60 overflow-y-auto">' + actual_script + '</pre></div>') if actual_script else '<p class="text-sm mt-2 italic">No code was generated.</p>'}
                     
                     <div class="mt-4 border-t border-red-300 pt-3">
                         <p class="text-sm font-semibold mb-2">📊 Help improve the AI:</p>
@@ -116,7 +113,7 @@ def api_generate_overall_model(request, project_id):
                                 <textarea 
                                     id="correction-overall_model-{project_id}"
                                     class="w-full h-64 p-2 border rounded font-mono text-xs"
-                                    placeholder="import cadquery as cq\n\nresult = ...">{actual_script if actual_script else 'import cadquery as cq\n\nresult = '}</textarea>
+                                    placeholder="import cadquery as cq&#10;&#10;result = ...">{actual_script if actual_script else 'import cadquery as cq&#10;&#10;result = '}</textarea>
                                 <button 
                                     onclick="submitCorrection('{project_id}', 'overall_model')"
                                     class="mt-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-semibold">
