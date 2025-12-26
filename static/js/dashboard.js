@@ -535,13 +535,7 @@ class DashboardManager {
             setTimeout(() => notification.remove(), 300);
         }, 3000);
     }
-}
-
-// Initialize dashboard when DOM is ready
-document.addEventListener('DOMContentLoaded', () => {
-    window.dashboardManager = new DashboardManager();
-});
-
+    
     // Dashboard Management Methods
     async loadDashboards() {
         try {
@@ -764,12 +758,16 @@ function closeDashboardEdit() {
 }
 
 function showCreateDashboard() {
-    dashboardManager.showCreateDashboard();
+    window.dashboardManager.showCreateDashboard();
 }
 
 function saveDashboard() {
-    dashboardManager.saveDashboard();
+    window.dashboardManager.saveDashboard();
 }
 
-// Initialize dashboard manager
-const dashboardManager = new DashboardManager();
+// Initialize dashboard manager when DOM is ready
+let dashboardManager;
+document.addEventListener('DOMContentLoaded', () => {
+    dashboardManager = new DashboardManager();
+    window.dashboardManager = dashboardManager;
+});
