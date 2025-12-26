@@ -598,7 +598,7 @@ class DashboardManager {
     
     switchDashboard(dashboardId) {
         if (dashboardId === this.currentDashboardId) {
-            this.closeDashboardSwitcher();
+            closeDashboardSwitcher();
             return;
         }
         
@@ -667,7 +667,7 @@ class DashboardManager {
             
             if (data.success) {
                 this.showNotification(dashboardId ? 'Dashboard updated!' : 'Dashboard created!', 'success');
-                this.closeDashboardEdit();
+                closeDashboardEdit();
                 
                 if (!dashboardId && data.dashboard) {
                     // Switch to new dashboard
