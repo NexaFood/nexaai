@@ -73,6 +73,11 @@ class MongoDB:
             logger.warning(f"Failed to create indexes: {e}")
     
     @property
+    def dashboards(self):
+        """Dashboards collection."""
+        return self._db.dashboards
+
+    @property
     def models(self):
         """3D models collection."""
         return self._db.models_3d
