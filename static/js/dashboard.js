@@ -19,6 +19,21 @@ class DashboardManager {
         this.loadDashboards();
         this.loadDashboard();
         this.initializeEventListeners();
+        this.updateDashboardTitleIcon();
+    }
+    
+    updateDashboardTitleIcon() {
+        // Convert emoji icon in title to Bootstrap Icon
+        const titleElement = document.getElementById('dashboard-title');
+        if (titleElement) {
+            const text = titleElement.textContent.trim();
+            const parts = text.split(' ');
+            if (parts.length > 0) {
+                const icon = parts[0];
+                const name = parts.slice(1).join(' ');
+                titleElement.innerHTML = `${this.getIconHTML(icon)} ${name}`;
+            }
+        }
     }
     
     initializeEventListeners() {
@@ -721,6 +736,31 @@ class DashboardManager {
     
     // Dashboard Management Methods
     getIconHTML(iconName) {
+        // Map emoji to icon names (for backward compatibility)
+        const emojiToName = {
+            '🏠': 'house',
+            '🛋️': 'sofa',
+            '🛋': 'sofa',
+            '🍳': 'kitchen',
+            '🛌️': 'bed',
+            '🛌': 'bed',
+            '🛠️': 'tools',
+            '🛠': 'tools',
+            '🏋️': 'gym',
+            '🏋': 'gym',
+            '🎮': 'game',
+            '📚': 'book',
+            '🎵': 'music',
+            '🎨': 'palette',
+            '👾': 'tv',
+            '⚙️': 'gear',
+            '⚙': 'gear'
+        };
+        
+        // Convert emoji to icon name if needed
+        const name = emojiToName[iconName] || iconName;
+        
+        // Map icon names to Bootstrap Icons HTML
         const iconMap = {
             'house': '<i class="bi bi-house" style="color: #8400ff;"></i>',
             'sofa': '<i class="bi bi-lamp" style="color: #e600a5;"></i>',
@@ -735,7 +775,8 @@ class DashboardManager {
             'tv': '<i class="bi bi-tv" style="color: #8400ff;"></i>',
             'gear': '<i class="bi bi-gear" style="color: #e600a5;"></i>'
         };
-        return iconMap[iconName] || iconName;
+        
+        return iconMap[name] || name;
     }
     
     async loadDashboards() {
