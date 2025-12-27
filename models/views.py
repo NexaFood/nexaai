@@ -712,3 +712,18 @@ def login_view(request):
             'username': username
         }
         return render(request, 'registration/login.html', context)
+
+
+
+def logout_view(request):
+    """Custom logout view that works with GET requests."""
+    # Clear the session
+    if 'user' in request.session:
+        del request.session['user']
+    
+    # Also logout from Django auth system if used
+    from django.contrib.auth import logout
+    logout(request)
+    
+    # Redirect to home page
+    return redirect('/')

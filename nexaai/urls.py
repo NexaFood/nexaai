@@ -13,7 +13,7 @@ urlpatterns = [
     
     # Authentication URLs
     path('login/', views.login_view, name='login'),
-    path('logout/', auth_views.LogoutView.as_view(next_page='/'), name='logout'),
+    path('logout/', views.logout_view, name='logout'),
     path('signup/', views.signup, name='signup'),
     
     # Main application URLs
