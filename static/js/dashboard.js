@@ -329,7 +329,9 @@ class DashboardManager {
                     }
                     
                     const container = widgetElement.querySelector('.widget-content');
-                    container.innerHTML = this.renderLightsWidget(groupsToShow, data.groups.length);
+                    if (container) {
+                        container.innerHTML = this.renderLightsWidget(groupsToShow, data.groups.length);
+                    }
                 });
             } else {
                 // No groups configured
@@ -605,9 +607,9 @@ class DashboardManager {
                             `).join('')}
                         </div>
                     </div>
-                    <div class="modal-footer">
-                        <button class="btn-secondary" onclick="this.closest('.modal').remove()">Cancel</button>
-                        <button class="btn-primary" id="add-lights-widget-btn">Add Widget</button>
+                    <div class="modal-footer" style="display: flex; gap: 1rem; justify-content: flex-end;">
+                        <button onclick="this.closest('.modal').remove()" style="padding: 0.75rem 1.5rem; border-radius: 8px; border: 1px solid rgba(132, 0, 255, 0.3); background: rgba(26, 23, 34, 0.6); color: #ffffff; cursor: pointer; transition: all 0.3s ease;">Cancel</button>
+                        <button id="add-lights-widget-btn" style="padding: 0.75rem 1.5rem; border-radius: 8px; border: none; background: linear-gradient(135deg, #8400ff, #e600a5); color: white; cursor: pointer; transition: all 0.3s ease;">Add Widget</button>
                     </div>
                 </div>
             `;
