@@ -415,20 +415,17 @@ def api_list_groups(request):
         # Get all groups for this user
         user_groups = [g for g in light_manager.get_all_groups() if hasattr(g, 'user_id') and g.user_id == user_id]
         
+        # Batch load all lights once to create dev_id -> MongoDB ID mapping
+        all_lights = list(db.ledvance_lights.find({'user_id': user_id}))
+        dev_id_to_mongo_id = {light['dev_id']: str(light['_id']) for light in all_lights}
+        
         groups_data = []
         for group in user_groups:
             status = group.get_status()
             # Get light IDs (dev_ids) for this group
             light_dev_ids = [light.dev_id for light in group.lights]
-            # Convert dev_ids to MongoDB IDs for frontend
-            light_mongo_ids = []
-            for dev_id in light_dev_ids:
-                light_doc = db.ledvance_lights.find_one({
-                    'dev_id': dev_id,
-                    'user_id': user_id
-                })
-                if light_doc:
-                    light_mongo_ids.append(str(light_doc['_id']))
+            # Convert dev_ids to MongoDB IDs using the mapping (no DB queries!)
+            light_mongo_ids = [dev_id_to_mongo_id.get(dev_id) for dev_id in light_dev_ids if dev_id in dev_id_to_mongo_id]
             
             groups_data.append({
                 'id': group.group_id,
