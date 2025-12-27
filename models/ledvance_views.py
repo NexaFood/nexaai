@@ -422,6 +422,7 @@ def api_list_groups(request):
                 'id': group.group_id,
                 'name': group.name,
                 'room': getattr(group, 'room', ''),
+                'light_count': status['total_lights'],  # Frontend expects light_count
                 'total_lights': status['total_lights'],
                 'online_lights': status['online_lights'],
                 'lights_on': status['lights_on'],
