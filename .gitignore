@@ -39,3 +39,10 @@ training/cadquery_model/
 *.bin
 *.safetensors
 *.ckpt
+
+# Archives
+*.zip
+*.tar.gz
+*.tgz
+*.rar
+*.7z
