@@ -306,34 +306,34 @@ class DashboardManager {
     
     async loadRealLightsData() {
         try {
-            const response = await fetch('/api/ledvance/lights/');
+            const response = await fetch('/api/ledvance/groups/');
             const data = await response.json();
             
-            if (data.success && data.lights.length > 0) {
+            if (data.success && data.groups.length > 0) {
                 // Find all lights widgets and update them
                 document.querySelectorAll('[data-widget-type="lights"] .widget-content').forEach(container => {
-                    container.innerHTML = this.renderLightsWidget(data.lights);
+                    container.innerHTML = this.renderLightsWidget(data.groups);
                 });
             } else {
-                // No lights configured
+                // No groups configured
                 document.querySelectorAll('[data-widget-type="lights"] .widget-content').forEach(container => {
                     container.innerHTML = `
                         <div class="widget-list">
                             <div class="widget-list-item" style="flex-direction: column; align-items: flex-start; gap: 0.5rem;">
-                                <span style="color: #8a8694;">No lights configured</span>
-                                <a href="/lights/" style="color: #8400ff; text-decoration: none; font-size: 0.875rem;">Add lights →</a>
+                                <span style="color: #8a8694;">No light groups configured</span>
+                                <a href="/lights/" style="color: #8400ff; text-decoration: none; font-size: 0.875rem;">Create groups →</a>
                             </div>
                         </div>
                     `;
                 });
             }
         } catch (error) {
-            console.error('Failed to load lights:', error);
+            console.error('Failed to load light groups:', error);
             document.querySelectorAll('[data-widget-type="lights"] .widget-content').forEach(container => {
                 container.innerHTML = `
                     <div class="widget-list">
                         <div class="widget-list-item">
-                            <span style="color: #ef4444;">Failed to load lights</span>
+                            <span style="color: #ef4444;">Failed to load groups</span>
                         </div>
                     </div>
                 `;
@@ -341,19 +341,26 @@ class DashboardManager {
         }
     }
     
-    renderLightsWidget(lights) {
-        // Show max 4 lights in widget
-        const displayLights = lights.slice(0, 4);
-        const hasMore = lights.length > 4;
+    renderLightsWidget(groups) {
+        // Show max 4 groups in widget
+        const displayGroups = groups.slice(0, 4);
+        const hasMore = groups.length > 4;
         
         let html = '<div class="widget-list">';
         
-        displayLights.forEach(light => {
-            const statusClass = light.power ? 'status-on' : 'status-off';
-            const statusText = light.power ? 'ON' : 'OFF';
+        displayGroups.forEach(group => {
+            // Group is ON if any light is on
+            const isOn = group.lights_on > 0;
+            const statusClass = isOn ? 'status-on' : 'status-off';
+            const statusText = isOn ? 'ON' : 'OFF';
+            const lightCount = group.light_count || 0;
+            
             html += `
-                <div class="widget-list-item" style="cursor: pointer;" onclick="window.dashboardManager.toggleLightFromWidget('${light.id}')">
-                    <span>${light.name}</span>
+                <div class="widget-list-item" style="cursor: pointer;" onclick="window.dashboardManager.toggleGroupFromWidget('${group.id}')">
+                    <div style="display: flex; flex-direction: column; gap: 0.25rem;">
+                        <span>${group.name}</span>
+                        <span style="font-size: 0.75rem; color: #8a8694;">${lightCount} light${lightCount !== 1 ? 's' : ''}</span>
+                    </div>
                     <span class="${statusClass}">${statusText}</span>
                 </div>
             `;
@@ -362,7 +369,7 @@ class DashboardManager {
         if (hasMore) {
             html += `
                 <div class="widget-list-item">
-                    <a href="/lights/" style="color: #8400ff; text-decoration: none; font-size: 0.875rem;">View all ${lights.length} lights →</a>
+                    <a href="/lights/" style="color: #8400ff; text-decoration: none; font-size: 0.875rem;">View all ${groups.length} groups →</a>
                 </div>
             `;
         }
@@ -371,9 +378,9 @@ class DashboardManager {
         return html;
     }
     
-    async toggleLightFromWidget(lightId) {
+    async toggleGroupFromWidget(groupId) {
         try {
-            const response = await fetch(`/api/ledvance/lights/${lightId}/toggle/`, {
+            const response = await fetch(`/api/ledvance/groups/${groupId}/toggle/`, {
                 method: 'POST',
                 headers: {
                     'X-CSRFToken': this.getCsrfToken()
@@ -383,14 +390,14 @@ class DashboardManager {
             const data = await response.json();
             
             if (data.success) {
-                // Reload lights data to update UI
+                // Reload groups data to update UI
                 this.loadRealLightsData();
             } else {
-                alert('Failed to toggle light: ' + data.error);
+                alert('Failed to toggle group: ' + data.error);
             }
         } catch (error) {
-            console.error('Error toggling light:', error);
-            alert('Error toggling light');
+            console.error('Error toggling group:', error);
+            alert('Error toggling group');
         }
     }
     
