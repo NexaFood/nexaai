@@ -754,10 +754,92 @@ function displayLights(lights) {
     const grid = document.getElementById('lights-grid');
     grid.innerHTML = '';
     
+    // Group lights by room
+    const roomGroups = {};
+    lights.forEach(light => {
+        const room = light.room || 'No Room';
+        if (!roomGroups[room]) {
+            roomGroups[room] = [];
+        }
+        roomGroups[room].push(light);
+    });
+    
+    // Create collapsible sections for each room
+    Object.keys(roomGroups).sort().forEach(room => {
+        const roomLights = roomGroups[room];
+        const roomSection = createRoomSection(room, roomLights);
+        grid.appendChild(roomSection);
+    });
+}
+
+function createRoomSection(roomName, lights) {
+    const section = document.createElement('div');
+    section.className = 'room-section';
+    section.style.cssText = 'margin-bottom: 2rem;';
+    
+    // Room header (clickable to collapse/expand)
+    const header = document.createElement('div');
+    header.className = 'room-header';
+    header.style.cssText = `
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 1rem 1.5rem;
+        background: rgba(26, 23, 34, 0.6);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(132, 0, 255, 0.2);
+        border-radius: 12px;
+        cursor: pointer;
+        margin-bottom: 1rem;
+        transition: all 0.3s ease;
+    `;
+    
+    const isExpanded = localStorage.getItem(`room-${roomName}-expanded`) !== 'false';
+    
+    header.innerHTML = `
+        <div style="display: flex; align-items: center; gap: 1rem;">
+            <i class="bi bi-chevron-${isExpanded ? 'down' : 'right'}" style="font-size: 1.2rem; color: #8400ff; transition: transform 0.3s ease;"></i>
+            <h2 style="margin: 0; font-size: 1.3rem; background: linear-gradient(135deg, #8400ff, #e600a5); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">${roomName}</h2>
+            <span style="color: #8a8694; font-size: 0.9rem;">${lights.length} light${lights.length !== 1 ? 's' : ''}</span>
+        </div>
+        <div style="display: flex; gap: 0.5rem;">
+            <button class="btn-power on" onclick="event.stopPropagation(); toggleRoomLights('${roomName}', true);" style="padding: 0.5rem 1rem; font-size: 0.9rem;">
+                <i class="bi bi-lightbulb"></i> All On
+            </button>
+            <button class="btn-power off" onclick="event.stopPropagation(); toggleRoomLights('${roomName}', false);" style="padding: 0.5rem 1rem; font-size: 0.9rem;">
+                <i class="bi bi-lightbulb-off"></i> All Off
+            </button>
+        </div>
+    `;
+    
+    // Lights grid for this room
+    const lightsGrid = document.createElement('div');
+    lightsGrid.className = 'room-lights-grid';
+    lightsGrid.style.cssText = `
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 1.5rem;
+        transition: all 0.3s ease;
+    `;
+    lightsGrid.style.display = isExpanded ? 'grid' : 'none';
+    
     lights.forEach(light => {
         const card = createLightCard(light);
-        grid.appendChild(card);
+        lightsGrid.appendChild(card);
     });
+    
+    // Toggle collapse/expand
+    header.addEventListener('click', () => {
+        const isCurrentlyExpanded = lightsGrid.style.display === 'grid';
+        lightsGrid.style.display = isCurrentlyExpanded ? 'none' : 'grid';
+        const chevron = header.querySelector('i.bi-chevron-down, i.bi-chevron-right');
+        chevron.className = isCurrentlyExpanded ? 'bi bi-chevron-right' : 'bi bi-chevron-down';
+        localStorage.setItem(`room-${roomName}-expanded`, !isCurrentlyExpanded);
+    });
+    
+    section.appendChild(header);
+    section.appendChild(lightsGrid);
+    return section;
 }
 
 function createLightCard(light) {
@@ -844,7 +926,7 @@ async function addLight(event) {
     }
 }
 
-async function toggleLight(lightId) {
+async function toggleLight(lightId, reload = true) {
     try {
         const response = await fetch(`/api/ledvance/lights/${lightId}/toggle/`, {
             method: 'POST',
@@ -856,7 +938,9 @@ async function toggleLight(lightId) {
         const data = await response.json();
         
         if (data.success) {
-            loadLights();
+            if (reload) {
+                loadLights();
+            }
         } else {
             alert('Failed to toggle light: ' + data.error);
         }
@@ -920,6 +1004,36 @@ function showColorPicker(lightId) {
         } else {
             alert('Invalid color format. Use: r,g,b (0-255 each)');
         }
+    }
+}
+
+async function toggleRoomLights(roomName, turnOn) {
+    try {
+        // Get all lights in this room
+        const response = await fetch('/api/ledvance/lights/');
+        const data = await response.json();
+        
+        if (!data.success) {
+            alert('Failed to load lights');
+            return;
+        }
+        
+        const roomLights = data.lights.filter(light => 
+            (light.room || 'No Room') === roomName
+        );
+        
+        // Toggle each light in the room
+        for (const light of roomLights) {
+            if (light.power !== turnOn) {
+                await toggleLight(light.id, false); // false = don't reload after each
+            }
+        }
+        
+        // Reload once after all toggles
+        await loadLights();
+    } catch (error) {
+        console.error('Error toggling room lights:', error);
+        alert('Error toggling room lights');
     }
 }
 
