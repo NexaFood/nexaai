@@ -22,6 +22,7 @@ urlpatterns = [
     path('', dashboard_views.dashboard, name='home'),
     path('dashboard/', dashboard_views.dashboard, name='dashboard'),
     path('dashboard/<str:dashboard_id>/', dashboard_views.dashboard, name='dashboard_view'),
+    path('lights/', ledvance_views.lights_management, name='lights-management'),
     
     # Dashboard Management API
     path('api/dashboards/', dashboard_manager_views.api_get_dashboards, name='api_get_dashboards'),

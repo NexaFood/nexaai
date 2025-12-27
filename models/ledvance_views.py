@@ -597,3 +597,13 @@ def api_set_group_color(request, group_id):
             'success': False,
             'error': str(e)
         }, status=500)
+
+
+
+# Template view for lights management page
+
+@session_login_required
+def lights_management(request):
+    """Render the lights management page"""
+    from django.shortcuts import render
+    return render(request, 'lights_management.html')
