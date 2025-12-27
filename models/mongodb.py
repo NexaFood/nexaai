@@ -83,6 +83,11 @@ class MongoDB:
         return self._db.ledvance_lights
 
     @property
+    def ledvance_groups(self):
+        """Ledvance groups collection."""
+        return self._db.ledvance_groups
+
+    @property
     def models(self):
         """3D models collection."""
         return self._db.models_3d
