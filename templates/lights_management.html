@@ -412,6 +412,7 @@
             </button>
         </div>
         <form id="add-light-form" onsubmit="addLight(event)">
+            {% csrf_token %}
             <div class="form-group">
                 <label for="light-name">Light Name *</label>
                 <input type="text" id="light-name" name="name" required placeholder="e.g., Living Room Ceiling">
