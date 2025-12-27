@@ -13,6 +13,7 @@ from . import home_automation_views
 from . import printer_dashboard_views
 from . import cad_dashboard_views
 from . import dashboard_manager_views
+from . import ledvance_views
 
 app_name = 'models'
 
@@ -60,7 +61,21 @@ urlpatterns = [
     path('api/design/send-to-printer/<str:project_id>/<int:part_number>/', print_job_views.api_send_to_printer, name='api-send-to-printer'),
     path('api/printers/<str:printer_id>/status/', print_job_views.api_get_printer_status, name='api-printer-status'),
     
-    # Home Automation API endpoints
+    # Ledvance Smart Lights API endpoints
+    path('api/ledvance/lights/', ledvance_views.api_list_lights, name='api-ledvance-list-lights'),
+    path('api/ledvance/lights/add/', ledvance_views.api_add_light, name='api-ledvance-add-light'),
+    path('api/ledvance/lights/<str:light_id>/remove/', ledvance_views.api_remove_light, name='api-ledvance-remove-light'),
+    path('api/ledvance/lights/<str:light_id>/toggle/', ledvance_views.api_toggle_light, name='api-ledvance-toggle-light'),
+    path('api/ledvance/lights/<str:light_id>/brightness/', ledvance_views.api_set_light_brightness, name='api-ledvance-set-brightness'),
+    path('api/ledvance/lights/<str:light_id>/color/', ledvance_views.api_set_light_color, name='api-ledvance-set-color'),
+    path('api/ledvance/lights/<str:light_id>/temperature/', ledvance_views.api_set_light_temperature, name='api-ledvance-set-temperature'),
+    path('api/ledvance/groups/', ledvance_views.api_list_groups, name='api-ledvance-list-groups'),
+    path('api/ledvance/groups/create/', ledvance_views.api_create_group, name='api-ledvance-create-group'),
+    path('api/ledvance/groups/<str:group_id>/toggle/', ledvance_views.api_toggle_group, name='api-ledvance-toggle-group'),
+    path('api/ledvance/groups/<str:group_id>/brightness/', ledvance_views.api_set_group_brightness, name='api-ledvance-set-group-brightness'),
+    path('api/ledvance/groups/<str:group_id>/color/', ledvance_views.api_set_group_color, name='api-ledvance-set-group-color'),
+    
+    # Home Automation API endpoints (Mock Data)
     path('api/home/lights/', home_automation_views.api_get_lights, name='api-get-lights'),
     path('api/home/lights/<str:light_id>/', home_automation_views.api_toggle_light, name='api-toggle-light'),
     path('api/home/climate/', home_automation_views.api_get_climate, name='api-get-climate'),
