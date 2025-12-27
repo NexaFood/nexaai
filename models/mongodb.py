@@ -78,6 +78,11 @@ class MongoDB:
         return self._db.dashboards
 
     @property
+    def ledvance_lights(self):
+        """Ledvance lights collection."""
+        return self._db.ledvance_lights
+
+    @property
     def models(self):
         """3D models collection."""
         return self._db.models_3d
