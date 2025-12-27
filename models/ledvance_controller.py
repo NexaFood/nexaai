@@ -12,7 +12,7 @@ from typing import Dict, List, Optional, Tuple
 class LedvanceLight:
     """Controller for a single Ledvance Smart+ WiFi bulb"""
     
-    def __init__(self, dev_id: str, ip: str, local_key: str, name: str = None):
+    def __init__(self, dev_id: str, ip: str, local_key: str, name: str = None, version: float = 3.3):
         """
         Initialize Ledvance light controller
         
@@ -21,11 +21,13 @@ class LedvanceLight:
             ip: Local IP address
             local_key: Local encryption key from Ledvance app
             name: Friendly name for the light
+            version: Protocol version (3.3 or 3.5, default 3.3)
         """
         self.dev_id = dev_id
         self.ip = ip
         self.local_key = local_key
         self.name = name or dev_id
+        self.version = version
         self.bulb = None
         self._connect()
     
@@ -33,8 +35,9 @@ class LedvanceLight:
         """Establish connection to the bulb"""
         try:
             self.bulb = tinytuya.BulbDevice(self.dev_id, self.ip, self.local_key)
-            self.bulb.set_version(3.5)
+            self.bulb.set_version(self.version)
             self.bulb.set_socketPersistent(True)
+            print(f"Connected to {self.name} using protocol version {self.version}")
         except Exception as e:
             print(f"Failed to connect to {self.name} ({self.ip}): {e}")
             raise

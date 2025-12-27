@@ -33,7 +33,8 @@ def _load_user_lights(user_id: str):
                 dev_id=light_data['dev_id'],
                 ip=light_data['ip'],
                 local_key=light_data['local_key'],
-                name=light_data.get('name', light_data['dev_id'])
+                name=light_data.get('name', light_data['dev_id']),
+                version=light_data.get('version', 3.3)
             )
             light.user_id = user_id
             light.light_id = str(light_data['_id'])
@@ -127,6 +128,7 @@ def api_add_light(request):
         ip = request.POST.get('ip', '').strip()
         local_key = request.POST.get('local_key', '').strip()
         room = request.POST.get('room', '').strip()
+        version = float(request.POST.get('version', '3.3'))
         skip_test = request.POST.get('skip_test', 'false').lower() == 'true'
         
         if not all([name, dev_id, ip, local_key]):
@@ -142,7 +144,7 @@ def api_add_light(request):
                 logger = logging.getLogger(__name__)
                 logger.info(f"Testing connection to {dev_id} at {ip}")
                 
-                test_light = LedvanceLight(dev_id, ip, local_key, name)
+                test_light = LedvanceLight(dev_id, ip, local_key, name, version)
                 test_status = test_light.get_status()
                 
                 logger.info(f"Connection test result: {test_status}")
@@ -171,6 +173,7 @@ def api_add_light(request):
             'ip': ip,
             'local_key': local_key,
             'room': room,
+            'version': version,
             'created_at': datetime.utcnow(),
             'updated_at': datetime.utcnow()
         }
@@ -179,7 +182,7 @@ def api_add_light(request):
         light_data['_id'] = result.inserted_id
         
         # Add to manager
-        light = LedvanceLight(dev_id, ip, local_key, name)
+        light = LedvanceLight(dev_id, ip, local_key, name, version)
         light.user_id = user_id
         light.light_id = str(result.inserted_id)
         light.room = room
