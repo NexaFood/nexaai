@@ -519,6 +519,97 @@ def api_create_group(request):
 
 @session_login_required
 @require_http_methods(["POST"])
+def api_update_group(request, group_id):
+    """Update an existing light group"""
+    try:
+        user_id = str(request.user.id)
+        
+        # Find group in database
+        group_doc = db.ledvance_groups.find_one({
+            '_id': ObjectId(group_id),
+            'user_id': user_id
+        })
+        
+        if not group_doc:
+            return JsonResponse({
+                'success': False,
+                'error': 'Group not found'
+            }, status=404)
+        
+        # Get updated data
+        name = request.POST.get('name', '').strip()
+        room = request.POST.get('room', '').strip()
+        light_ids = request.POST.get('light_ids', '').strip()
+        
+        if not name:
+            return JsonResponse({
+                'success': False,
+                'error': 'Name is required'
+            }, status=400)
+        
+        # Parse and convert light IDs if provided
+        if light_ids:
+            try:
+                light_ids = json.loads(light_ids) if isinstance(light_ids, str) else light_ids
+            except:
+                light_ids = light_ids.split(',') if isinstance(light_ids, str) else []
+            
+            # Convert MongoDB document IDs to device IDs
+            dev_ids = []
+            for light_id in light_ids:
+                try:
+                    light_doc = db.ledvance_lights.find_one({
+                        '_id': ObjectId(light_id),
+                        'user_id': user_id
+                    })
+                    if light_doc:
+                        dev_ids.append(light_doc['dev_id'])
+                except Exception as e:
+                    print(f"Failed to convert light ID {light_id}: {e}")
+            
+            if not dev_ids:
+                return JsonResponse({
+                    'success': False,
+                    'error': 'No valid lights selected'
+                }, status=400)
+        else:
+            # Keep existing lights
+            dev_ids = group_doc.get('light_ids', [])
+        
+        # Update in database
+        db.ledvance_groups.update_one(
+            {'_id': ObjectId(group_id)},
+            {'$set': {
+                'name': name,
+                'room': room,
+                'light_ids': dev_ids,
+                'updated_at': datetime.utcnow()
+            }}
+        )
+        
+        # Reload groups
+        _load_user_lights(user_id)
+        _load_user_groups(user_id)
+        
+        return JsonResponse({
+            'success': True,
+            'group': {
+                'id': group_id,
+                'name': name,
+                'room': room,
+                'light_count': len(dev_ids)
+            }
+        })
+    
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'error': str(e)
+        }, status=500)
+
+
+@session_login_required
+@require_http_methods(["POST"])
 def api_toggle_group(request, group_id):
     """Toggle all lights in a group"""
     try:

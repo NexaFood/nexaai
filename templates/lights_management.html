@@ -646,6 +646,39 @@
     </div>
 </div>
 
+<!-- Edit Group Modal -->
+<div id="edit-group-modal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Edit Light Group</h2>
+            <button class="btn-close" onclick="closeEditGroupModal()">
+                <i class="bi bi-x-lg"></i>
+            </button>
+        </div>
+        <form id="edit-group-form" onsubmit="updateGroup(event)">
+            <input type="hidden" id="edit-group-id" name="group_id">
+            <div class="form-group">
+                <label for="edit-group-name">Group Name *</label>
+                <input type="text" id="edit-group-name" name="name" required placeholder="e.g., Living Room">
+            </div>
+            <div class="form-group">
+                <label for="edit-group-room">Room</label>
+                <input type="text" id="edit-group-room" name="room" placeholder="e.g., Living Room">
+            </div>
+            <div class="form-group">
+                <label>Select Lights *</label>
+                <div id="edit-lights-selector" style="max-height: 300px; overflow-y: auto; border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 8px; padding: 0.5rem;">
+                    <!-- Lights checkboxes will be loaded here -->
+                </div>
+            </div>
+            <div class="form-actions">
+                <button type="button" class="btn-cancel" onclick="closeEditGroupModal()">Cancel</button>
+                <button type="submit" class="btn-submit">Save Changes</button>
+            </div>
+        </form>
+    </div>
+</div>
+
 <script>
 // Load lights on page load
 document.addEventListener('DOMContentLoaded', () => {
@@ -1067,9 +1100,14 @@ function createGroupCard(group) {
                     <i class="bi bi-power"></i>
                     ${isOn ? 'Turn All Off' : 'Turn All On'}
                 </button>
-                <button class="btn-delete" onclick="deleteGroup('${group.id}', '${group.name}')">
-                    <i class="bi bi-trash"></i>
-                </button>
+                <div style="display: flex; gap: 0.5rem;">
+                    <button class="btn-delete" onclick="showEditGroupModal('${group.id}')" style="background: linear-gradient(135deg, #8400ff, #e600a5);">
+                        <i class="bi bi-pencil-square"></i>
+                    </button>
+                    <button class="btn-delete" onclick="deleteGroup('${group.id}', '${group.name}')">
+                        <i class="bi bi-trash"></i>
+                    </button>
+                </div>
             </div>
         </div>
     `;
@@ -1153,6 +1191,118 @@ async function createGroup(event) {
     } catch (error) {
         console.error('Error creating group:', error);
         alert('Error creating group');
+    }
+}
+
+async function showEditGroupModal(groupId) {
+    // Load group data
+    try {
+        const groupsResponse = await fetch('/api/ledvance/groups/');
+        const groupsData = await groupsResponse.json();
+        
+        if (!groupsData.success) {
+            alert('Failed to load group data');
+            return;
+        }
+        
+        const group = groupsData.groups.find(g => g.id === groupId);
+        if (!group) {
+            alert('Group not found');
+            return;
+        }
+        
+        // Get group details from database to find light IDs
+        const lightsResponse = await fetch('/api/ledvance/lights/');
+        const lightsData = await lightsResponse.json();
+        
+        if (!lightsData.success) {
+            alert('Failed to load lights');
+            return;
+        }
+        
+        // Populate form
+        document.getElementById('edit-group-id').value = groupId;
+        document.getElementById('edit-group-name').value = group.name;
+        document.getElementById('edit-group-room').value = group.room || '';
+        
+        // Load lights checkboxes
+        const selector = document.getElementById('edit-lights-selector');
+        selector.innerHTML = '';
+        
+        // Get current group's light dev_ids from database
+        const groupResponse = await fetch(`/api/ledvance/groups/`);
+        const allGroupsData = await groupResponse.json();
+        const currentGroup = allGroupsData.groups.find(g => g.id === groupId);
+        
+        // We need to get the dev_ids from the group, but API doesn't return them
+        // So we'll need to check all lights and pre-select based on group membership
+        // For now, just show all lights and let user reselect
+        
+        lightsData.lights.forEach(light => {
+            const checkbox = document.createElement('div');
+            checkbox.style.cssText = 'padding: 0.5rem; display: flex; align-items: center; gap: 0.5rem;';
+            checkbox.innerHTML = `
+                <input type="checkbox" id="edit-light-${light.id}" value="${light.id}" style="width: auto;">
+                <label for="edit-light-${light.id}" style="margin: 0; cursor: pointer; flex: 1;">${light.name} ${light.room ? '(' + light.room + ')' : ''}</label>
+            `;
+            selector.appendChild(checkbox);
+        });
+        
+        document.getElementById('edit-group-modal').classList.add('active');
+    } catch (error) {
+        console.error('Failed to load group:', error);
+        alert('Failed to load group data');
+    }
+}
+
+function closeEditGroupModal() {
+    document.getElementById('edit-group-modal').classList.remove('active');
+    document.getElementById('edit-group-form').reset();
+}
+
+async function updateGroup(event) {
+    event.preventDefault();
+    
+    const groupId = document.getElementById('edit-group-id').value;
+    const name = document.getElementById('edit-group-name').value;
+    const room = document.getElementById('edit-group-room').value;
+    
+    // Get selected lights
+    const selectedLights = [];
+    document.querySelectorAll('#edit-lights-selector input[type="checkbox"]:checked').forEach(cb => {
+        selectedLights.push(cb.value);
+    });
+    
+    if (selectedLights.length === 0) {
+        alert('Please select at least one light');
+        return;
+    }
+    
+    try {
+        const formData = new FormData();
+        formData.append('name', name);
+        formData.append('room', room);
+        formData.append('light_ids', JSON.stringify(selectedLights));
+        
+        const response = await fetch(`/api/ledvance/groups/${groupId}/update/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': getCsrfToken()
+            },
+            body: formData
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            closeEditGroupModal();
+            loadGroups();
+        } else {
+            alert('Failed to update group: ' + data.error);
+        }
+    } catch (error) {
+        console.error('Error updating group:', error);
+        alert('Error updating group');
     }
 }
 
