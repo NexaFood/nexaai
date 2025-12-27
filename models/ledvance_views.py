@@ -459,18 +459,37 @@ def api_create_group(request):
                 'error': 'Name and light IDs are required'
             }, status=400)
         
-        # Parse light IDs
+        # Parse light IDs (these are MongoDB document IDs from the form)
         try:
             light_ids = json.loads(light_ids) if isinstance(light_ids, str) else light_ids
         except:
             light_ids = light_ids.split(',') if isinstance(light_ids, str) else []
         
-        # Save to database
+        # Convert MongoDB document IDs to device IDs (dev_id)
+        dev_ids = []
+        for light_id in light_ids:
+            try:
+                light_doc = db.ledvance_lights.find_one({
+                    '_id': ObjectId(light_id),
+                    'user_id': user_id
+                })
+                if light_doc:
+                    dev_ids.append(light_doc['dev_id'])
+            except Exception as e:
+                print(f"Failed to convert light ID {light_id}: {e}")
+        
+        if not dev_ids:
+            return JsonResponse({
+                'success': False,
+                'error': 'No valid lights found'
+            }, status=400)
+        
+        # Save to database with device IDs
         group_data = {
             'user_id': user_id,
             'name': name,
             'room': room,
-            'light_ids': light_ids,
+            'light_ids': dev_ids,  # Store device IDs, not MongoDB IDs
             'created_at': datetime.utcnow(),
             'updated_at': datetime.utcnow()
         }
