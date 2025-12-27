@@ -720,6 +720,24 @@ class DashboardManager {
     }
     
     // Dashboard Management Methods
+    getIconHTML(iconName) {
+        const iconMap = {
+            'house': '<i class="bi bi-house" style="color: #8400ff;"></i>',
+            'sofa': '<i class="bi bi-lamp" style="color: #e600a5;"></i>',
+            'kitchen': '<i class="bi bi-cup-hot" style="color: #8400ff;"></i>',
+            'bed': '<i class="bi bi-moon" style="color: #e600a5;"></i>',
+            'tools': '<i class="bi bi-tools" style="color: #8400ff;"></i>',
+            'gym': '<i class="bi bi-heart-pulse" style="color: #e600a5;"></i>',
+            'game': '<i class="bi bi-controller" style="color: #8400ff;"></i>',
+            'book': '<i class="bi bi-book" style="color: #e600a5;"></i>',
+            'music': '<i class="bi bi-music-note-beamed" style="color: #8400ff;"></i>',
+            'palette': '<i class="bi bi-palette" style="color: #e600a5;"></i>',
+            'tv': '<i class="bi bi-tv" style="color: #8400ff;"></i>',
+            'gear': '<i class="bi bi-gear" style="color: #e600a5;"></i>'
+        };
+        return iconMap[iconName] || iconName;
+    }
+    
     async loadDashboards() {
         try {
             const response = await fetch('/api/dashboards/');
@@ -744,7 +762,7 @@ class DashboardManager {
             card.innerHTML = `
                 <div class="dashboard-card-header">
                     <div class="dashboard-card-title">
-                        <span>${dashboard.icon}</span>
+                        <span>${this.getIconHTML(dashboard.icon)}</span>
                         <span>${dashboard.name}</span>
                         ${dashboard.is_default ? '<span style="font-size: 0.75rem; color: var(--color-accent);">★</span>' : ''}
                     </div>
@@ -860,7 +878,7 @@ class DashboardManager {
                     await this.loadDashboards();
                     if (dashboardId === this.currentDashboardId) {
                         // Update current dashboard title
-                        document.getElementById('dashboard-title').textContent = `${icon} ${name}`;
+                        document.getElementById('dashboard-title').innerHTML = `${this.getIconHTML(icon)} ${name}`;
                     }
                 }
             } else {
