@@ -1229,24 +1229,30 @@ async function showEditGroupModal(groupId) {
         const selector = document.getElementById('edit-lights-selector');
         selector.innerHTML = '';
         
-        // Get current group's light dev_ids from database
-        const groupResponse = await fetch(`/api/ledvance/groups/`);
-        const allGroupsData = await groupResponse.json();
-        const currentGroup = allGroupsData.groups.find(g => g.id === groupId);
+        // Get the light IDs that are already in this group
+        const groupLightIds = group.light_ids || [];
+        const groupRoom = group.room || '';
         
-        // We need to get the dev_ids from the group, but API doesn't return them
-        // So we'll need to check all lights and pre-select based on group membership
-        // For now, just show all lights and let user reselect
+        // Filter lights by room if group has a room set
+        const filteredLights = groupRoom 
+            ? lightsData.lights.filter(light => light.room === groupRoom)
+            : lightsData.lights;
         
-        lightsData.lights.forEach(light => {
-            const checkbox = document.createElement('div');
-            checkbox.style.cssText = 'padding: 0.5rem; display: flex; align-items: center; gap: 0.5rem;';
-            checkbox.innerHTML = `
-                <input type="checkbox" id="edit-light-${light.id}" value="${light.id}" style="width: auto;">
-                <label for="edit-light-${light.id}" style="margin: 0; cursor: pointer; flex: 1;">${light.name} ${light.room ? '(' + light.room + ')' : ''}</label>
-            `;
-            selector.appendChild(checkbox);
-        });
+        if (filteredLights.length === 0) {
+            selector.innerHTML = '<p style="color: #8a8694; padding: 1rem; text-align: center;">No lights in this room. Change the room field to see other lights.</p>';
+        } else {
+            filteredLights.forEach(light => {
+                const checkbox = document.createElement('div');
+                checkbox.style.cssText = 'padding: 0.5rem; display: flex; align-items: center; gap: 0.5rem;';
+                // Check if this light is in the group
+                const isChecked = groupLightIds.includes(light.id) ? 'checked' : '';
+                checkbox.innerHTML = `
+                    <input type="checkbox" id="edit-light-${light.id}" value="${light.id}" style="width: auto;" ${isChecked}>
+                    <label for="edit-light-${light.id}" style="margin: 0; cursor: pointer; flex: 1;">${light.name}</label>
+                `;
+                selector.appendChild(checkbox);
+            });
+        }
         
         document.getElementById('edit-group-modal').classList.add('active');
     } catch (error) {

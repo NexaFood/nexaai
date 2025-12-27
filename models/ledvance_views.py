@@ -418,11 +418,24 @@ def api_list_groups(request):
         groups_data = []
         for group in user_groups:
             status = group.get_status()
+            # Get light IDs (dev_ids) for this group
+            light_dev_ids = [light.dev_id for light in group.lights]
+            # Convert dev_ids to MongoDB IDs for frontend
+            light_mongo_ids = []
+            for dev_id in light_dev_ids:
+                light_doc = db.ledvance_lights.find_one({
+                    'dev_id': dev_id,
+                    'user_id': user_id
+                })
+                if light_doc:
+                    light_mongo_ids.append(str(light_doc['_id']))
+            
             groups_data.append({
                 'id': group.group_id,
                 'name': group.name,
                 'room': getattr(group, 'room', ''),
                 'light_count': status['total_lights'],  # Frontend expects light_count
+                'light_ids': light_mongo_ids,  # MongoDB IDs for frontend checkboxes
                 'total_lights': status['total_lights'],
                 'online_lights': status['online_lights'],
                 'lights_on': status['lights_on'],
