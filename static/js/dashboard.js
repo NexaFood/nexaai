@@ -289,26 +289,113 @@ class DashboardManager {
     }
     
     getLightsWidget() {
-        return `
+        // Return loading state initially
+        const loadingHtml = `
             <div class="widget-list">
                 <div class="widget-list-item">
-                    <span>Living Room</span>
-                    <span class="status-on">ON</span>
-                </div>
-                <div class="widget-list-item">
-                    <span>Kitchen</span>
-                    <span class="status-on">ON</span>
-                </div>
-                <div class="widget-list-item">
-                    <span>Bedroom</span>
-                    <span class="status-off">OFF</span>
-                </div>
-                <div class="widget-list-item">
-                    <span>Office</span>
-                    <span class="status-on">ON</span>
+                    <span>Loading lights...</span>
                 </div>
             </div>
         `;
+        
+        // Fetch real lights data
+        setTimeout(() => this.loadRealLightsData(), 100);
+        
+        return loadingHtml;
+    }
+    
+    async loadRealLightsData() {
+        try {
+            const response = await fetch('/api/ledvance/lights/');
+            const data = await response.json();
+            
+            if (data.success && data.lights.length > 0) {
+                // Find all lights widgets and update them
+                document.querySelectorAll('[data-widget-type="lights"] .widget-content').forEach(container => {
+                    container.innerHTML = this.renderLightsWidget(data.lights);
+                });
+            } else {
+                // No lights configured
+                document.querySelectorAll('[data-widget-type="lights"] .widget-content').forEach(container => {
+                    container.innerHTML = `
+                        <div class="widget-list">
+                            <div class="widget-list-item" style="flex-direction: column; align-items: flex-start; gap: 0.5rem;">
+                                <span style="color: #8a8694;">No lights configured</span>
+                                <a href="/lights/" style="color: #8400ff; text-decoration: none; font-size: 0.875rem;">Add lights →</a>
+                            </div>
+                        </div>
+                    `;
+                });
+            }
+        } catch (error) {
+            console.error('Failed to load lights:', error);
+            document.querySelectorAll('[data-widget-type="lights"] .widget-content').forEach(container => {
+                container.innerHTML = `
+                    <div class="widget-list">
+                        <div class="widget-list-item">
+                            <span style="color: #ef4444;">Failed to load lights</span>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+    }
+    
+    renderLightsWidget(lights) {
+        // Show max 4 lights in widget
+        const displayLights = lights.slice(0, 4);
+        const hasMore = lights.length > 4;
+        
+        let html = '<div class="widget-list">';
+        
+        displayLights.forEach(light => {
+            const statusClass = light.power ? 'status-on' : 'status-off';
+            const statusText = light.power ? 'ON' : 'OFF';
+            html += `
+                <div class="widget-list-item" style="cursor: pointer;" onclick="window.dashboardManager.toggleLightFromWidget('${light.id}')">
+                    <span>${light.name}</span>
+                    <span class="${statusClass}">${statusText}</span>
+                </div>
+            `;
+        });
+        
+        if (hasMore) {
+            html += `
+                <div class="widget-list-item">
+                    <a href="/lights/" style="color: #8400ff; text-decoration: none; font-size: 0.875rem;">View all ${lights.length} lights →</a>
+                </div>
+            `;
+        }
+        
+        html += '</div>';
+        return html;
+    }
+    
+    async toggleLightFromWidget(lightId) {
+        try {
+            const response = await fetch(`/api/ledvance/lights/${lightId}/toggle/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': this.getCsrfToken()
+                }
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                // Reload lights data to update UI
+                this.loadRealLightsData();
+            } else {
+                alert('Failed to toggle light: ' + data.error);
+            }
+        } catch (error) {
+            console.error('Error toggling light:', error);
+            alert('Error toggling light');
+        }
+    }
+    
+    getCsrfToken() {
+        return document.querySelector('[name=csrfmiddlewaretoken]')?.value || '';
     }
     
     getClimateWidget() {
