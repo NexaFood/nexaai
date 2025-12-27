@@ -610,6 +610,40 @@ def api_update_group(request, group_id):
 
 @session_login_required
 @require_http_methods(["POST"])
+def api_delete_group(request, group_id):
+    """Delete a light group"""
+    try:
+        user_id = str(request.user.id)
+        
+        # Find and delete group from database
+        result = db.ledvance_groups.delete_one({
+            '_id': ObjectId(group_id),
+            'user_id': user_id
+        })
+        
+        if result.deleted_count == 0:
+            return JsonResponse({
+                'success': False,
+                'error': 'Group not found'
+            }, status=404)
+        
+        # Remove from manager
+        light_manager.remove_group(group_id)
+        
+        return JsonResponse({
+            'success': True,
+            'message': 'Group deleted successfully'
+        })
+    
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'error': str(e)
+        }, status=500)
+
+
+@session_login_required
+@require_http_methods(["POST"])
 def api_toggle_group(request, group_id):
     """Toggle all lights in a group"""
     try:
