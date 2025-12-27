@@ -607,3 +607,43 @@ def lights_management(request):
     """Render the lights management page"""
     from django.shortcuts import render
     return render(request, 'lights_management.html')
+
+
+
+@session_login_required
+@require_http_methods(["POST"])
+def api_scan_network(request):
+    """Scan local network for Tuya devices"""
+    try:
+        import tinytuya
+        import socket
+        
+        # Get local network info
+        hostname = socket.gethostname()
+        local_ip = socket.gethostbyname(hostname)
+        
+        # Scan for devices (this may take 10-20 seconds)
+        devices = tinytuya.deviceScan(False, 20)
+        
+        discovered = []
+        for dev_id, device_info in devices.items():
+            discovered.append({
+                'dev_id': dev_id,
+                'ip': device_info.get('ip', ''),
+                'version': device_info.get('version', ''),
+                'name': device_info.get('name', 'Unknown Device'),
+                'product_key': device_info.get('product_key', '')
+            })
+        
+        return JsonResponse({
+            'success': True,
+            'devices': discovered,
+            'local_ip': local_ip,
+            'count': len(discovered)
+        })
+    
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'error': str(e)
+        }, status=500)

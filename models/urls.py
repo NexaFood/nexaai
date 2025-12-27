@@ -65,6 +65,7 @@ urlpatterns = [
     # Ledvance Smart Lights API endpoints
     path('api/ledvance/lights/', ledvance_views.api_list_lights, name='api-ledvance-list-lights'),
     path('api/ledvance/lights/add/', ledvance_views.api_add_light, name='api-ledvance-add-light'),
+    path('api/ledvance/scan/', ledvance_views.api_scan_network, name='api-ledvance-scan'),
     path('api/ledvance/lights/<str:light_id>/remove/', ledvance_views.api_remove_light, name='api-ledvance-remove-light'),
     path('api/ledvance/lights/<str:light_id>/toggle/', ledvance_views.api_toggle_light, name='api-ledvance-toggle-light'),
     path('api/ledvance/lights/<str:light_id>/brightness/', ledvance_views.api_set_light_brightness, name='api-ledvance-set-brightness'),
