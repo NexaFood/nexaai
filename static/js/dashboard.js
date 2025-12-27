@@ -179,7 +179,7 @@ class DashboardManager {
             widgetElement.classList.add(`widget-${widgetData.size}`);
         }
         
-        widget.querySelector('.widget-title').textContent = this.getWidgetTitle(widgetData.type);
+        widget.querySelector('.widget-title').innerHTML = this.getWidgetTitle(widgetData.type);
         widget.querySelector('.widget-content').innerHTML = this.getWidgetContent(widgetData.type);
         
         // Add event listeners
@@ -268,14 +268,14 @@ class DashboardManager {
     
     getWidgetTitle(type) {
         const titles = {
-            'lights': '💡 Lights',
-            'climate': '🌡️ Climate',
-            'devices': '📱 Devices',
-            'printer-status': '📊 Printer Status',
-            'print-progress': '⏱️ Print Progress',
-            'printer-camera': '📹 Camera Feed',
-            'recent-projects': '📝 Recent Projects',
-            'quick-design': '✨ Quick Design'
+            'lights': '<i class="bi bi-lightbulb" style="color: #e600a5;"></i> Lights',
+            'climate': '<i class="bi bi-thermometer-half" style="color: #8400ff;"></i> Climate',
+            'devices': '<i class="bi bi-phone" style="color: #e600a5;"></i> Devices',
+            'printer-status': '<i class="bi bi-bar-chart" style="color: #8400ff;"></i> Printer Status',
+            'print-progress': '<i class="bi bi-clock-history" style="color: #e600a5;"></i> Print Progress',
+            'printer-camera': '<i class="bi bi-camera-video" style="color: #8400ff;"></i> Camera Feed',
+            'recent-projects': '<i class="bi bi-file-earmark-text" style="color: #e600a5;"></i> Recent Projects',
+            'quick-design': '<i class="bi bi-stars" style="color: #8400ff;"></i> Quick Design'
         };
         return titles[type] || 'Widget';
     }
