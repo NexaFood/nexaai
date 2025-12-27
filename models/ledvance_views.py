@@ -127,6 +127,7 @@ def api_add_light(request):
         ip = request.POST.get('ip', '').strip()
         local_key = request.POST.get('local_key', '').strip()
         room = request.POST.get('room', '').strip()
+        skip_test = request.POST.get('skip_test', 'false').lower() == 'true'
         
         if not all([name, dev_id, ip, local_key]):
             return JsonResponse({
@@ -134,20 +135,33 @@ def api_add_light(request):
                 'error': 'Name, device ID, IP, and local key are required'
             }, status=400)
         
-        # Test connection
-        try:
-            test_light = LedvanceLight(dev_id, ip, local_key, name)
-            test_status = test_light.get_status()
-            if not test_status.get('online'):
+        # Test connection (unless skipped)
+        if not skip_test:
+            try:
+                import logging
+                logger = logging.getLogger(__name__)
+                logger.info(f"Testing connection to {dev_id} at {ip}")
+                
+                test_light = LedvanceLight(dev_id, ip, local_key, name)
+                test_status = test_light.get_status()
+                
+                logger.info(f"Connection test result: {test_status}")
+                
+                if not test_status.get('online'):
+                    error_msg = test_status.get('error', 'Device not responding')
+                    logger.error(f"Connection test failed: {error_msg}")
+                    return JsonResponse({
+                        'success': False,
+                        'error': f'Could not connect to light: {error_msg}. Try enabling "Skip Connection Test" to add anyway.'
+                    }, status=400)
+            except Exception as e:
+                import logging
+                logger = logging.getLogger(__name__)
+                logger.error(f"Connection test exception: {str(e)}", exc_info=True)
                 return JsonResponse({
                     'success': False,
-                    'error': 'Could not connect to light. Check device ID, IP, and local key.'
+                    'error': f'Connection test failed: {str(e)}. Try enabling "Skip Connection Test" to add anyway.'
                 }, status=400)
-        except Exception as e:
-            return JsonResponse({
-                'success': False,
-                'error': f'Connection test failed: {str(e)}'
-            }, status=400)
         
         # Save to database
         light_data = {

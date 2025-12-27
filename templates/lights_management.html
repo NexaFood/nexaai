@@ -427,8 +427,8 @@
                 <input type="text" id="light-room" name="room" placeholder="e.g., Living Room">
             </div>
             <div class="form-group">
-                <label for="light-dev-id">Device ID *</label>
-                <input type="text" id="light-dev-id" name="dev_id" required placeholder="Get from Ledvance app">
+                <label for="light-dev-id">Device ID (Virtual ID) *</label>
+                <input type="text" id="light-dev-id" name="dev_id" required placeholder="Virtual ID from scan or Ledvance app">
             </div>
             <div class="form-group">
                 <label for="light-ip">IP Address *</label>
@@ -437,6 +437,10 @@
             <div class="form-group">
                 <label for="light-local-key">Local Key *</label>
                 <input type="text" id="light-local-key" name="local_key" required placeholder="Get from Ledvance app">
+            </div>
+            <div class="form-group" style="display: flex; align-items: center; gap: 0.5rem;">
+                <input type="checkbox" id="skip-test" name="skip_test" value="true" style="width: auto;">
+                <label for="skip-test" style="margin: 0; cursor: pointer;">Skip connection test (add light without testing)</label>
             </div>
             <div class="form-actions">
                 <button type="button" class="btn-cancel" onclick="closeAddLightModal()">Cancel</button>
@@ -865,9 +869,6 @@ function addDiscoveredDevice(device) {
     // Close scan modal and open add modal
     closeScanModal();
     showAddLightModal();
-    
-    // Show info about local key
-    alert('Device found! Please enter the Local Key from your Ledvance app to complete setup.');
 }
 </script>
 {% endblock %}
