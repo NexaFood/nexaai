@@ -2,112 +2,199 @@
 
 {% block title %}Sign Up - NexaAI{% endblock %}
 
-{% block content %}
-<div class="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-600 via-blue-600 to-cyan-500 py-12 px-4 sm:px-6 lg:px-8">
-    <div class="max-w-md w-full space-y-8 bg-white p-10 rounded-2xl shadow-2xl">
-        <!-- Logo/Header -->
-        <div>
-            <h2 class="mt-6 text-center text-4xl font-extrabold text-gray-900">
-                Create Account
-            </h2>
-            <p class="mt-2 text-center text-sm text-gray-600">
-                Join NexaAI to start generating 3D models
-            </p>
-        </div>
+{% block extra_css %}
+<style>
+.auth-container {
+    max-width: 450px;
+    margin: 4rem auto;
+    padding: 0 1rem;
+}
 
-        <!-- Signup Form -->
-        <form class="mt-8 space-y-6" 
+.auth-card {
+    background: rgba(26, 23, 34, 0.8);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(132, 0, 255, 0.3);
+    border-radius: 16px;
+    padding: 3rem 2.5rem;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+}
+
+.auth-card h1 {
+    font-size: 2rem;
+    font-weight: 800;
+    text-align: center;
+    margin-bottom: 0.5rem;
+    background: linear-gradient(135deg, #8400ff, #e600a5);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.auth-subtitle {
+    text-align: center;
+    color: #8a8694;
+    font-size: 0.875rem;
+    margin-bottom: 2rem;
+}
+
+.auth-error {
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    color: #fca5a5;
+    padding: 1rem;
+    border-radius: 8px;
+    margin-bottom: 1.5rem;
+    font-size: 0.875rem;
+}
+
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-label {
+    display: block;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #b8b4c5;
+    margin-bottom: 0.5rem;
+}
+
+.form-input {
+    width: 100%;
+    padding: 0.875rem 1rem;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    color: white;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+}
+
+.form-input:focus {
+    outline: none;
+    background: rgba(255, 255, 255, 0.08);
+    border-color: #8400ff;
+    box-shadow: 0 0 0 3px rgba(132, 0, 255, 0.1);
+}
+
+.btn-submit {
+    width: 100%;
+    background: linear-gradient(135deg, #8400ff, #e600a5);
+    color: white;
+    border: none;
+    padding: 1rem;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-top: 0.5rem;
+}
+
+.btn-submit:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(132, 0, 255, 0.4);
+}
+
+.auth-footer {
+    margin-top: 2rem;
+    text-align: center;
+    font-size: 0.875rem;
+    color: #8a8694;
+}
+
+.auth-footer a {
+    color: #8400ff;
+    font-weight: 600;
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+.auth-footer a:hover {
+    color: #e600a5;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="auth-container">
+    <div class="auth-card">
+        <h1>Create Account</h1>
+        <p class="auth-subtitle">Join NexaAI to start automating your home</p>
+        
+        <form method="post" 
               hx-post="/signup/" 
               hx-target="#signup-form"
               hx-swap="outerHTML">
             {% csrf_token %}
             
-            <div id="signup-form" class="rounded-md shadow-sm space-y-4">
-                <!-- Username -->
-                <div>
-                    <label for="username" class="block text-sm font-medium text-gray-700 mb-1">
-                        Username
+            <div id="signup-form">
+                <div class="form-group">
+                    <label for="username" class="form-label">
+                        Username *
                     </label>
                     <input 
                         id="username" 
                         name="username" 
                         type="text" 
                         required 
-                        class="appearance-none relative block w-full px-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 focus:z-10 sm:text-sm"
+                        class="form-input"
                         placeholder="Choose a username"
                     >
                 </div>
 
-                <!-- Email -->
-                <div>
-                    <label for="email" class="block text-sm font-medium text-gray-700 mb-1">
+                <div class="form-group">
+                    <label for="email" class="form-label">
                         Email (optional)
                     </label>
                     <input 
                         id="email" 
                         name="email" 
                         type="email" 
-                        class="appearance-none relative block w-full px-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 focus:z-10 sm:text-sm"
+                        class="form-input"
                         placeholder="your@email.com"
                     >
                 </div>
 
-                <!-- Password -->
-                <div>
-                    <label for="password" class="block text-sm font-medium text-gray-700 mb-1">
-                        Password
+                <div class="form-group">
+                    <label for="password" class="form-label">
+                        Password *
                     </label>
                     <input 
                         id="password" 
                         name="password" 
                         type="password" 
                         required 
-                        class="appearance-none relative block w-full px-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 focus:z-10 sm:text-sm"
+                        class="form-input"
                         placeholder="At least 8 characters"
                     >
                 </div>
 
-                <!-- Confirm Password -->
-                <div>
-                    <label for="password2" class="block text-sm font-medium text-gray-700 mb-1">
-                        Confirm Password
+                <div class="form-group">
+                    <label for="password2" class="form-label">
+                        Confirm Password *
                     </label>
                     <input 
                         id="password2" 
                         name="password2" 
                         type="password" 
                         required 
-                        class="appearance-none relative block w-full px-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 focus:z-10 sm:text-sm"
+                        class="form-input"
                         placeholder="Confirm your password"
                     >
                 </div>
             </div>
 
-            <!-- Submit Button -->
-            <div>
-                <button 
-                    type="submit"
-                    class="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition-all duration-200 shadow-lg hover:shadow-xl"
-                >
-                    <span class="absolute left-0 inset-y-0 flex items-center pl-3">
-                        <svg class="h-5 w-5 text-purple-300 group-hover:text-purple-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"></path>
-                        </svg>
-                    </span>
-                    Create Account
-                </button>
-            </div>
-
-            <!-- Login Link -->
-            <div class="text-center">
-                <p class="text-sm text-gray-600">
-                    Already have an account?
-                    <a href="/login/" class="font-medium text-purple-600 hover:text-purple-500 transition-colors">
-                        Sign in
-                    </a>
-                </p>
-            </div>
+            <button type="submit" class="btn-submit">
+                <i class="bi bi-person-plus"></i> Create Account
+            </button>
         </form>
+        
+        <div class="auth-footer">
+            <p>Already have an account? 
+                <a href="/login/">Sign in</a>
+            </p>
+        </div>
     </div>
 </div>
 {% endblock %}
