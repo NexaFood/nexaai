@@ -74,10 +74,17 @@ class DashboardManager {
         
         // Widget options
         document.querySelectorAll('.widget-option').forEach(option => {
-            option.addEventListener('click', () => {
+            option.addEventListener('click', async () => {
                 const widgetType = option.dataset.widgetType;
-                this.addWidget(widgetType);
-                this.hideAddWidgetModal();
+                
+                // For lights widget, show group selection
+                if (widgetType === 'lights') {
+                    this.hideAddWidgetModal();
+                    await this.showLightsWidgetConfig();
+                } else {
+                    this.addWidget(widgetType);
+                    this.hideAddWidgetModal();
+                }
             });
         });
     }
@@ -310,9 +317,19 @@ class DashboardManager {
             const data = await response.json();
             
             if (data.success && data.groups.length > 0) {
-                // Find all lights widgets and update them
-                document.querySelectorAll('[data-widget-type="lights"] .widget-content').forEach(container => {
-                    container.innerHTML = this.renderLightsWidget(data.groups);
+                // Find all lights widgets and update them with their specific config
+                document.querySelectorAll('[data-widget-type="lights"]').forEach(widgetElement => {
+                    const widgetId = widgetElement.dataset.widgetId;
+                    const widgetData = this.widgets.find(w => w.id === widgetId);
+                    
+                    // Filter groups based on widget config
+                    let groupsToShow = data.groups;
+                    if (widgetData && widgetData.config && widgetData.config.groups) {
+                        groupsToShow = data.groups.filter(g => widgetData.config.groups.includes(g.id));
+                    }
+                    
+                    const container = widgetElement.querySelector('.widget-content');
+                    container.innerHTML = this.renderLightsWidget(groupsToShow, data.groups.length);
                 });
             } else {
                 // No groups configured
@@ -341,10 +358,11 @@ class DashboardManager {
         }
     }
     
-    renderLightsWidget(groups) {
+    renderLightsWidget(groups, totalGroups = null) {
         // Show max 4 groups in widget
         const displayGroups = groups.slice(0, 4);
         const hasMore = groups.length > 4;
+        const showTotalCount = totalGroups !== null && totalGroups !== groups.length;
         
         let html = '<div class="widget-list">';
         
@@ -366,10 +384,13 @@ class DashboardManager {
             `;
         });
         
-        if (hasMore) {
+        if (hasMore || showTotalCount) {
+            const linkText = showTotalCount 
+                ? `View ${groups.length} selected of ${totalGroups} groups →`
+                : `View all ${groups.length} groups →`;
             html += `
                 <div class="widget-list-item">
-                    <a href="/lights/" style="color: #8400ff; text-decoration: none; font-size: 0.875rem;">View all ${groups.length} groups →</a>
+                    <a href="/lights/" style="color: #8400ff; text-decoration: none; font-size: 0.875rem;">${linkText}</a>
                 </div>
             `;
         }
@@ -538,15 +559,81 @@ class DashboardManager {
         `;
     }
     
-    addWidget(type) {
+    addWidget(type, config = {}) {
         const id = type + '-' + Date.now();
-        this.widgets.push({ id, type, size: 'medium' });
+        this.widgets.push({ id, type, size: 'medium', config });
         this.renderDashboard();
     }
     
     removeWidget(id) {
         this.widgets = this.widgets.filter(w => w.id !== id);
         this.renderDashboard();
+    }
+    
+    async showLightsWidgetConfig() {
+        try {
+            // Fetch available groups
+            const response = await fetch('/api/ledvance/groups/');
+            const data = await response.json();
+            
+            if (!data.success || !data.groups || data.groups.length === 0) {
+                alert('No light groups found. Please create groups first.');
+                return;
+            }
+            
+            // Create modal
+            const modal = document.createElement('div');
+            modal.className = 'modal active';
+            modal.innerHTML = `
+                <div class="modal-content" style="max-width: 500px;">
+                    <div class="modal-header">
+                        <h2>Configure Lights Widget</h2>
+                        <button class="modal-close" onclick="this.closest('.modal').remove()">
+                            <i class="bi bi-x-lg"></i>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <p style="color: #b8b4c5; margin-bottom: 1rem;">Select which groups to show in this widget:</p>
+                        <div id="group-selector" style="max-height: 300px; overflow-y: auto;">
+                            ${data.groups.map(group => `
+                                <div style="padding: 0.75rem; display: flex; align-items: center; gap: 0.75rem; background: rgba(26, 23, 34, 0.4); border-radius: 8px; margin-bottom: 0.5rem;">
+                                    <input type="checkbox" id="group-${group.id}" value="${group.id}" checked style="width: auto; margin: 0;">
+                                    <label for="group-${group.id}" style="margin: 0; cursor: pointer; flex: 1; color: #ffffff;">
+                                        ${group.name} <span style="color: #8a8694;">(${group.light_count} lights)</span>
+                                    </label>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn-secondary" onclick="this.closest('.modal').remove()">Cancel</button>
+                        <button class="btn-primary" id="add-lights-widget-btn">Add Widget</button>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+            
+            // Handle add button
+            document.getElementById('add-lights-widget-btn').addEventListener('click', () => {
+                const selectedGroups = [];
+                document.querySelectorAll('#group-selector input[type="checkbox"]:checked').forEach(cb => {
+                    selectedGroups.push(cb.value);
+                });
+                
+                if (selectedGroups.length === 0) {
+                    alert('Please select at least one group');
+                    return;
+                }
+                
+                this.addWidget('lights', { groups: selectedGroups });
+                modal.remove();
+            });
+            
+        } catch (error) {
+            console.error('Failed to load groups:', error);
+            alert('Failed to load groups');
+        }
     }
     
     refreshWidget(id) {
