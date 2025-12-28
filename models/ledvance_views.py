@@ -790,6 +790,13 @@ def api_scan_network(request):
         import tinytuya
         import socket
         
+        user_id = str(request.user.id)
+        
+        # Get existing lights for this user
+        existing_lights = list(db.ledvance_lights.find({'user_id': user_id}))
+        existing_dev_ids = {light.get('dev_id') for light in existing_lights}
+        existing_ips = {light.get('ip') for light in existing_lights}
+        
         # Get local network info
         hostname = socket.gethostname()
         local_ip = socket.gethostbyname(hostname)
@@ -799,9 +806,15 @@ def api_scan_network(request):
         
         discovered = []
         for dev_id, device_info in devices.items():
+            device_ip = device_info.get('ip', '')
+            
+            # Skip if device is already added (by dev_id or IP)
+            if dev_id in existing_dev_ids or device_ip in existing_ips:
+                continue
+            
             discovered.append({
                 'dev_id': dev_id,
-                'ip': device_info.get('ip', ''),
+                'ip': device_ip,
                 'version': device_info.get('version', ''),
                 'name': device_info.get('name', 'Unknown Device'),
                 'product_key': device_info.get('product_key', '')
@@ -811,7 +824,8 @@ def api_scan_network(request):
             'success': True,
             'devices': discovered,
             'local_ip': local_ip,
-            'count': len(discovered)
+            'count': len(discovered),
+            'filtered_count': len(devices) - len(discovered)  # How many were filtered out
         })
     
     except Exception as e:
