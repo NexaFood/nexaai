@@ -381,7 +381,26 @@ class DashboardManager {
         const hasMore = groups.length > 4;
         const showTotalCount = totalGroups !== null && totalGroups !== groups.length;
         
+        // Get all group IDs for bulk control
+        const groupIds = groups.map(g => g.id).join(',');
+        
         let html = '<div class="widget-list">';
+        
+        // Add All On/Off buttons at the top
+        if (groups.length > 0) {
+            html += `
+                <div style="display: flex; gap: 0.5rem; padding: 0.5rem; border-bottom: 1px solid rgba(255,255,255,0.1);">
+                    <button onclick="window.dashboardManager.toggleAllGroupsInWidget('${groupIds}', true); event.stopPropagation();" 
+                            style="flex: 1; padding: 0.5rem; border-radius: 0.375rem; border: none; background: linear-gradient(135deg, #8400ff, #e600a5); color: white; cursor: pointer; font-weight: 600; transition: all 0.3s;">
+                        <i class="bi bi-lightbulb"></i> All On
+                    </button>
+                    <button onclick="window.dashboardManager.toggleAllGroupsInWidget('${groupIds}', false); event.stopPropagation();"
+                            style="flex: 1; padding: 0.5rem; border-radius: 0.375rem; border: 1px solid rgba(255,255,255,0.2); background: rgba(255,255,255,0.05); color: white; cursor: pointer; font-weight: 600; transition: all 0.3s;">
+                        <i class="bi bi-lightbulb-off"></i> All Off
+                    </button>
+                </div>
+            `;
+        }
         
         displayGroups.forEach(group => {
             // Group is ON if any light is on
@@ -436,6 +455,34 @@ class DashboardManager {
         } catch (error) {
             console.error('Error toggling group:', error);
             alert('Error toggling group');
+        }
+    }
+    
+    async toggleAllGroupsInWidget(groupIdsStr, turnOn) {
+        try {
+            const groupIds = groupIdsStr.split(',');
+            
+            // Toggle all groups in parallel
+            const promises = groupIds.map(groupId => 
+                fetch(`/api/ledvance/groups/${groupId}/brightness/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': this.getCsrfToken()
+                    },
+                    body: JSON.stringify({
+                        brightness: turnOn ? 100 : 0
+                    })
+                })
+            );
+            
+            await Promise.all(promises);
+            
+            // Reload groups data to update UI
+            this.loadRealLightsData();
+        } catch (error) {
+            console.error('Error toggling all groups:', error);
+            alert('Error toggling all groups');
         }
     }
     
