@@ -699,7 +699,12 @@ def api_set_group_brightness(request, group_id):
         _load_user_lights(user_id)
         _load_user_groups(user_id)
         
-        brightness = int(request.POST.get('brightness', 50))
+        # Accept both JSON and form data
+        if request.content_type == 'application/json':
+            data = json.loads(request.body)
+            brightness = int(data.get('brightness', 50))
+        else:
+            brightness = int(request.POST.get('brightness', 50))
         
         # Find group
         group = None

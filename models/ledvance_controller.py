@@ -7,6 +7,7 @@ import tinytuya
 import colorsys
 import time
 from typing import Dict, List, Optional, Tuple
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 
 class LedvanceLight:
@@ -291,59 +292,148 @@ class LightGroup:
         }
     
     def turn_on(self) -> Dict[str, bool]:
-        """Turn on all lights in group"""
+        """Turn on all lights in group in parallel"""
         results = {}
-        for light in self.lights:
-            results[light.dev_id] = light.turn_on()
+        
+        def turn_on_light(light):
+            return (light.dev_id, light.turn_on())
+        
+        with ThreadPoolExecutor(max_workers=len(self.lights)) as executor:
+            futures = [executor.submit(turn_on_light, light) for light in self.lights]
+            for future in as_completed(futures):
+                try:
+                    dev_id, success = future.result()
+                    results[dev_id] = success
+                except Exception as e:
+                    print(f"Error turning on light: {e}")
+        
         return results
     
     def turn_off(self) -> Dict[str, bool]:
-        """Turn off all lights in group"""
+        """Turn off all lights in group in parallel"""
         results = {}
-        for light in self.lights:
-            results[light.dev_id] = light.turn_off()
+        
+        def turn_off_light(light):
+            return (light.dev_id, light.turn_off())
+        
+        with ThreadPoolExecutor(max_workers=len(self.lights)) as executor:
+            futures = [executor.submit(turn_off_light, light) for light in self.lights]
+            for future in as_completed(futures):
+                try:
+                    dev_id, success = future.result()
+                    results[dev_id] = success
+                except Exception as e:
+                    print(f"Error turning off light: {e}")
+        
         return results
     
     def toggle(self) -> Dict[str, bool]:
-        """Toggle all lights in group"""
+        """Toggle all lights in group in parallel"""
         results = {}
-        for light in self.lights:
-            results[light.dev_id] = light.toggle()
+        
+        def toggle_light(light):
+            return (light.dev_id, light.toggle())
+        
+        with ThreadPoolExecutor(max_workers=len(self.lights)) as executor:
+            futures = [executor.submit(toggle_light, light) for light in self.lights]
+            for future in as_completed(futures):
+                try:
+                    dev_id, success = future.result()
+                    results[dev_id] = success
+                except Exception as e:
+                    print(f"Error toggling light: {e}")
+        
         return results
     
     def set_brightness(self, brightness: int) -> Dict[str, bool]:
-        """Set brightness for all lights"""
+        """Set brightness for all lights in parallel"""
         results = {}
-        for light in self.lights:
-            results[light.dev_id] = light.set_brightness(brightness)
+        
+        def set_light_brightness(light):
+            return (light.dev_id, light.set_brightness(brightness))
+        
+        # Execute all light commands in parallel
+        with ThreadPoolExecutor(max_workers=len(self.lights)) as executor:
+            futures = [executor.submit(set_light_brightness, light) for light in self.lights]
+            for future in as_completed(futures):
+                try:
+                    dev_id, success = future.result()
+                    results[dev_id] = success
+                except Exception as e:
+                    print(f"Error setting brightness: {e}")
+        
         return results
     
     def set_color_temperature(self, kelvin: int) -> Dict[str, bool]:
-        """Set color temperature for all lights"""
+        """Set color temperature for all lights in parallel"""
         results = {}
-        for light in self.lights:
-            results[light.dev_id] = light.set_color_temperature(kelvin)
+        
+        def set_light_temperature(light):
+            return (light.dev_id, light.set_color_temperature(kelvin))
+        
+        with ThreadPoolExecutor(max_workers=len(self.lights)) as executor:
+            futures = [executor.submit(set_light_temperature, light) for light in self.lights]
+            for future in as_completed(futures):
+                try:
+                    dev_id, success = future.result()
+                    results[dev_id] = success
+                except Exception as e:
+                    print(f"Error setting temperature: {e}")
+        
         return results
     
     def set_white(self, brightness: int, kelvin: int) -> Dict[str, bool]:
-        """Set white mode for all lights"""
+        """Set white mode for all lights in parallel"""
         results = {}
-        for light in self.lights:
-            results[light.dev_id] = light.set_white(brightness, kelvin)
+        
+        def set_light_white(light):
+            return (light.dev_id, light.set_white(brightness, kelvin))
+        
+        with ThreadPoolExecutor(max_workers=len(self.lights)) as executor:
+            futures = [executor.submit(set_light_white, light) for light in self.lights]
+            for future in as_completed(futures):
+                try:
+                    dev_id, success = future.result()
+                    results[dev_id] = success
+                except Exception as e:
+                    print(f"Error setting white mode: {e}")
+        
         return results
     
     def set_rgb(self, r: int, g: int, b: int, saturation: int = 100) -> Dict[str, bool]:
-        """Set RGB color for all lights"""
+        """Set RGB color for all lights in parallel"""
         results = {}
-        for light in self.lights:
-            results[light.dev_id] = light.set_rgb(r, g, b, saturation)
+        
+        def set_light_rgb(light):
+            return (light.dev_id, light.set_rgb(r, g, b, saturation))
+        
+        with ThreadPoolExecutor(max_workers=len(self.lights)) as executor:
+            futures = [executor.submit(set_light_rgb, light) for light in self.lights]
+            for future in as_completed(futures):
+                try:
+                    dev_id, success = future.result()
+                    results[dev_id] = success
+                except Exception as e:
+                    print(f"Error setting RGB: {e}")
+        
         return results
     
     def set_hsv(self, hue: float, saturation: float, value: float) -> Dict[str, bool]:
-        """Set HSV color for all lights"""
+        """Set HSV color for all lights in parallel"""
         results = {}
-        for light in self.lights:
-            results[light.dev_id] = light.set_hsv(hue, saturation, value)
+        
+        def set_light_hsv(light):
+            return (light.dev_id, light.set_hsv(hue, saturation, value))
+        
+        with ThreadPoolExecutor(max_workers=len(self.lights)) as executor:
+            futures = [executor.submit(set_light_hsv, light) for light in self.lights]
+            for future in as_completed(futures):
+                try:
+                    dev_id, success = future.result()
+                    results[dev_id] = success
+                except Exception as e:
+                    print(f"Error setting HSV: {e}")
+        
         return results
 
 
