@@ -49,6 +49,7 @@ urlpatterns = [
     
     # Design workflow API endpoints
     path('api/design/create-project/', design_views.api_create_design_project, name='api-create-design-project'),
+    path('api/design/refine-concept/<str:project_id>/', design_views.api_refine_concept, name='api-refine-concept'),
     path('api/design/approve-concept/<str:project_id>/', design_views.api_approve_concept, name='api-approve-concept'),
     path('api/design/generate-overall-model/<str:project_id>/', overall_model_views.api_generate_overall_model, name='api-generate-overall-model'),
     path('api/design/approve-overall-model/<str:project_id>/', overall_model_views.api_approve_overall_model, name='api-approve-overall-model'),

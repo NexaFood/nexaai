@@ -206,6 +206,140 @@ def api_create_design_project(request):
 
 @session_login_required
 @require_http_methods(["POST"])
+def api_refine_concept(request, project_id):
+    """
+    HTMX endpoint to refine the design concept based on user feedback.
+    """
+    try:
+        feedback = request.POST.get('feedback', '').strip()
+        
+        if not feedback:
+            return HttpResponse('Feedback is required', status=400)
+        
+        # Get project and original concept
+        project = db.design_projects.find_one({
+            '_id': to_object_id(project_id),
+            'user_id': str(request.user.id)
+        })
+        
+        if not project:
+            return HttpResponse('Project not found', status=404)
+        
+        # Get original concept
+        concept = db.design_concepts.find_one({'project_id': to_object_id(project_id)})
+        
+        if not concept:
+            return HttpResponse('Concept not found', status=404)
+        
+        # Combine original prompt with feedback
+        original_prompt = project.get('original_prompt', '')
+        refined_prompt = f"{original_prompt}\n\nUser Feedback: {feedback}"
+        
+        logger.info(f"Refining design concept for project {project_id} with feedback")
+        
+        # Generate refined concept using AI
+        concept_data = generate_design_concept(refined_prompt)
+        
+        # Update existing concept with refined data
+        db.design_concepts.update_one(
+            {'project_id': to_object_id(project_id)},
+            {'$set': {
+                'refined_description': concept_data['refined_description'],
+                'design_requirements': concept_data['design_requirements'],
+                'technical_specifications': concept_data['technical_specifications'],
+                'materials': concept_data['materials'],
+                'dimensions': concept_data['dimensions'],
+                'user_feedback': feedback,
+                'updated_at': datetime.utcnow()
+            }}
+        )
+        
+        # Update project
+        db.design_projects.update_one(
+            {'_id': to_object_id(project_id)},
+            {'$set': {
+                'concept_description': concept_data['refined_description'],
+                'updated_at': datetime.utcnow()
+            }}
+        )
+        
+        # Return updated concept card
+        return HttpResponse(f'''
+            <div class="bg-white rounded-lg shadow-lg p-6 mb-6" id="concept-{project_id}">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-2xl font-bold text-gray-800">Design Concept (Refined)</h3>
+                    <span class="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm font-semibold">
+                        Stage 1: Concept
+                    </span>
+                </div>
+                
+                <div class="mb-4">
+                    <h4 class="text-lg font-semibold text-gray-700 mb-2">Description</h4>
+                    <p class="text-gray-600">{concept_data['refined_description']}</p>
+                </div>
+                
+                <div class="mb-4">
+                    <h4 class="text-lg font-semibold text-gray-700 mb-2">Design Requirements</h4>
+                    <ul class="list-disc list-inside text-gray-600">
+                        {''.join([f'<li>{req}</li>' for req in concept_data['design_requirements']])}
+                    </ul>
+                </div>
+                
+                <div class="mb-4">
+                    <h4 class="text-lg font-semibold text-gray-700 mb-2">Technical Specifications</h4>
+                    <ul class="list-disc list-inside text-gray-600">
+                        {''.join([f'<li>{spec}</li>' for spec in concept_data['technical_specifications']])}
+                    </ul>
+                </div>
+                
+                <div class="mb-4">
+                    <h4 class="text-lg font-semibold text-gray-700 mb-2">Materials</h4>
+                    <p class="text-gray-600">{', '.join(concept_data['materials'])}</p>
+                </div>
+                
+                <div class="mb-4">
+                    <h4 class="text-lg font-semibold text-gray-700 mb-2">Dimensions</h4>
+                    <p class="text-gray-600">{concept_data['dimensions']}</p>
+                </div>
+                
+                <div class="flex gap-4">
+                    <button 
+                        hx-post="/api/design/approve-concept/{project_id}/"
+                        hx-target="#concept-{project_id}"
+                        hx-swap="outerHTML"
+                        class="px-6 py-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg hover:from-purple-700 hover:to-pink-700 transition-all">
+                        Approve Concept
+                    </button>
+                    <button 
+                        onclick="document.getElementById('refine-form-{project_id}').classList.toggle('hidden')"
+                        class="px-6 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-all">
+                        Refine Again
+                    </button>
+                </div>
+                
+                <div id="refine-form-{project_id}" class="mt-4 hidden">
+                    <form hx-post="/api/design/refine-concept/{project_id}/" hx-target="#concept-{project_id}" hx-swap="outerHTML">
+                        <textarea 
+                            name="feedback" 
+                            rows="3" 
+                            placeholder="Provide feedback to refine the concept..."
+                            class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                            required></textarea>
+                        <button type="submit" class="mt-2 px-6 py-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg hover:from-purple-700 hover:to-pink-700 transition-all">
+                            Refine Concept
+                        </button>
+                    </form>
+                </div>
+            </div>
+        ''')
+    
+    except Exception as e:
+        logger.error(f"Error refining concept: {e}")
+        return HttpResponse(f'Error refining concept: {str(e)}', status=500)
+
+
+@session_login_required
+@require_http_methods(["POST"])
 def api_approve_concept(request, project_id):
     """
     HTMX endpoint to approve concept and move to overall model generation.
