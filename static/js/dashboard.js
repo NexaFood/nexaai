@@ -390,11 +390,11 @@ class DashboardManager {
         if (groups.length > 0) {
             html += `
                 <div style="display: flex; gap: 0.5rem; padding: 0.5rem; border-bottom: 1px solid rgba(255,255,255,0.1);">
-                    <button onclick="window.dashboardManager.toggleAllGroupsInWidget('${groupIds}', true); event.stopPropagation();" 
+                    <button onclick="event.stopPropagation(); window.dashboardManager.toggleAllGroupsInWidget('${groupIds}', true);" 
                             style="flex: 1; padding: 0.5rem; border-radius: 0.375rem; border: none; background: linear-gradient(135deg, #8400ff, #e600a5); color: white; cursor: pointer; font-weight: 600; transition: all 0.3s;">
                         <i class="bi bi-lightbulb"></i> All On
                     </button>
-                    <button onclick="window.dashboardManager.toggleAllGroupsInWidget('${groupIds}', false); event.stopPropagation();"
+                    <button onclick="event.stopPropagation(); window.dashboardManager.toggleAllGroupsInWidget('${groupIds}', false);"
                             style="flex: 1; padding: 0.5rem; border-radius: 0.375rem; border: 1px solid rgba(255,255,255,0.2); background: rgba(255,255,255,0.05); color: white; cursor: pointer; font-weight: 600; transition: all 0.3s;">
                         <i class="bi bi-lightbulb-off"></i> All Off
                     </button>
