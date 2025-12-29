@@ -76,6 +76,8 @@ urlpatterns = [
     path('api/ledvance/groups/<str:group_id>/update/', ledvance_views.api_update_group, name='api-ledvance-update-group'),
     path('api/ledvance/groups/<str:group_id>/delete/', ledvance_views.api_delete_group, name='api-ledvance-delete-group'),
     path('api/ledvance/groups/<str:group_id>/toggle/', ledvance_views.api_toggle_group, name='api-ledvance-toggle-group'),
+    path('api/ledvance/groups/<str:group_id>/on/', ledvance_views.api_turn_on_group, name='api-ledvance-turn-on-group'),
+    path('api/ledvance/groups/<str:group_id>/off/', ledvance_views.api_turn_off_group, name='api-ledvance-turn-off-group'),
     path('api/ledvance/groups/<str:group_id>/brightness/', ledvance_views.api_set_group_brightness, name='api-ledvance-set-group-brightness'),
     path('api/ledvance/groups/<str:group_id>/color/', ledvance_views.api_set_group_color, name='api-ledvance-set-group-color'),
     

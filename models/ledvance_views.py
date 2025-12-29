@@ -692,6 +692,78 @@ def api_toggle_group(request, group_id):
 
 @session_login_required
 @require_http_methods(["POST"])
+def api_turn_on_group(request, group_id):
+    """Turn on all lights in a group"""
+    try:
+        user_id = str(request.user.id)
+        _load_user_lights(user_id)
+        _load_user_groups(user_id)
+        
+        # Find group
+        group = None
+        for g in light_manager.get_all_groups():
+            if g.group_id == group_id and hasattr(g, 'user_id') and g.user_id == user_id:
+                group = g
+                break
+        
+        if not group:
+            return JsonResponse({
+                'success': False,
+                'error': 'Group not found'
+            }, status=404)
+        
+        results = group.turn_on()
+        
+        return JsonResponse({
+            'success': True,
+            'results': results
+        })
+    
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'error': str(e)
+        }, status=500)
+
+
+@session_login_required
+@require_http_methods(["POST"])
+def api_turn_off_group(request, group_id):
+    """Turn off all lights in a group"""
+    try:
+        user_id = str(request.user.id)
+        _load_user_lights(user_id)
+        _load_user_groups(user_id)
+        
+        # Find group
+        group = None
+        for g in light_manager.get_all_groups():
+            if g.group_id == group_id and hasattr(g, 'user_id') and g.user_id == user_id:
+                group = g
+                break
+        
+        if not group:
+            return JsonResponse({
+                'success': False,
+                'error': 'Group not found'
+            }, status=404)
+        
+        results = group.turn_off()
+        
+        return JsonResponse({
+            'success': True,
+            'results': results
+        })
+    
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'error': str(e)
+        }, status=500)
+
+
+@session_login_required
+@require_http_methods(["POST"])
 def api_set_group_brightness(request, group_id):
     """Set brightness for all lights in a group"""
     try:

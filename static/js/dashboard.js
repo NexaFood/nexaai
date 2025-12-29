@@ -464,17 +464,14 @@ class DashboardManager {
             const groupIds = groupIdsStr.split(',');
             console.log('Group IDs to toggle:', groupIds);
             
-            // Toggle all groups in parallel
+            // Turn on/off all groups in parallel
             const promises = groupIds.map(groupId => 
-                fetch(`/api/ledvance/groups/${groupId}/brightness/`, {
+                fetch(`/api/ledvance/groups/${groupId}/${turnOn ? 'on' : 'off'}/`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                         'X-CSRFToken': this.getCsrfToken()
-                    },
-                    body: JSON.stringify({
-                        brightness: turnOn ? 100 : 0
-                    })
+                    }
                 })
             );
             
