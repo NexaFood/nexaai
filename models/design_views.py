@@ -189,12 +189,25 @@ def api_create_design_project(request):
                         ✓ Approve & Generate Overall Model
                     </button>
                     <button 
-                        hx-post="/api/design/refine-concept/{project_id}/"
-                        hx-target="#concept-{project_id}"
-                        hx-swap="outerHTML"
+                        onclick="document.getElementById('refine-form-{project_id}').classList.toggle('hidden')"
                         class="flex-1 bg-yellow-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-yellow-700 transition">
                         ↻ Refine Concept
                     </button>
+                </div>
+                
+                <div id="refine-form-{project_id}" class="mt-4 hidden">
+                    <form hx-post="/api/design/refine-concept/{project_id}/" hx-target="#concept-{project_id}" hx-swap="outerHTML">
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Provide feedback to refine the concept:</label>
+                        <textarea 
+                            name="feedback" 
+                            rows="3" 
+                            placeholder="Example: Make it smaller, use aluminum instead of plastic, add more storage..."
+                            class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                            required></textarea>
+                        <button type="submit" class="mt-2 px-6 py-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg hover:from-purple-700 hover:to-pink-700 transition-all">
+                            Refine Concept
+                        </button>
+                    </form>
                 </div>
             </div>
         ''')
