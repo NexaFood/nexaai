@@ -459,8 +459,10 @@ class DashboardManager {
     }
     
     async toggleAllGroupsInWidget(groupIdsStr, turnOn) {
+        console.log('toggleAllGroupsInWidget called:', groupIdsStr, turnOn);
         try {
             const groupIds = groupIdsStr.split(',');
+            console.log('Group IDs to toggle:', groupIds);
             
             // Toggle all groups in parallel
             const promises = groupIds.map(groupId => 
