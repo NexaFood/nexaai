@@ -254,18 +254,20 @@ def api_refine_concept(request, project_id):
         # Generate refined concept using AI
         concept_data = generate_design_concept(refined_prompt)
         
-        # Update existing concept with refined data
+        # Update existing concept with refined data (only fields that exist)
+        update_fields = {
+            'refined_description': concept_data.get('refined_description', ''),
+            'design_type': concept_data.get('design_type', ''),
+            'key_features': concept_data.get('key_features', []),
+            'estimated_complexity': concept_data.get('estimated_complexity', ''),
+            'estimated_parts_count': concept_data.get('estimated_parts_count', 1),
+            'user_feedback': feedback,
+            'updated_at': datetime.utcnow()
+        }
+        
         db.design_concepts.update_one(
             {'project_id': to_object_id(project_id)},
-            {'$set': {
-                'refined_description': concept_data['refined_description'],
-                'design_requirements': concept_data['design_requirements'],
-                'technical_specifications': concept_data['technical_specifications'],
-                'materials': concept_data['materials'],
-                'dimensions': concept_data['dimensions'],
-                'user_feedback': feedback,
-                'updated_at': datetime.utcnow()
-            }}
+            {'$set': update_fields}
         )
         
         # Update project
