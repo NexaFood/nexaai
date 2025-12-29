@@ -202,7 +202,8 @@ def api_create_design_project(request):
                             name="feedback" 
                             rows="3" 
                             placeholder="Example: Make it smaller, use aluminum instead of plastic, add more storage..."
-                            class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                            style="background: #1a1625; color: white; border: 1px solid rgba(132, 0, 255, 0.3);"
+                            class="w-full p-3 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                             required></textarea>
                         <button type="submit" class="mt-2 px-6 py-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg hover:from-purple-700 hover:to-pink-700 transition-all">
                             Refine Concept
@@ -276,74 +277,20 @@ def api_refine_concept(request, project_id):
             }}
         )
         
-        # Return updated concept card
-        return HttpResponse(f'''
-            <div class="bg-white rounded-lg shadow-lg p-6 mb-6" id="concept-{project_id}">
-                <div class="flex items-center justify-between mb-4">
-                    <h3 class="text-2xl font-bold text-gray-800">Design Concept (Refined)</h3>
-                    <span class="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm font-semibold">
-                        Stage 1: Concept
-                    </span>
-                </div>
-                
-                <div class="mb-4">
-                    <h4 class="text-lg font-semibold text-gray-700 mb-2">Description</h4>
-                    <p class="text-gray-600">{concept_data['refined_description']}</p>
-                </div>
-                
-                <div class="mb-4">
-                    <h4 class="text-lg font-semibold text-gray-700 mb-2">Design Requirements</h4>
-                    <ul class="list-disc list-inside text-gray-600">
-                        {''.join([f'<li>{req}</li>' for req in concept_data['design_requirements']])}
-                    </ul>
-                </div>
-                
-                <div class="mb-4">
-                    <h4 class="text-lg font-semibold text-gray-700 mb-2">Technical Specifications</h4>
-                    <ul class="list-disc list-inside text-gray-600">
-                        {''.join([f'<li>{spec}</li>' for spec in concept_data['technical_specifications']])}
-                    </ul>
-                </div>
-                
-                <div class="mb-4">
-                    <h4 class="text-lg font-semibold text-gray-700 mb-2">Materials</h4>
-                    <p class="text-gray-600">{', '.join(concept_data['materials'])}</p>
-                </div>
-                
-                <div class="mb-4">
-                    <h4 class="text-lg font-semibold text-gray-700 mb-2">Dimensions</h4>
-                    <p class="text-gray-600">{concept_data['dimensions']}</p>
-                </div>
-                
-                <div class="flex gap-4">
-                    <button 
-                        hx-post="/api/design/approve-concept/{project_id}/"
-                        hx-target="#concept-{project_id}"
-                        hx-swap="outerHTML"
-                        class="px-6 py-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg hover:from-purple-700 hover:to-pink-700 transition-all">
-                        Approve Concept
-                    </button>
-                    <button 
-                        onclick="document.getElementById('refine-form-{project_id}').classList.toggle('hidden')"
-                        class="px-6 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-all">
-                        Refine Again
-                    </button>
-                </div>
-                
-                <div id="refine-form-{project_id}" class="mt-4 hidden">
-                    <form hx-post="/api/design/refine-concept/{project_id}/" hx-target="#concept-{project_id}" hx-swap="outerHTML">
-                        <textarea 
-                            name="feedback" 
-                            rows="3" 
-                            placeholder="Provide feedback to refine the concept..."
-                            class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                            required></textarea>
-                        <button type="submit" class="mt-2 px-6 py-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg hover:from-purple-700 hover:to-pink-700 transition-all">
-                            Refine Concept
-                        </button>
-                    </form>
-                </div>
+        # Reload updated concept from database
+        updated_concept = db.design_concepts.find_one({'project_id': to_object_id(project_id)})
+        
+        # Return success message - let the page reload to show updated concept
+        return HttpResponse('''
+            <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4" role="alert">
+                <strong class="font-bold">Success!</strong>
+                <span class="block sm:inline">Concept has been refined. Refreshing...</span>
             </div>
+            <script>
+                setTimeout(function() {
+                    window.location.reload();
+                }, 1000);
+            </script>
         ''')
     
     except Exception as e:
