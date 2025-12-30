@@ -39,8 +39,8 @@
     content: '';
     position: fixed;
     top: 0;
-    left: 0;
-    width: 100%;
+    left: 280px;
+    width: calc(100% - 280px);
     height: 100%;
     background: radial-gradient(circle at 20% 50%, rgba(132, 0, 255, 0.08) 0%, transparent 50%),
                 radial-gradient(circle at 80% 80%, rgba(230, 0, 165, 0.08) 0%, transparent 50%);
@@ -605,8 +605,8 @@
     display: none;
     position: fixed;
     top: 0;
-    left: 0;
-    width: 100%;
+    left: 280px;
+    width: calc(100% - 280px);
     height: 100%;
     background: rgba(19, 17, 26, 0.95);
     backdrop-filter: blur(12px);
@@ -809,6 +809,16 @@
 @media (max-width: 768px) {
     .dashboard-container {
         padding: 1rem;
+    }
+    
+    .dashboard-container::before {
+        left: 0;
+        width: 100%;
+    }
+    
+    .modal {
+        left: 0;
+        width: 100%;
     }
     
     .dashboard-header {
