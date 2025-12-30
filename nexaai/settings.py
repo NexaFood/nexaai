@@ -20,6 +20,13 @@ DEBUG = os.getenv('DEBUG', 'True') == 'True'
 
 ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1,*').split(',')
 
+# CSRF Trusted Origins - Add domains that can make POST requests
+CSRF_TRUSTED_ORIGINS = [
+    'http://localhost:8000',
+    'http://127.0.0.1:8000',
+    'https://*.manus.computer',
+]
+
 # Application definition
 INSTALLED_APPS = [
     'django.contrib.admin',
