@@ -113,7 +113,7 @@ Return ONLY a JSON object with this structure:
 
     try:
         response = client.chat.completions.create(
-            model="gpt-4.1-mini",
+            model="ft:gpt-4.1-mini-2025-04-14:nexafood:nexaai:Cs8FToAS",
             messages=[
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": user_prompt}
