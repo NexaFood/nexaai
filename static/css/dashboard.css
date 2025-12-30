@@ -28,7 +28,7 @@
 
 /* Base Dashboard Styles */
 .dashboard-container {
-    padding: 2rem;
+    padding: 3rem;
     background: var(--color-primary);
     min-height: 100vh;
     position: relative;
@@ -58,14 +58,14 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 2.5rem;
-    padding-bottom: 1.5rem;
+    margin-bottom: 3rem;
+    padding-bottom: 2rem;
     border-bottom: 2px solid transparent;
     background: linear-gradient(90deg, var(--color-secondary) 0%, var(--color-accent) 100%) bottom / 100% 2px no-repeat;
 }
 
 .dashboard-header h1 {
-    font-size: 2.5rem;
+    font-size: 2.75rem;
     font-weight: 800;
     color: var(--color-text);
     margin: 0;
@@ -73,23 +73,30 @@
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
-    letter-spacing: -0.02em;
-    text-shadow: 0 0 30px rgba(132, 0, 255, 0.3);
+    letter-spacing: -0.03em;
+    filter: drop-shadow(0 0 20px rgba(132, 0, 255, 0.4));
+    transition: filter 0.3s ease;
+}
+
+.dashboard-header h1:hover {
+    filter: drop-shadow(0 0 30px rgba(230, 0, 165, 0.6));
 }
 
 .header-actions {
     display: flex;
-    gap: 0.75rem;
+    gap: 1rem;
 }
 
 .btn-icon {
-    background: var(--color-primary-light);
-    border: 1px solid var(--color-border);
+    background: rgba(26, 23, 34, 0.6);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(132, 0, 255, 0.25);
     color: var(--color-text);
-    padding: 0.875rem;
-    border-radius: 0.75rem;
+    padding: 1rem;
+    border-radius: 1rem;
     cursor: pointer;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -100,56 +107,56 @@
 .btn-icon::before {
     content: '';
     position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 0;
-    height: 0;
-    border-radius: 50%;
-    background: radial-gradient(circle, var(--color-secondary) 0%, transparent 70%);
-    transform: translate(-50%, -50%);
-    transition: width 0.6s, height 0.6s;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(132, 0, 255, 0.2) 0%, rgba(230, 0, 165, 0.2) 100%);
+    opacity: 0;
+    transition: opacity 0.4s;
 }
 
 .btn-icon:hover::before {
-    width: 200%;
-    height: 200%;
+    opacity: 1;
 }
 
 .btn-icon:hover {
-    background: var(--color-primary-lighter);
-    border-color: var(--color-secondary);
-    box-shadow: 0 0 20px rgba(132, 0, 255, 0.4), 0 4px 12px rgba(0, 0, 0, 0.3);
-    transform: translateY(-2px);
+    border-color: rgba(132, 0, 255, 0.6);
+    box-shadow: 0 8px 32px rgba(132, 0, 255, 0.3), 0 0 0 1px rgba(132, 0, 255, 0.2);
+    transform: translateY(-3px);
 }
 
 .btn-icon:active {
-    transform: translateY(0) scale(0.95);
+    transform: translateY(-1px) scale(0.97);
 }
 
-.btn-icon svg {
+.btn-icon i {
     position: relative;
     z-index: 1;
+    transition: transform 0.3s ease;
+}
+
+.btn-icon:hover i {
+    transform: scale(1.1) rotate(-5deg);
 }
 
 /* Dashboard Grid */
 .dashboard-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-    gap: 1.75rem;
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: 2rem;
     min-height: 400px;
 }
 
-/* Widget Base Styles - Glassmorphism */
+/* Widget Base Styles - Enhanced Glassmorphism */
 .widget {
-    background: rgba(26, 23, 34, 0.6);
-    backdrop-filter: blur(20px);
+    background: rgba(19, 17, 26, 0.7);
+    backdrop-filter: blur(40px) saturate(180%);
+    -webkit-backdrop-filter: blur(40px) saturate(180%);
     border: 1px solid rgba(132, 0, 255, 0.2);
-    border-radius: 1rem;
-    padding: 1.75rem;
+    border-radius: 1.25rem;
+    padding: 2rem;
     transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     position: relative;
     overflow: hidden;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
 }
 
 .widget::before {
@@ -158,10 +165,10 @@
     top: 0;
     left: 0;
     right: 0;
-    height: 3px;
+    height: 2px;
     background: linear-gradient(90deg, var(--color-secondary) 0%, var(--color-accent) 100%);
     opacity: 0;
-    transition: opacity 0.3s;
+    transition: opacity 0.4s;
 }
 
 .widget:hover::before {
@@ -185,9 +192,10 @@
 }
 
 .widget:hover {
+    background: rgba(19, 17, 26, 0.85);
     border-color: rgba(132, 0, 255, 0.5);
-    box-shadow: 0 12px 48px rgba(132, 0, 255, 0.2), 0 0 0 1px rgba(132, 0, 255, 0.1);
-    transform: translateY(-4px);
+    box-shadow: 0 16px 56px rgba(132, 0, 255, 0.25), 0 0 0 1px rgba(132, 0, 255, 0.2);
+    transform: translateY(-6px);
 }
 
 .widget.draggable {
@@ -235,17 +243,17 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 1.25rem;
+    margin-bottom: 1.5rem;
     position: relative;
     z-index: 2;
 }
 
 .widget-title {
-    font-size: 1.25rem;
+    font-size: 1.375rem;
     font-weight: 700;
     color: var(--color-text);
     margin: 0;
-    letter-spacing: -0.01em;
+    letter-spacing: -0.02em;
 }
 
 .widget-actions {
@@ -255,21 +263,45 @@
 
 .widget-action-btn {
     background: rgba(255, 255, 255, 0.05);
-    border: 1px solid transparent;
+    border: 1px solid rgba(132, 0, 255, 0.15);
     color: var(--color-text-dim);
     cursor: pointer;
-    padding: 0.5rem;
-    border-radius: 0.5rem;
-    transition: all 0.3s;
+    padding: 0.625rem;
+    border-radius: 0.625rem;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     display: flex;
     align-items: center;
     justify-content: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.widget-action-btn::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(132, 0, 255, 0.2) 0%, rgba(230, 0, 165, 0.2) 100%);
+    opacity: 0;
+    transition: opacity 0.4s;
+}
+
+.widget-action-btn:hover::before {
+    opacity: 1;
+}
+
+.widget-action-btn i {
+    position: relative;
+    z-index: 1;
+    transition: transform 0.3s ease;
 }
 
 .widget-action-btn:hover {
     color: var(--color-secondary);
-    background: rgba(132, 0, 255, 0.15);
-    border-color: rgba(132, 0, 255, 0.3);
+    border-color: rgba(132, 0, 255, 0.4);
+    transform: scale(1.1) rotate(-5deg);
+}
+
+.widget-action-btn:hover i {
     transform: scale(1.1);
 }
 
