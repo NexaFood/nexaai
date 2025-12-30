@@ -34,144 +34,218 @@
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         }
         
-        /* Modern Navigation */
+        /* Ultra-Modern Navigation */
         .modern-nav {
-            background: rgba(26, 23, 34, 0.95);
-            backdrop-filter: blur(20px);
-            border-bottom: 1px solid rgba(132, 0, 255, 0.2);
+            background: rgba(19, 17, 26, 0.7);
+            backdrop-filter: blur(40px) saturate(180%);
+            -webkit-backdrop-filter: blur(40px) saturate(180%);
+            border-bottom: 1px solid rgba(132, 0, 255, 0.15);
             position: sticky;
             top: 0;
             z-index: 1000;
-            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .modern-nav:hover {
+            background: rgba(19, 17, 26, 0.85);
+            box-shadow: 0 12px 48px 0 rgba(132, 0, 255, 0.2);
         }
         
         .nav-container {
-            max-width: 1400px;
+            max-width: 1600px;
             margin: 0 auto;
-            padding: 0 2rem;
+            padding: 0 3rem;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            height: 70px;
+            height: 80px;
         }
         
         .nav-brand {
             display: flex;
             align-items: center;
-            gap: 1rem;
+            gap: 1.25rem;
+            transition: transform 0.3s ease;
+        }
+        
+        .nav-brand:hover {
+            transform: scale(1.02);
         }
         
         .nav-brand i {
-            font-size: 1.75rem;
+            font-size: 2rem;
             background: linear-gradient(135deg, #8400ff 0%, #e600a5 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
+            filter: drop-shadow(0 0 8px rgba(132, 0, 255, 0.5));
+            animation: pulse-glow 3s ease-in-out infinite;
+        }
+        
+        @keyframes pulse-glow {
+            0%, 100% { filter: drop-shadow(0 0 8px rgba(132, 0, 255, 0.5)); }
+            50% { filter: drop-shadow(0 0 16px rgba(230, 0, 165, 0.6)); }
         }
         
         .brand-name {
-            font-size: 1.5rem;
+            font-size: 1.75rem;
             font-weight: 800;
-            letter-spacing: -0.02em;
+            letter-spacing: -0.03em;
             background: linear-gradient(135deg, #8400ff 0%, #e600a5 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
+            position: relative;
         }
         
         .brand-tagline {
-            font-size: 0.75rem;
-            color: #8a8694;
+            font-size: 0.8125rem;
+            color: #9b97a8;
             font-weight: 500;
-            padding-left: 1rem;
-            border-left: 1px solid rgba(132, 0, 255, 0.3);
+            padding-left: 1.25rem;
+            border-left: 2px solid rgba(132, 0, 255, 0.4);
+            letter-spacing: 0.02em;
         }
         
         .nav-links {
             display: flex;
             align-items: center;
-            gap: 0.5rem;
+            gap: 0.75rem;
         }
         
         .nav-link {
             display: flex;
             align-items: center;
-            gap: 0.5rem;
-            padding: 0.75rem 1.25rem;
-            border-radius: 0.75rem;
-            color: #b8b4c5;
+            gap: 0.625rem;
+            padding: 0.875rem 1.5rem;
+            border-radius: 1rem;
+            color: #c5c1d0;
             text-decoration: none;
             font-weight: 600;
             font-size: 0.9375rem;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
             position: relative;
+            overflow: hidden;
         }
         
         .nav-link i {
-            font-size: 1.125rem;
+            font-size: 1.25rem;
+            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         }
         
         .nav-link::before {
             content: '';
             position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, rgba(132, 0, 255, 0.15) 0%, rgba(230, 0, 165, 0.15) 100%);
+            opacity: 0;
+            transition: opacity 0.4s;
+        }
+        
+        .nav-link::after {
+            content: '';
+            position: absolute;
             bottom: 0;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 0;
-            height: 2px;
+            left: 0;
+            right: 0;
+            height: 3px;
             background: linear-gradient(90deg, #8400ff 0%, #e600a5 100%);
-            transition: width 0.3s;
+            transform: scaleX(0);
+            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         }
         
         .nav-link:hover {
             color: #ffffff;
-            background: rgba(132, 0, 255, 0.1);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(132, 0, 255, 0.25);
         }
         
         .nav-link:hover::before {
-            width: 80%;
+            opacity: 1;
+        }
+        
+        .nav-link:hover::after {
+            transform: scaleX(1);
+        }
+        
+        .nav-link:hover i {
+            transform: scale(1.1) rotate(-5deg);
         }
         
         .nav-user {
             display: flex;
             align-items: center;
-            gap: 1rem;
+            gap: 1.25rem;
         }
         
         .user-info {
             display: flex;
             align-items: center;
-            gap: 0.5rem;
-            color: #b8b4c5;
+            gap: 0.75rem;
+            padding: 0.75rem 1.25rem;
+            background: rgba(132, 0, 255, 0.08);
+            border-radius: 1rem;
+            color: #d4d1de;
             font-weight: 600;
             font-size: 0.9375rem;
+            border: 1px solid rgba(132, 0, 255, 0.2);
+            transition: all 0.3s ease;
+        }
+        
+        .user-info:hover {
+            background: rgba(132, 0, 255, 0.12);
+            border-color: rgba(132, 0, 255, 0.35);
         }
         
         .user-info i {
-            font-size: 1.5rem;
-            color: #8400ff;
+            font-size: 1.625rem;
+            background: linear-gradient(135deg, #8400ff 0%, #e600a5 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
         
         .btn-logout, .btn-login {
             display: flex;
             align-items: center;
-            gap: 0.5rem;
-            padding: 0.625rem 1.25rem;
-            border-radius: 0.75rem;
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(132, 0, 255, 0.3);
+            gap: 0.625rem;
+            padding: 0.75rem 1.5rem;
+            border-radius: 1rem;
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(132, 0, 255, 0.35);
             color: #ffffff;
             text-decoration: none;
             font-weight: 600;
             font-size: 0.9375rem;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .btn-logout::before, .btn-login::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, #8400ff 0%, #e600a5 100%);
+            opacity: 0;
+            transition: opacity 0.4s;
+        }
+        
+        .btn-logout span, .btn-login span,
+        .btn-logout i, .btn-login i {
+            position: relative;
+            z-index: 1;
         }
         
         .btn-logout:hover, .btn-login:hover {
-            background: linear-gradient(135deg, #8400ff 0%, #e600a5 100%);
             border-color: transparent;
-            transform: translateY(-2px);
-            box-shadow: 0 8px 24px rgba(132, 0, 255, 0.4);
+            transform: translateY(-3px);
+            box-shadow: 0 12px 32px rgba(132, 0, 255, 0.4);
+        }
+        
+        .btn-logout:hover::before, .btn-login:hover::before {
+            opacity: 1;
         }
         
         .btn-login {
@@ -179,8 +253,12 @@
             border: none;
         }
         
+        .btn-login::before {
+            background: linear-gradient(135deg, #9d1aff 0%, #ff1ac6 100%);
+        }
+        
         .btn-login:hover {
-            box-shadow: 0 8px 32px rgba(132, 0, 255, 0.6);
+            box-shadow: 0 12px 40px rgba(132, 0, 255, 0.6);
         }
         
         @media (max-width: 768px) {
