@@ -30,6 +30,7 @@
             color: #ffffff;
             margin-left: 280px;
             transition: margin-left 0.3s ease;
+            overflow-x: hidden;
         }
         
         .gradient-bg {
@@ -422,7 +423,7 @@
     </nav>
     
     <!-- Main Content -->
-    <main style="padding: 2rem 3rem;">
+    <main style="padding: 2rem 3rem; position: relative; z-index: 1;">
         {% if messages %}
             <div class="mb-6">
                 {% for message in messages %}
