@@ -272,6 +272,10 @@
             box-shadow: 0 12px 40px rgba(132, 0, 255, 0.6);
         }
         
+        main, footer {
+            transition: padding 0.3s ease;
+        }
+        
         @media (max-width: 1024px) {
             .modern-nav {
                 width: 240px;
@@ -279,6 +283,11 @@
             
             body {
                 margin-left: 240px;
+            }
+            
+            main, footer {
+                padding-left: 2rem;
+                padding-right: 2rem;
             }
         }
         
@@ -289,6 +298,11 @@
             
             body {
                 margin-left: 80px;
+            }
+            
+            main, footer {
+                padding-left: 1.5rem;
+                padding-right: 1.5rem;
             }
             
             .nav-container {
@@ -408,7 +422,7 @@
     </nav>
     
     <!-- Main Content -->
-    <main class="container mx-auto px-4 py-8">
+    <main style="padding: 2rem 3rem;">
         {% if messages %}
             <div class="mb-6">
                 {% for message in messages %}
@@ -423,8 +437,7 @@
     </main>
     
     <!-- Footer -->
-    <footer class="text-white mt-16" style="background-color: #1a1722; border-top: 1px solid #2d2838;">
-        <div class="container mx-auto px-4 py-8">
+    <footer class="text-white mt-16" style="background-color: #1a1722; border-top: 1px solid #2d2838; padding: 2rem 3rem;">
             <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
                 <div>
                     <h3 class="text-lg font-bold mb-4">NexaAI</h3>
@@ -452,7 +465,6 @@
             <div class="border-t border-gray-700 mt-8 pt-8 text-center text-gray-400">
                 <p>&copy; 2024 NexaAI. All rights reserved.</p>
             </div>
-        </div>
     </footer>
     
     {% block extra_js %}{% endblock %}
