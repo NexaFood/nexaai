@@ -189,21 +189,28 @@ def tv_api_power(request, tv_id):
             tv.get('client_key')
         )
         
+        new_power_state = None
+        
         if action == 'on':
             result = service.power_on()
+            new_power_state = 'on'
         elif action == 'off':
             result = service.power_off()
+            new_power_state = 'off'
         else:
             # Toggle
             state = service.get_state()
             if state.get('power') == 'on':
                 result = service.power_off()
+                new_power_state = 'off'
             else:
                 result = service.power_on()
+                new_power_state = 'on'
         
         # Trigger light sync if enabled
-        if result.get('success') and tv.get('auto_sync_enabled'):
-            _sync_lights_with_tv(tv, action if action != 'toggle' else ('on' if state.get('power') == 'off' else 'off'))
+        if result.get('success') and tv.get('auto_sync_enabled') and new_power_state:
+            print(f"TV power changed to {new_power_state}, syncing lights...")
+            _sync_lights_with_tv(tv, new_power_state)
         
         return JsonResponse(result)
         
@@ -319,6 +326,31 @@ def tv_api_launch_app(request, tv_id):
 
 @login_required
 @require_http_methods(['POST'])
+def tv_toggle_sync(request, tv_id):
+    """Toggle auto-sync setting for a TV"""
+    user_id = str(request.user.id)
+    tv = db.tvs.find_one({'_id': to_object_id(tv_id), 'user_id': user_id})
+    
+    if not tv:
+        return JsonResponse({'success': False, 'error': 'TV not found'})
+    
+    try:
+        data = json.loads(request.body) if request.body else {}
+        enabled = data.get('enabled', False)
+        
+        db.tvs.update_one(
+            {'_id': to_object_id(tv_id)},
+            {'$set': {'auto_sync_enabled': enabled}}
+        )
+        
+        return JsonResponse({'success': True, 'auto_sync_enabled': enabled})
+        
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)})
+
+
+@login_required
+@require_http_methods(['POST'])
 def tv_link_lights(request, tv_id):
     """Link lights to sync with TV state"""
     user_id = str(request.user.id)
@@ -350,17 +382,38 @@ def _sync_lights_with_tv(tv: dict, power_state: str):
         tv: TV document from database
         power_state: 'on' or 'off'
     """
-    from .lights_views import set_light_state
+    from .ledvance_controller import LedvanceLight
     
     linked_lights = tv.get('linked_lights', [])
+    print(f"Syncing {len(linked_lights)} lights with TV state: {power_state}")
     
     for light_id in linked_lights:
         try:
-            # Get light from database
-            light = db.lights.find_one({'_id': to_object_id(light_id)})
+            # Get light from database - try ledvance_lights collection
+            light = db.ledvance_lights.find_one({'_id': to_object_id(light_id)})
+            if not light:
+                # Also try by dev_id
+                light = db.ledvance_lights.find_one({'dev_id': light_id})
+            
             if light:
-                # Turn light on/off based on TV state
-                set_light_state(light, power_state == 'on')
+                print(f"Found light: {light.get('name')} at {light.get('ip')}")
+                # Create controller and turn on/off
+                controller = LedvanceLight(
+                    dev_id=light['dev_id'],
+                    ip=light['ip'],
+                    local_key=light['local_key'],
+                    name=light.get('name', light['dev_id']),
+                    version=light.get('version', 3.3)
+                )
+                
+                if power_state == 'on':
+                    result = controller.turn_on()
+                    print(f"Turn on {light.get('name')}: {result}")
+                else:
+                    result = controller.turn_off()
+                    print(f"Turn off {light.get('name')}: {result}")
+            else:
+                print(f"Light not found: {light_id}")
         except Exception as e:
             print(f"Error syncing light {light_id}: {e}")
 

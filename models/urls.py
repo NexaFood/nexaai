@@ -126,6 +126,7 @@ urlpatterns = [
     path('api/tv/<str:tv_id>/apps/', tv_views.tv_api_apps, name='api_tv_apps'),
     path('api/tv/<str:tv_id>/launch-app/', tv_views.tv_api_launch_app, name='api_tv_launch_app'),
     path('api/tv/<str:tv_id>/link-lights/', tv_views.tv_link_lights, name='api_tv_link_lights'),
+    path('api/tv/<str:tv_id>/toggle-sync/', tv_views.tv_toggle_sync, name='api_tv_toggle_sync'),
     
     # Lights API for TV linking
     path('api/lights/', ledvance_views.api_list_lights, name='api_lights_list'),
