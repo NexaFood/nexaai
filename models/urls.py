@@ -15,6 +15,7 @@ from . import cad_dashboard_views
 from . import dashboard_manager_views
 from . import ledvance_views
 from . import printer_views
+from . import tv_views
 
 app_name = 'models'
 
@@ -109,4 +110,23 @@ urlpatterns = [
     # CAD AI Dashboard API endpoints
     path('api/cad/recent-projects/', cad_dashboard_views.api_get_recent_projects, name='api-get-recent-projects'),
     path('api/cad/stats/', cad_dashboard_views.api_get_project_stats, name='api-get-project-stats'),
+    
+    # TV Management
+    path('tvs/', tv_views.tv_list, name='tv_list'),
+    path('tv/add/', tv_views.tv_add, name='tv_add'),
+    path('tv/<str:tv_id>/edit/', tv_views.tv_edit, name='tv_edit'),
+    path('tv/<str:tv_id>/delete/', tv_views.tv_delete, name='tv_delete'),
+    path('tv/<str:tv_id>/pair/', tv_views.tv_pair, name='tv_pair'),
+    
+    # TV API endpoints
+    path('api/tv/<str:tv_id>/pair/', tv_views.tv_pair_connect, name='api_tv_pair'),
+    path('api/tv/<str:tv_id>/state/', tv_views.tv_api_state, name='api_tv_state'),
+    path('api/tv/<str:tv_id>/power/', tv_views.tv_api_power, name='api_tv_power'),
+    path('api/tv/<str:tv_id>/volume/', tv_views.tv_api_volume, name='api_tv_volume'),
+    path('api/tv/<str:tv_id>/apps/', tv_views.tv_api_apps, name='api_tv_apps'),
+    path('api/tv/<str:tv_id>/launch-app/', tv_views.tv_api_launch_app, name='api_tv_launch_app'),
+    path('api/tv/<str:tv_id>/link-lights/', tv_views.tv_link_lights, name='api_tv_link_lights'),
+    
+    # Lights API for TV linking
+    path('api/lights/', ledvance_views.api_list_lights, name='api_lights_list'),
 ]

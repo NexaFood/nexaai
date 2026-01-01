@@ -118,6 +118,16 @@ class MongoDB:
         return self._db.design_projects
     
     @property
+    def tvs(self):
+        """TVs collection."""
+        return self._db.tvs
+    
+    @property
+    def lights(self):
+        """Lights collection (alias for ledvance_lights)."""
+        return self._db.ledvance_lights
+    
+    @property
     def design_concepts(self):
         """Design concepts collection (Stage 1)."""
         return self._db.design_concepts

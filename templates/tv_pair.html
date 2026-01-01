@@ -1,0 +1,232 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Pair TV - NexaAI{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/tvs.css' %}">
+<style>
+.pair-container {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 2rem;
+}
+
+.pair-card {
+    background: linear-gradient(145deg, rgba(26, 23, 34, 0.95) 0%, rgba(15, 12, 20, 0.98) 100%);
+    border: 1px solid rgba(132, 0, 255, 0.15);
+    border-radius: 16px;
+    overflow: hidden;
+    position: relative;
+    text-align: center;
+    padding: 3rem 2rem;
+}
+
+.pair-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(132, 0, 255, 0.5), rgba(230, 0, 165, 0.5), transparent);
+}
+
+.pair-icon {
+    font-size: 5rem;
+    color: #c084fc;
+    margin-bottom: 1.5rem;
+    animation: pulse-glow 2s infinite;
+}
+
+@keyframes pulse-glow {
+    0%, 100% { 
+        filter: drop-shadow(0 0 10px rgba(192, 132, 252, 0.5));
+    }
+    50% { 
+        filter: drop-shadow(0 0 25px rgba(192, 132, 252, 0.8));
+    }
+}
+
+.pair-title {
+    color: #e0dce8;
+    font-size: 1.5rem;
+    margin: 0 0 0.5rem 0;
+}
+
+.pair-subtitle {
+    color: #8a8694;
+    margin: 0 0 2rem 0;
+}
+
+.pair-steps {
+    text-align: left;
+    background: rgba(26, 23, 34, 0.5);
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.pair-step {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1rem;
+    color: #e0dce8;
+}
+
+.pair-step:last-child {
+    margin-bottom: 0;
+}
+
+.step-number {
+    width: 28px;
+    height: 28px;
+    background: linear-gradient(135deg, #8400ff 0%, #e600a5 100%);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 0.85rem;
+    flex-shrink: 0;
+}
+
+.step-text {
+    padding-top: 3px;
+}
+
+.pair-status {
+    padding: 1rem;
+    border-radius: 10px;
+    margin-bottom: 1.5rem;
+}
+
+.pair-status.waiting {
+    background: rgba(132, 0, 255, 0.1);
+    border: 1px solid rgba(132, 0, 255, 0.3);
+    color: #c084fc;
+}
+
+.pair-status.success {
+    background: rgba(52, 211, 153, 0.1);
+    border: 1px solid rgba(52, 211, 153, 0.3);
+    color: #34d399;
+}
+
+.pair-status.error {
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    color: #ef4444;
+}
+
+.spinner {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 2px solid currentColor;
+    border-right-color: transparent;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-right: 0.5rem;
+    vertical-align: middle;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+.back-link {
+    color: #8a8694;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.back-link:hover {
+    color: #c084fc;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="pair-container">
+    <a href="{% url 'tv_list' %}" class="back-link">
+        <i class="bi bi-arrow-left"></i> Back to TVs
+    </a>
+
+    <div class="pair-card">
+        <i class="bi bi-tv pair-icon"></i>
+        <h2 class="pair-title">Pair with {{ tv.name }}</h2>
+        <p class="pair-subtitle">{{ tv.ip_address }}</p>
+
+        <div class="pair-steps">
+            <div class="pair-step">
+                <span class="step-number">1</span>
+                <span class="step-text">Make sure your TV is turned on</span>
+            </div>
+            <div class="pair-step">
+                <span class="step-number">2</span>
+                <span class="step-text">Click "Start Pairing" below</span>
+            </div>
+            <div class="pair-step">
+                <span class="step-number">3</span>
+                <span class="step-text">Accept the connection prompt on your TV</span>
+            </div>
+        </div>
+
+        <div id="pairStatus" class="pair-status waiting" style="display: none;">
+            <span class="spinner"></span>
+            <span id="statusText">Waiting for TV response...</span>
+        </div>
+
+        <button id="pairBtn" class="btn-primary" onclick="startPairing()">
+            <i class="bi bi-link"></i> Start Pairing
+        </button>
+    </div>
+</div>
+
+<script>
+function startPairing() {
+    const btn = document.getElementById('pairBtn');
+    const status = document.getElementById('pairStatus');
+    const statusText = document.getElementById('statusText');
+    
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner"></span> Connecting...';
+    status.style.display = 'block';
+    status.className = 'pair-status waiting';
+    statusText.textContent = 'Connecting to TV... Please accept the prompt on your TV screen.';
+    
+    fetch('{% url "tv_pair" tv.id %}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': '{{ csrf_token }}'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            status.className = 'pair-status success';
+            statusText.innerHTML = '<i class="bi bi-check-circle"></i> Successfully paired! Redirecting...';
+            setTimeout(() => {
+                window.location.href = '{% url "tv_list" %}';
+            }, 2000);
+        } else {
+            status.className = 'pair-status error';
+            statusText.innerHTML = '<i class="bi bi-exclamation-circle"></i> ' + (data.error || 'Pairing failed. Make sure TV is on and try again.');
+            btn.disabled = false;
+            btn.innerHTML = '<i class="bi bi-link"></i> Try Again';
+        }
+    })
+    .catch(error => {
+        status.className = 'pair-status error';
+        statusText.innerHTML = '<i class="bi bi-exclamation-circle"></i> Connection error. Check TV is on and on same network.';
+        btn.disabled = false;
+        btn.innerHTML = '<i class="bi bi-link"></i> Try Again';
+    });
+}
+</script>
+{% endblock %}

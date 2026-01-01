@@ -1,0 +1,230 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{% if action == 'edit' %}Edit{% else %}Add{% endif %} TV - NexaAI{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/tvs.css' %}">
+<style>
+.form-container {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 2rem;
+}
+
+.form-card {
+    background: linear-gradient(145deg, rgba(26, 23, 34, 0.95) 0%, rgba(15, 12, 20, 0.98) 100%);
+    border: 1px solid rgba(132, 0, 255, 0.15);
+    border-radius: 16px;
+    overflow: hidden;
+    position: relative;
+}
+
+.form-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(132, 0, 255, 0.5), rgba(230, 0, 165, 0.5), transparent);
+}
+
+.form-header {
+    padding: 1.5rem;
+    border-bottom: 1px solid rgba(132, 0, 255, 0.1);
+}
+
+.form-header h2 {
+    margin: 0;
+    color: #e0dce8;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.form-header h2 i {
+    color: #c084fc;
+}
+
+.form-body {
+    padding: 1.5rem;
+}
+
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-group label {
+    display: block;
+    color: #e0dce8;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.form-group small {
+    display: block;
+    color: #8a8694;
+    font-size: 0.8rem;
+    margin-top: 0.25rem;
+}
+
+.form-input {
+    width: 100%;
+    padding: 0.875rem 1rem;
+    background: rgba(26, 23, 34, 0.8);
+    border: 1px solid rgba(132, 0, 255, 0.2);
+    border-radius: 10px;
+    color: #e0dce8;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+}
+
+.form-input:focus {
+    outline: none;
+    border-color: rgba(132, 0, 255, 0.5);
+    box-shadow: 0 0 0 3px rgba(132, 0, 255, 0.1);
+}
+
+.form-input::placeholder {
+    color: #6b6779;
+}
+
+.form-checkbox {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.form-checkbox input {
+    width: 20px;
+    height: 20px;
+    accent-color: #8400ff;
+}
+
+.form-footer {
+    padding: 1rem 1.5rem;
+    border-top: 1px solid rgba(132, 0, 255, 0.1);
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+.back-link {
+    color: #8a8694;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.back-link:hover {
+    color: #c084fc;
+}
+
+.info-box {
+    background: rgba(132, 0, 255, 0.1);
+    border: 1px solid rgba(132, 0, 255, 0.2);
+    border-radius: 10px;
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.info-box h4 {
+    color: #c084fc;
+    margin: 0 0 0.5rem 0;
+    font-size: 0.9rem;
+}
+
+.info-box p {
+    color: #8a8694;
+    margin: 0;
+    font-size: 0.85rem;
+    line-height: 1.5;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="form-container">
+    <a href="{% url 'tv_list' %}" class="back-link">
+        <i class="bi bi-arrow-left"></i> Back to TVs
+    </a>
+
+    <div class="form-card">
+        <div class="form-header">
+            <h2>
+                <i class="bi bi-tv"></i>
+                {% if action == 'edit' %}Edit TV{% else %}Add New TV{% endif %}
+            </h2>
+        </div>
+
+        <form method="post">
+            {% csrf_token %}
+            <div class="form-body">
+                {% if action == 'add' %}
+                <div class="info-box">
+                    <h4><i class="bi bi-info-circle"></i> LG webOS TV Setup</h4>
+                    <p>
+                        To control your LG TV, you'll need:
+                        <br>• TV's IP address (find in TV Settings → Network)
+                        <br>• MAC address for Wake-on-LAN (to turn TV on remotely)
+                        <br>• Enable "Mobile TV On" in TV settings
+                    </p>
+                </div>
+                {% endif %}
+
+                <div class="form-group">
+                    <label for="name">TV Name</label>
+                    <input type="text" id="name" name="name" class="form-input" 
+                           value="{{ tv.name|default:'' }}" placeholder="e.g., Living Room TV" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="model">Model (optional)</label>
+                    <input type="text" id="model" name="model" class="form-input" 
+                           value="{{ tv.model|default:'' }}" placeholder="e.g., LG C1 55&quot;">
+                </div>
+
+                <div class="form-group">
+                    <label for="ip_address">IP Address</label>
+                    <input type="text" id="ip_address" name="ip_address" class="form-input" 
+                           value="{{ tv.ip_address|default:'' }}" placeholder="e.g., 192.168.1.100" required>
+                    <small>Find this in your TV's Network Settings</small>
+                </div>
+
+                <div class="form-group">
+                    <label for="mac_address">MAC Address (for Wake-on-LAN)</label>
+                    <input type="text" id="mac_address" name="mac_address" class="form-input" 
+                           value="{{ tv.mac_address|default:'' }}" placeholder="e.g., AA:BB:CC:DD:EE:FF">
+                    <small>Required to turn TV on remotely. Find in TV Network Settings.</small>
+                </div>
+
+                <div class="form-group">
+                    <label for="location">Location (optional)</label>
+                    <input type="text" id="location" name="location" class="form-input" 
+                           value="{{ tv.location|default:'' }}" placeholder="e.g., Living Room">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-checkbox">
+                        <input type="checkbox" name="auto_sync_enabled" 
+                               {% if tv.auto_sync_enabled %}checked{% endif %}>
+                        <span>Auto-sync linked lights with TV power</span>
+                    </label>
+                    <small>When enabled, linked lights will turn on/off with the TV</small>
+                </div>
+            </div>
+
+            <div class="form-footer">
+                <a href="{% url 'tv_list' %}" class="btn-secondary">Cancel</a>
+                <button type="submit" class="btn-primary">
+                    <i class="bi bi-check-lg"></i>
+                    {% if action == 'edit' %}Save Changes{% else %}Add TV{% endif %}
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

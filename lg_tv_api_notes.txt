@@ -1,0 +1,68 @@
+LG webOS TV API Notes (PyWebOSTV library)
+==========================================
+
+Installation:
+pip install pywebostv
+
+Connection:
+-----------
+from pywebostv.connection import WebOSClient
+from pywebostv.controls import SystemControl, MediaControl, ApplicationControl
+
+# Connect with IP
+client = WebOSClient("<IP Address>", secure=True)  # secure=True for newer models
+client.connect()
+
+# First time registration (shows prompt on TV)
+store = {}
+for status in client.register(store):
+    if status == WebOSClient.PROMPTED:
+        print("Please accept on TV!")
+    elif status == WebOSClient.REGISTERED:
+        print("Success!")
+
+# Store contains: {'client_key': 'ACCESS_TOKEN_FROM_TV'}
+# Save this for future connections
+
+System Controls:
+----------------
+system = SystemControl(client)
+system.power_off()          # Turn off TV
+system.info()               # Get TV info (model, etc.)
+system.screen_off()         # Turn off screen only
+system.screen_on()          # Turn screen back on
+
+Media Controls:
+---------------
+media = MediaControl(client)
+media.volume_up()
+media.volume_down()
+media.get_volume()          # Returns: {'scenario': '...', 'volume': 9, 'muted': False}
+media.set_volume(50)        # 1-100
+media.mute(True/False)
+
+Application Controls:
+---------------------
+app = ApplicationControl(client)
+apps = app.list_apps()      # Get all installed apps
+app.launch(app_info)        # Launch an app
+app.get_current()           # Get currently running app
+
+Wake-on-LAN (to turn TV ON):
+----------------------------
+Need MAC address of TV
+Use wakeonlan library: pip install wakeonlan
+
+from wakeonlan import send_magic_packet
+send_magic_packet('AA:BB:CC:DD:EE:FF')
+
+TV Settings needed:
+- Enable "Mobile TV On" in TV settings
+- Enable Wake-on-LAN in network settings
+- Some models: Turn off Quick Start+
+
+Getting TV State:
+-----------------
+- If connection succeeds = TV is on
+- If connection fails = TV is off
+- Can also check get_current() app to see what's playing
