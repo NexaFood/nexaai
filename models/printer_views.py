@@ -9,12 +9,12 @@ from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_http_methods
 from django.views.decorators.csrf import csrf_exempt
-from bson.objectid import ObjectId
+from bson import ObjectId
 import json
 import logging
 from datetime import datetime
 
-from .mongodb_connection import get_database
+from .mongodb import db, to_object_id, doc_to_dict
 from .printer_api_service import PrinterAPIFactory, PrusaLinkAPI, SnapmakerAPI, format_time
 
 logger = logging.getLogger(__name__)
@@ -22,8 +22,7 @@ logger = logging.getLogger(__name__)
 
 def get_printers_collection():
     """Get the printers collection from MongoDB"""
-    db = get_database()
-    return db['printers']
+    return db.printers
 
 
 def serialize_printer(printer: dict) -> dict:
