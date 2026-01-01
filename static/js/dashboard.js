@@ -389,14 +389,16 @@ class DashboardManager {
         // Add All On/Off buttons at the top
         if (groups.length > 0) {
             html += `
-                <div style="display: flex; gap: 0.5rem; padding: 0.5rem; border-bottom: 1px solid rgba(255,255,255,0.1);">
+                <div style="display: flex; gap: 0.75rem; padding: 0.75rem 0; margin-bottom: 0.5rem; border-bottom: 1px solid rgba(132, 0, 255, 0.15);">
                     <button onclick="event.stopPropagation(); window.dashboardManager.toggleAllGroupsInWidget('${groupIds}', true);" 
-                            style="flex: 1; padding: 0.5rem; border-radius: 0.375rem; border: none; background: linear-gradient(135deg, #8400ff, #e600a5); color: white; cursor: pointer; font-weight: 600; transition: all 0.3s;">
-                        <i class="bi bi-lightbulb"></i> All On
+                            class="widget-control-btn widget-control-btn-primary"
+                            style="flex: 1; display: flex; align-items: center; justify-content: center; gap: 0.5rem; padding: 0.75rem 1rem; border-radius: 0.75rem; border: none; background: linear-gradient(135deg, #8400ff 0%, #e600a5 100%); color: white; cursor: pointer; font-weight: 600; font-size: 0.875rem; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: 0 4px 16px rgba(132, 0, 255, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2);">
+                        <i class="bi bi-lightbulb-fill" style="font-size: 1rem;"></i> All On
                     </button>
                     <button onclick="event.stopPropagation(); window.dashboardManager.toggleAllGroupsInWidget('${groupIds}', false);"
-                            style="flex: 1; padding: 0.5rem; border-radius: 0.375rem; border: 1px solid rgba(255,255,255,0.2); background: rgba(255,255,255,0.05); color: white; cursor: pointer; font-weight: 600; transition: all 0.3s;">
-                        <i class="bi bi-lightbulb-off"></i> All Off
+                            class="widget-control-btn widget-control-btn-secondary"
+                            style="flex: 1; display: flex; align-items: center; justify-content: center; gap: 0.5rem; padding: 0.75rem 1rem; border-radius: 0.75rem; border: 1px solid rgba(138, 134, 148, 0.3); background: linear-gradient(135deg, rgba(45, 40, 60, 0.6) 0%, rgba(30, 27, 40, 0.8) 100%); color: #b8b4c5; cursor: pointer; font-weight: 600; font-size: 0.875rem; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);">
+                        <i class="bi bi-lightbulb-off" style="font-size: 1rem;"></i> All Off
                     </button>
                 </div>
             `;
@@ -408,12 +410,18 @@ class DashboardManager {
             const statusClass = isOn ? 'status-on' : 'status-off';
             const statusText = isOn ? 'ON' : 'OFF';
             const lightCount = group.light_count || 0;
+            const lightsOnCount = group.lights_on || 0;
             
             html += `
                 <div class="widget-list-item" style="cursor: pointer;" onclick="window.dashboardManager.toggleGroupFromWidget('${group.id}')">
-                    <div style="display: flex; flex-direction: column; gap: 0.25rem;">
-                        <span>${group.name}</span>
-                        <span style="font-size: 0.75rem; color: #8a8694;">${lightCount} light${lightCount !== 1 ? 's' : ''}</span>
+                    <div style="display: flex; align-items: center; gap: 1rem;">
+                        <div style="width: 42px; height: 42px; display: flex; align-items: center; justify-content: center; border-radius: 0.75rem; background: ${isOn ? 'linear-gradient(135deg, rgba(132, 0, 255, 0.3) 0%, rgba(230, 0, 165, 0.2) 100%)' : 'rgba(138, 134, 148, 0.1)'}; border: 1px solid ${isOn ? 'rgba(132, 0, 255, 0.4)' : 'rgba(138, 134, 148, 0.2)'}; transition: all 0.3s;">
+                            <i class="bi bi-${isOn ? 'lightbulb-fill' : 'lightbulb'}" style="font-size: 1.25rem; color: ${isOn ? '#e600a5' : '#8a8694'}; ${isOn ? 'filter: drop-shadow(0 0 8px rgba(230, 0, 165, 0.5));' : ''}"></i>
+                        </div>
+                        <div style="display: flex; flex-direction: column; gap: 0.125rem;">
+                            <span style="font-weight: 600; color: #ffffff; font-size: 0.9375rem;">${group.name}</span>
+                            <span style="font-size: 0.75rem; color: #8a8694;">${isOn ? lightsOnCount + ' of ' + lightCount + ' on' : lightCount + ' light' + (lightCount !== 1 ? 's' : '')}</span>
+                        </div>
                     </div>
                     <span class="${statusClass}">${statusText}</span>
                 </div>
