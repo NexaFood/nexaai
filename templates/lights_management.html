@@ -855,13 +855,6 @@ function createLightCard(light) {
                        onchange="setBrightness('${light.id}', this.value)"
                        oninput="document.getElementById('brightness-value-${light.id}').textContent = this.value + '%'">
             </div>
-            
-            <div class="color-controls">
-                <div class="color-preset" style="background: #ffffff;" onclick="setColorTemp('${light.id}', 6500)" title="Cool White"></div>
-                <div class="color-preset" style="background: #ffd699;" onclick="setColorTemp('${light.id}', 4000)" title="Neutral White"></div>
-                <div class="color-preset" style="background: #ffb366;" onclick="setColorTemp('${light.id}', 2700)" title="Warm White"></div>
-                <div class="color-preset" style="background: linear-gradient(135deg, #ff0000, #ff00ff, #0000ff, #00ffff, #00ff00, #ffff00, #ff0000);" onclick="showColorPicker('${light.id}')" title="Custom Color"></div>
-            </div>
         </div>
     `;
     return card;
