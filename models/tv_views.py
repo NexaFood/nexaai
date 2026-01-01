@@ -131,7 +131,9 @@ def tv_pair_connect(request, tv_id):
             tv.get('client_key')
         )
         
-        result = service.connect(timeout=10)
+        print(f"DEBUG pair: Attempting to connect to TV at {tv.get('ip_address')}")
+        result = service.connect(timeout=15)
+        print(f"DEBUG pair: Connect result = {result}")
         
         if result.get('success') and result.get('client_key'):
             # Save the client key

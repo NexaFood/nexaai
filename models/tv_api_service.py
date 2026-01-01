@@ -56,18 +56,23 @@ class LGTVService:
         
     async def _connect_async(self, timeout: int = 10) -> Dict[str, Any]:
         """Async connect to the TV"""
+        print(f"DEBUG _connect_async: WEBOS_AVAILABLE={WEBOS_AVAILABLE}")
         if not WEBOS_AVAILABLE:
             return {
                 'success': False,
-                'error': 'aiowebostv library not installed'
+                'error': 'aiowebostv library not installed. Run: pip install aiowebostv'
             }
             
         try:
+            print(f"DEBUG _connect_async: Creating WebOsClient for {self.ip_address}")
             client = WebOsClient(self.ip_address, client_key=self.client_key)
+            
+            print(f"DEBUG _connect_async: Calling client.connect() with timeout={timeout}")
             await asyncio.wait_for(client.connect(), timeout=timeout)
             
             # Get the client key after connection
             new_client_key = client.client_key
+            print(f"DEBUG _connect_async: Got client_key={new_client_key[:20] if new_client_key else None}...")
             
             await client.disconnect()
             
@@ -79,11 +84,15 @@ class LGTVService:
             }
             
         except asyncio.TimeoutError:
+            print("DEBUG _connect_async: TimeoutError")
             return {
                 'success': False,
                 'error': 'Connection timed out. Make sure TV is on and accepts the connection prompt.'
             }
         except Exception as e:
+            print(f"DEBUG _connect_async: Exception: {type(e).__name__}: {e}")
+            import traceback
+            traceback.print_exc()
             return {
                 'success': False,
                 'error': str(e)
