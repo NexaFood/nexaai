@@ -1,12 +1,366 @@
 /**
- * CAD Designer Custom Dark Theme Classes
+ * CAD Designer Custom Dark Theme - Modern Glassmorphism
+ * Matches the dashboard widget styling
  */
+
+/* ==================== Card Styles ==================== */
+
+/* Modern card with glassmorphism */
+.cad-card {
+    background: linear-gradient(135deg, rgba(26, 23, 34, 0.9) 0%, rgba(19, 17, 26, 0.95) 100%);
+    backdrop-filter: blur(40px) saturate(200%);
+    -webkit-backdrop-filter: blur(40px) saturate(200%);
+    border: 1px solid rgba(132, 0, 255, 0.25);
+    border-radius: 1.5rem;
+    padding: 1.75rem;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+    box-shadow: 
+        0 8px 32px 0 rgba(0, 0, 0, 0.4),
+        inset 0 1px 0 rgba(255, 255, 255, 0.05),
+        inset 0 -1px 0 rgba(0, 0, 0, 0.2);
+}
+
+/* Top gradient accent line */
+.cad-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, var(--color-secondary, #8400ff) 0%, var(--color-accent, #e600a5) 50%, var(--color-secondary, #8400ff) 100%);
+    opacity: 0.6;
+    transition: opacity 0.4s;
+}
+
+.cad-card:hover::before {
+    opacity: 1;
+}
+
+/* Ambient glow effect */
+.cad-card::after {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle at 30% 30%, rgba(132, 0, 255, 0.08) 0%, transparent 50%),
+                radial-gradient(circle at 70% 70%, rgba(230, 0, 165, 0.06) 0%, transparent 50%);
+    opacity: 0.5;
+    transition: opacity 0.5s;
+    pointer-events: none;
+    z-index: 0;
+}
+
+.cad-card:hover::after {
+    opacity: 1;
+}
+
+.cad-card:hover {
+    background: linear-gradient(135deg, rgba(30, 27, 40, 0.95) 0%, rgba(22, 20, 30, 0.98) 100%);
+    border-color: rgba(132, 0, 255, 0.5);
+    box-shadow: 
+        0 20px 60px rgba(132, 0, 255, 0.2),
+        0 8px 24px rgba(0, 0, 0, 0.4),
+        0 0 0 1px rgba(132, 0, 255, 0.3),
+        inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    transform: translateY(-4px);
+}
+
+.cad-card > * {
+    position: relative;
+    z-index: 1;
+}
+
+/* ==================== Project Card Styles ==================== */
+
+.project-card {
+    background: linear-gradient(135deg, rgba(26, 23, 34, 0.9) 0%, rgba(19, 17, 26, 0.95) 100%);
+    backdrop-filter: blur(40px) saturate(200%);
+    -webkit-backdrop-filter: blur(40px) saturate(200%);
+    border: 1px solid rgba(132, 0, 255, 0.25);
+    border-radius: 1.25rem;
+    padding: 1.5rem;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+    box-shadow: 
+        0 8px 32px 0 rgba(0, 0, 0, 0.4),
+        inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+.project-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, #8400ff 0%, #e600a5 50%, #8400ff 100%);
+    opacity: 0.5;
+    transition: opacity 0.4s;
+}
+
+.project-card:hover::before {
+    opacity: 1;
+}
+
+.project-card:hover {
+    border-color: rgba(132, 0, 255, 0.5);
+    box-shadow: 
+        0 16px 48px rgba(132, 0, 255, 0.2),
+        0 8px 24px rgba(0, 0, 0, 0.4),
+        inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    transform: translateY(-4px);
+}
+
+/* ==================== Stage Badge Styles ==================== */
+
+.stage-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.375rem 0.875rem;
+    border-radius: 2rem;
+    font-weight: 700;
+    font-size: 0.75rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    transition: all 0.3s;
+}
+
+.stage-badge::before {
+    content: '';
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+}
+
+/* Concept stage - Purple */
+.stage-badge-concept {
+    background: linear-gradient(135deg, rgba(132, 0, 255, 0.2) 0%, rgba(132, 0, 255, 0.1) 100%);
+    border: 1px solid rgba(132, 0, 255, 0.4);
+    color: #9d33ff;
+    text-shadow: 0 0 12px rgba(132, 0, 255, 0.5);
+    box-shadow: 0 0 16px rgba(132, 0, 255, 0.15);
+}
+
+.stage-badge-concept::before {
+    background: #9d33ff;
+    box-shadow: 0 0 8px #9d33ff;
+}
+
+/* Overall Model stage - Pink */
+.stage-badge-overall_model {
+    background: linear-gradient(135deg, rgba(230, 0, 165, 0.2) 0%, rgba(230, 0, 165, 0.1) 100%);
+    border: 1px solid rgba(230, 0, 165, 0.4);
+    color: #ff33c1;
+    text-shadow: 0 0 12px rgba(230, 0, 165, 0.5);
+    box-shadow: 0 0 16px rgba(230, 0, 165, 0.15);
+}
+
+.stage-badge-overall_model::before {
+    background: #ff33c1;
+    box-shadow: 0 0 8px #ff33c1;
+}
+
+/* Parts stage - Green */
+.stage-badge-parts {
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.2) 0%, rgba(16, 185, 129, 0.1) 100%);
+    border: 1px solid rgba(16, 185, 129, 0.4);
+    color: #34d399;
+    text-shadow: 0 0 12px rgba(16, 185, 129, 0.5);
+    box-shadow: 0 0 16px rgba(16, 185, 129, 0.15);
+}
+
+.stage-badge-parts::before {
+    background: #34d399;
+    box-shadow: 0 0 8px #34d399;
+}
+
+/* Generation stage - Blue */
+.stage-badge-generation {
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.2) 0%, rgba(59, 130, 246, 0.1) 100%);
+    border: 1px solid rgba(59, 130, 246, 0.4);
+    color: #60a5fa;
+    text-shadow: 0 0 12px rgba(59, 130, 246, 0.5);
+    box-shadow: 0 0 16px rgba(59, 130, 246, 0.15);
+}
+
+.stage-badge-generation::before {
+    background: #60a5fa;
+    box-shadow: 0 0 8px #60a5fa;
+}
+
+/* Complete stage - Gold */
+.stage-badge-complete {
+    background: linear-gradient(135deg, rgba(245, 158, 11, 0.2) 0%, rgba(245, 158, 11, 0.1) 100%);
+    border: 1px solid rgba(245, 158, 11, 0.4);
+    color: #fbbf24;
+    text-shadow: 0 0 12px rgba(245, 158, 11, 0.5);
+    box-shadow: 0 0 16px rgba(245, 158, 11, 0.15);
+}
+
+.stage-badge-complete::before {
+    background: #fbbf24;
+    box-shadow: 0 0 8px #fbbf24;
+}
+
+/* ==================== Button Styles ==================== */
+
+.cad-btn-primary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    border-radius: 0.75rem;
+    border: none;
+    background: linear-gradient(135deg, #8400ff 0%, #e600a5 100%);
+    color: white;
+    font-weight: 600;
+    font-size: 0.9375rem;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 4px 16px rgba(132, 0, 255, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    position: relative;
+    overflow: hidden;
+}
+
+.cad-btn-primary::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s ease;
+}
+
+.cad-btn-primary:hover::before {
+    left: 100%;
+}
+
+.cad-btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(132, 0, 255, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+}
+
+.cad-btn-primary:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 8px rgba(132, 0, 255, 0.3);
+}
+
+/* Large button variant */
+.cad-btn-lg {
+    padding: 1rem 2rem;
+    font-size: 1rem;
+    border-radius: 0.875rem;
+}
+
+/* Full width button */
+.cad-btn-full {
+    width: 100%;
+}
+
+/* ==================== Form Styles ==================== */
+
+.cad-textarea {
+    width: 100%;
+    padding: 1rem 1.25rem;
+    background: linear-gradient(135deg, rgba(36, 32, 48, 0.6) 0%, rgba(26, 23, 34, 0.8) 100%);
+    border: 1px solid rgba(132, 0, 255, 0.25);
+    border-radius: 0.875rem;
+    color: #ffffff;
+    font-size: 0.9375rem;
+    line-height: 1.6;
+    resize: vertical;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.cad-textarea::placeholder {
+    color: #8a8694;
+}
+
+.cad-textarea:focus {
+    outline: none;
+    border-color: rgba(132, 0, 255, 0.5);
+    box-shadow: 0 0 0 3px rgba(132, 0, 255, 0.15), 0 4px 16px rgba(132, 0, 255, 0.1);
+    background: linear-gradient(135deg, rgba(45, 40, 60, 0.7) 0%, rgba(30, 27, 40, 0.9) 100%);
+}
+
+/* ==================== Section Headers ==================== */
+
+.cad-section-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #ffffff;
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.cad-section-title::before {
+    content: '';
+    width: 4px;
+    height: 1.5rem;
+    background: linear-gradient(180deg, #8400ff 0%, #e600a5 100%);
+    border-radius: 2px;
+}
+
+/* ==================== Workflow Cards ==================== */
+
+.workflow-card {
+    background: linear-gradient(135deg, rgba(26, 23, 34, 0.9) 0%, rgba(19, 17, 26, 0.95) 100%);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(132, 0, 255, 0.2);
+    border-radius: 1rem;
+    padding: 1.5rem;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+.workflow-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(132, 0, 255, 0.5), transparent);
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+.workflow-card:hover::before {
+    opacity: 1;
+}
+
+.workflow-card:hover {
+    border-color: rgba(132, 0, 255, 0.4);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(132, 0, 255, 0.15);
+}
+
+.workflow-icon {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+    filter: drop-shadow(0 0 8px rgba(132, 0, 255, 0.3));
+}
+
+/* ==================== Legacy Support ==================== */
 
 /* Background colors */
 .bg-dark-card {
-    background: rgba(26, 23, 34, 0.6);
-    backdrop-filter: blur(20px);
-    border: 1px solid rgba(132, 0, 255, 0.2);
+    background: linear-gradient(135deg, rgba(26, 23, 34, 0.9) 0%, rgba(19, 17, 26, 0.95) 100%);
+    backdrop-filter: blur(40px);
+    border: 1px solid rgba(132, 0, 255, 0.25);
 }
 
 .bg-dark-card-light {
@@ -44,41 +398,15 @@
     background: rgba(132, 0, 255, 0.2);
 }
 
-/* Status colors - Blue */
-.bg-blue-dark {
-    background: rgba(59, 130, 246, 0.2);
-}
-
-.text-blue-light {
-    color: #60a5fa;
-}
-
-/* Status colors - Green */
-.bg-green-dark {
-    background: rgba(16, 185, 129, 0.2);
-}
-
-.text-green-light {
-    color: #10b981;
-}
-
-/* Status colors - Yellow */
-.bg-yellow-dark {
-    background: rgba(245, 158, 11, 0.2);
-}
-
-.text-yellow-light {
-    color: #fbbf24;
-}
-
-/* Status colors - Red */
-.bg-red-dark {
-    background: rgba(239, 68, 68, 0.2);
-}
-
-.text-red-light {
-    color: #f87171;
-}
+/* Status colors */
+.bg-blue-dark { background: rgba(59, 130, 246, 0.2); }
+.text-blue-light { color: #60a5fa; }
+.bg-green-dark { background: rgba(16, 185, 129, 0.2); }
+.text-green-light { color: #10b981; }
+.bg-yellow-dark { background: rgba(245, 158, 11, 0.2); }
+.text-yellow-light { color: #fbbf24; }
+.bg-red-dark { background: rgba(239, 68, 68, 0.2); }
+.text-red-light { color: #f87171; }
 
 /* Borders */
 .border-dark-border {
