@@ -152,7 +152,7 @@
 
 {% block content %}
 <div class="pair-container">
-    <a href="{% url 'tv_list' %}" class="back-link">
+    <a href="{% url 'models:tv_list' %}" class="back-link">
         <i class="bi bi-arrow-left"></i> Back to TVs
     </a>
 
@@ -199,7 +199,7 @@ function startPairing() {
     status.className = 'pair-status waiting';
     statusText.textContent = 'Connecting to TV... Please accept the prompt on your TV screen.';
     
-    fetch('{% url "tv_pair" tv.id %}', {
+    fetch('{% url 'models:tv_pair' tv.id %}', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -212,7 +212,7 @@ function startPairing() {
             status.className = 'pair-status success';
             statusText.innerHTML = '<i class="bi bi-check-circle"></i> Successfully paired! Redirecting...';
             setTimeout(() => {
-                window.location.href = '{% url "tv_list" %}';
+                window.location.href = '{% url 'models:tv_list' %}';
             }, 2000);
         } else {
             status.className = 'pair-status error';

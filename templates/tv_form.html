@@ -148,7 +148,7 @@
 
 {% block content %}
 <div class="form-container">
-    <a href="{% url 'tv_list' %}" class="back-link">
+    <a href="{% url 'models:tv_list' %}" class="back-link">
         <i class="bi bi-arrow-left"></i> Back to TVs
     </a>
 
@@ -218,7 +218,7 @@
             </div>
 
             <div class="form-footer">
-                <a href="{% url 'tv_list' %}" class="btn-secondary">Cancel</a>
+                <a href="{% url 'models:tv_list' %}" class="btn-secondary">Cancel</a>
                 <button type="submit" class="btn-primary">
                     <i class="bi bi-check-lg"></i>
                     {% if action == 'edit' %}Save Changes{% else %}Add TV{% endif %}

@@ -58,7 +58,7 @@ def tv_add(request):
         tv_id = str(result.inserted_id)
         
         # Redirect to pairing page
-        return redirect('tv_pair', tv_id=tv_id)
+        return redirect('models:tv_pair', tv_id=tv_id)
     
     return render(request, 'tv_form.html', {'tv': None, 'action': 'add'})
 
@@ -70,7 +70,7 @@ def tv_edit(request, tv_id):
     tv = db.tvs.find_one({'_id': to_object_id(tv_id), 'user_id': user_id})
     
     if not tv:
-        return redirect('tv_list')
+        return redirect('models:tv_list')
     
     if request.method == 'POST':
         update_data = {
@@ -87,7 +87,7 @@ def tv_edit(request, tv_id):
             {'$set': update_data}
         )
         
-        return redirect('tv_list')
+        return redirect('models:tv_list')
     
     tv = doc_to_dict(tv)
     return render(request, 'tv_form.html', {'tv': tv, 'action': 'edit'})
@@ -98,7 +98,7 @@ def tv_delete(request, tv_id):
     """Delete a TV"""
     user_id = str(request.user.id)
     db.tvs.delete_one({'_id': to_object_id(tv_id), 'user_id': user_id})
-    return redirect('tv_list')
+    return redirect('models:tv_list')
 
 
 @login_required
@@ -108,7 +108,7 @@ def tv_pair(request, tv_id):
     tv = db.tvs.find_one({'_id': to_object_id(tv_id), 'user_id': user_id})
     
     if not tv:
-        return redirect('tv_list')
+        return redirect('models:tv_list')
     
     tv = doc_to_dict(tv)
     return render(request, 'tv_pair.html', {'tv': tv})

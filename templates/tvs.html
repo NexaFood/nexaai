@@ -19,7 +19,7 @@
             <p class="page-subtitle">Control your LG webOS TVs and sync with lights</p>
         </div>
         <div class="page-actions">
-            <a href="{% url 'tv_add' %}" class="btn-primary">
+            <a href="{% url 'models:tv_add' %}" class="btn-primary">
                 <i class="bi bi-plus-lg"></i> Add TV
             </a>
         </div>
@@ -111,11 +111,11 @@
 
             <div class="tv-card-footer">
                 {% if not tv.client_key %}
-                <a href="{% url 'tv_pair' tv.id %}" class="btn-secondary btn-sm">
+                <a href="{% url 'models:tv_pair' tv.id %}" class="btn-secondary btn-sm">
                     <i class="bi bi-link"></i> Pair
                 </a>
                 {% endif %}
-                <a href="{% url 'tv_edit' tv.id %}" class="btn-icon" title="Edit">
+                <a href="{% url 'models:tv_edit' tv.id %}" class="btn-icon" title="Edit">
                     <i class="bi bi-pencil"></i>
                 </a>
                 <button class="btn-icon btn-danger" onclick="deleteTV('{{ tv.id }}')" title="Delete">
@@ -128,7 +128,7 @@
             <i class="bi bi-tv"></i>
             <h3>No TVs Added</h3>
             <p>Add your LG webOS TV to control it and sync with your lights.</p>
-            <a href="{% url 'tv_add' %}" class="btn-primary">
+            <a href="{% url 'models:tv_add' %}" class="btn-primary">
                 <i class="bi bi-plus-lg"></i> Add TV
             </a>
         </div>
