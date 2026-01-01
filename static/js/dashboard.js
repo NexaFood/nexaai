@@ -110,6 +110,7 @@ class DashboardManager {
         document.getElementById('edit-layout-btn').style.display = this.editMode ? 'none' : 'flex';
         document.getElementById('save-layout-btn').style.display = this.editMode ? 'flex' : 'none';
         document.getElementById('reset-layout-btn').style.display = this.editMode ? 'flex' : 'none';
+        document.getElementById('add-widget-btn').style.display = this.editMode ? 'flex' : 'none';
         
         // Toggle remove buttons
         document.querySelectorAll('.widget-remove-btn').forEach(btn => {

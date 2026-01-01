@@ -172,7 +172,7 @@
     top: 0;
     left: 0;
     right: 0;
-    height: 2px;
+    height: 1px;
     background: linear-gradient(90deg, var(--color-secondary) 0%, var(--color-accent) 50%, var(--color-secondary) 100%);
     opacity: 0.6;
     transition: opacity 0.4s;
