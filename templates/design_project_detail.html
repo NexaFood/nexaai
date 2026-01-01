@@ -56,7 +56,7 @@
     <div id="concept-section" class="cad-card mb-6">
         <div class="flex items-center justify-between mb-4">
             <h2 class="cad-section-title" style="margin-bottom: 0;">
-                <span class="workflow-icon" style="font-size: 1.5rem; margin-bottom: 0;">📝</span>
+                <i class="bi bi-file-earmark-text" style="font-size: 1.5rem; color: #e600a5; filter: drop-shadow(0 0 6px rgba(230, 0, 165, 0.5));"></i>
                 Stage 1: Design Concept
             </h2>
             {% if project.stage != 'concept' %}
@@ -85,13 +85,13 @@
                 hx-post="/api/design/approve-concept/{{ project.id }}/"
                 hx-target="#concept-section"
                 hx-swap="innerHTML"
-                class="cad-btn-primary flex-1" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%);">
-                ✓ Approve & Generate Overall Model
+                class="cad-btn-primary flex-1">
+                <i class="bi bi-check-lg"></i> Approve & Generate Overall Model
             </button>
             <button 
                 onclick="document.getElementById('refine-form-{{ project.id }}').classList.toggle('hidden')"
-                class="cad-btn-primary flex-1" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);">
-                ↻ Refine Concept
+                class="cad-btn-secondary flex-1">
+                <i class="bi bi-arrow-repeat"></i> Refine Concept
             </button>
         </div>
         
@@ -118,7 +118,7 @@
     <div class="cad-card mb-6">
         <div class="flex items-center justify-between mb-4">
             <h2 class="cad-section-title" style="margin-bottom: 0;">
-                <span class="workflow-icon" style="font-size: 1.5rem; margin-bottom: 0;">🏛️</span>
+                <i class="bi bi-box" style="font-size: 1.5rem; color: #e600a5; filter: drop-shadow(0 0 6px rgba(230, 0, 165, 0.5));"></i>
                 Stage 2: Overall 3D Model
             </h2>
             {% if project.overall_model_approved_at %}
@@ -134,11 +134,11 @@
         <!-- Show generating status -->
         <div id="overall-model-result" class="mt-4">
             <div class="workflow-card" style="border-color: rgba(59, 130, 246, 0.4);">
-                <p class="font-semibold" style="color: #60a5fa;">⏳ Generating overall model...</p>
+                <p class="font-semibold" style="color: #60a5fa;"><i class="bi bi-hourglass-split"></i> Generating overall model...</p>
                 <p class="text-sm mt-1" style="color: #b8b4c5;">This may take 30-60 seconds. You can navigate away and come back.</p>
                 <p class="text-xs mt-2" style="color: #60a5fa;">Auto-refreshing every 5 seconds...</p>
-                <button onclick="location.reload()" class="cad-btn-primary mt-3" style="background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);">
-                    🔄 Refresh Now
+                <button onclick="location.reload()" class="cad-btn-primary mt-3">
+                    <i class="bi bi-arrow-repeat"></i> Refresh Now
                 </button>
             </div>
         </div>
@@ -150,25 +150,25 @@
         <!-- Show failed status with retry -->
         <div id="overall-model-result" class="mt-4">
             <div class="workflow-card" style="border-color: rgba(239, 68, 68, 0.4);">
-                <p class="font-semibold" style="color: #f87171;">✗ Overall model generation failed</p>
+                <p class="font-semibold" style="color: #f87171;"><i class="bi bi-x-circle"></i> Overall model generation failed</p>
                 <p class="text-sm mt-1" style="color: #f87171;">{{ project.overall_model_error|default:"Unknown error" }}</p>
                 <button hx-post="/api/design/generate-overall-model/{{ project.id }}/" hx-target="#overall-model-result"
                     hx-swap="innerHTML" class="cad-btn-primary mt-3">
-                    🔄 Retry Generation
+                    <i class="bi bi-arrow-repeat"></i> Retry Generation
                 </button>
             </div>
 
             <!-- Allow correction even on failure -->
             <div class="mt-4 pt-4" style="border-top: 1px solid rgba(132, 0, 255, 0.2);">
                 <details>
-                    <summary class="cursor-pointer text-sm font-semibold" style="color: #60a5fa;">✏️ I fixed the code (click to submit correction)</summary>
+                    <summary class="cursor-pointer text-sm font-semibold" style="color: #60a5fa;"><i class="bi bi-pencil"></i> I fixed the code (click to submit correction)</summary>
                     <div class="mt-3 p-3 rounded-lg" style="background: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.2);">
                         <p class="text-xs mb-2" style="color: #8a8694;">Your corrections help train the AI! Paste the corrected code below:</p>
                         <textarea id="correction-overall_model-{{ project.id }}"
                             class="cad-textarea font-mono text-xs"
                             style="height: 10rem;"
                             placeholder="import cadquery as cq\n\nresult = ...">{{ project.overall_model_ai_code }}</textarea>
-                        <button onclick="submitCorrection('{{ project.id }}', 'overall_model')" class="cad-btn-primary mt-2" style="background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);">
+                        <button onclick="submitCorrection('{{ project.id }}', 'overall_model')" class="cad-btn-primary mt-2">
                             Submit Correction
                         </button>
                     </div>
@@ -201,13 +201,13 @@
 
                 <div class="flex gap-2 mb-4 flex-wrap">
                     {% if project.overall_model_step_url %}
-                    <a href="{{ project.overall_model_step_url }}" download class="cad-btn-primary" style="background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);">
-                        📥 Download STEP
+                    <a href="{{ project.overall_model_step_url }}" download class="cad-btn-primary">
+                        <i class="bi bi-download"></i> Download STEP
                     </a>
                     {% endif %}
                     {% if project.overall_model_stl_url %}
-                    <a href="{{ project.overall_model_stl_url }}" download class="cad-btn-primary">
-                        📥 Download STL
+                    <a href="{{ project.overall_model_stl_url }}" download class="cad-btn-secondary">
+                        <i class="bi bi-download"></i> Download STL
                     </a>
                     {% endif %}
                 </div>
@@ -219,31 +219,31 @@
 
                 <!-- Feedback Section -->
                 <div class="mb-4 pt-4" style="border-top: 1px solid rgba(132, 0, 255, 0.2);">
-                    <p class="text-sm font-semibold mb-2" style="color: #b8b4c5;">📊 Help improve the AI:</p>
+                    <p class="text-sm font-semibold mb-2" style="color: #b8b4c5;"><i class="bi bi-bar-chart"></i> Help improve the AI:</p>
                     <div class="flex gap-2 mb-3 flex-wrap">
                         <button onclick="submitFeedback('{{ project.id }}', 'overall_model', 'good')"
-                            class="cad-btn-primary flex-1" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%);">
-                            ✅ Perfect!
+                            class="cad-btn-primary flex-1">
+                            <i class="bi bi-check-circle"></i> Perfect!
                         </button>
                         <button onclick="submitFeedback('{{ project.id }}', 'overall_model', 'ok')"
-                            class="cad-btn-primary flex-1" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);">
-                            ⚠️ Needs Work
+                            class="cad-btn-secondary flex-1">
+                            <i class="bi bi-exclamation-circle"></i> Needs Work
                         </button>
                         <button onclick="submitFeedback('{{ project.id }}', 'overall_model', 'bad')"
-                            class="cad-btn-primary flex-1" style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);">
-                            ❌ Failed
+                            class="cad-btn-tertiary flex-1">
+                            <i class="bi bi-x-circle"></i> Failed
                         </button>
                     </div>
 
                     <details>
-                        <summary class="cursor-pointer text-sm font-semibold" style="color: #60a5fa;">✏️ I fixed the code (click to submit correction)</summary>
+                        <summary class="cursor-pointer text-sm font-semibold" style="color: #60a5fa;"><i class="bi bi-pencil"></i> I fixed the code (click to submit correction)</summary>
                         <div class="mt-3 p-3 rounded-lg" style="background: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.2);">
                             <p class="text-xs mb-2" style="color: #8a8694;">Your corrections help train the AI! Paste the corrected code below:</p>
                             <textarea id="correction-overall_model-{{ project.id }}"
                                 class="cad-textarea font-mono text-xs"
                                 style="height: 10rem;"
                                 placeholder="import cadquery as cq\n\nresult = ...">{{ project.overall_model_ai_code }}</textarea>
-                            <button onclick="submitCorrection('{{ project.id }}', 'overall_model')" class="cad-btn-primary mt-2" style="background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);">
+                            <button onclick="submitCorrection('{{ project.id }}', 'overall_model')" class="cad-btn-primary mt-2">
                                 Submit Correction
                             </button>
                         </div>
@@ -254,13 +254,13 @@
                 <div class="flex gap-2">
                     <button hx-post="/api/design/approve-overall-model/{{ project.id }}/"
                         hx-target="#overall-model-result" hx-swap="innerHTML"
-                        class="cad-btn-primary flex-1" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%);">
-                        ✓ Approve & Break Into Parts
+                        class="cad-btn-primary flex-1">
+                        <i class="bi bi-check-lg"></i> Approve & Break Into Parts
                     </button>
                     <button hx-post="/api/design/generate-overall-model/{{ project.id }}/"
                         hx-target="#overall-model-result" hx-swap="innerHTML"
-                        class="cad-btn-primary" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);">
-                        🔄 Regenerate
+                        class="cad-btn-secondary">
+                        <i class="bi bi-arrow-repeat"></i> Regenerate
                     </button>
                 </div>
                 {% endif %}
@@ -275,7 +275,7 @@
     <div class="cad-card mb-6">
         <div class="flex items-center justify-between mb-4">
             <h2 class="cad-section-title" style="margin-bottom: 0;">
-                <span class="workflow-icon" style="font-size: 1.5rem; margin-bottom: 0;">🔧</span>
+                <i class="bi bi-puzzle" style="font-size: 1.5rem; color: #e600a5; filter: drop-shadow(0 0 6px rgba(230, 0, 165, 0.5));"></i>
                 Stage 3: Part Breakdown
             </h2>
             <span class="stage-badge stage-badge-complete">✓ Approved</span>
@@ -322,7 +322,7 @@
     <div class="cad-card mb-6">
         <div class="flex items-center justify-between mb-4">
             <h2 class="cad-section-title" style="margin-bottom: 0;">
-                <span class="workflow-icon" style="font-size: 1.5rem; margin-bottom: 0;">⚙️</span>
+                <i class="bi bi-gear" style="font-size: 1.5rem; color: #e600a5; filter: drop-shadow(0 0 6px rgba(230, 0, 165, 0.5));"></i>
                 Stage 4: CAD Generation
             </h2>
             {% if project.stage == 'completed' %}
@@ -360,22 +360,22 @@
                 <div id="part-{{ part.part_number }}-result">
                     {% if part.status == 'completed' %}
                     <div class="mt-2 p-4 rounded-lg" style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.2);">
-                        <p class="font-semibold mb-2" style="color: #34d399;">✓ Part {{ part.part_number }} generated successfully!</p>
+                        <p class="font-semibold mb-2" style="color: #34d399;"><i class="bi bi-check-circle"></i> Part {{ part.part_number }} generated successfully!</p>
 
                         <div class="flex gap-2 mb-3 flex-wrap">
                             {% if part.step_url %}
-                            <a href="{{ part.step_url }}" download class="cad-btn-primary" style="background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); padding: 0.5rem 1rem; font-size: 0.875rem;">
-                                📥 Download STEP
+                            <a href="{{ part.step_url }}" download class="cad-btn-primary" style="padding: 0.5rem 1rem; font-size: 0.875rem;">
+                                <i class="bi bi-download"></i> Download STEP
                             </a>
                             {% endif %}
                             {% if part.stl_url %}
-                            <a href="{{ part.stl_url }}" download class="cad-btn-primary" style="padding: 0.5rem 1rem; font-size: 0.875rem;">
-                                📥 Download STL
+                            <a href="{{ part.stl_url }}" download class="cad-btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.875rem;">
+                                <i class="bi bi-download"></i> Download STL
                             </a>
                             {% endif %}
                             <button onclick="showPrinterSelector('{{ project.id }}', {{ part.part_number }}, '{{ part.name }}')"
-                                class="cad-btn-primary" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); padding: 0.5rem 1rem; font-size: 0.875rem;">
-                                🖨️ Send to Printer
+                                class="cad-btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.875rem;">
+                                <i class="bi bi-printer"></i> Send to Printer
                             </button>
                         </div>
 
@@ -388,14 +388,14 @@
                     </div>
                     {% elif part.status == 'failed' %}
                     <div class="mt-2 p-4 rounded-lg" style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.2);">
-                        <p class="font-semibold mb-2" style="color: #f87171;">✗ Generation failed</p>
+                        <p class="font-semibold mb-2" style="color: #f87171;"><i class="bi bi-x-circle"></i> Generation failed</p>
                         {% if part.generation_error %}
                         <p class="text-sm mb-3" style="color: #f87171;">{{ part.generation_error }}</p>
                         {% endif %}
                         <button hx-post="/api/design/generate/{{ project.id }}/{{ part.part_number }}/"
                             hx-target="#part-{{ part.part_number }}-result" hx-swap="innerHTML"
                             class="cad-btn-primary">
-                            🔄 Retry Generation
+                            <i class="bi bi-arrow-repeat"></i> Retry Generation
                         </button>
                     </div>
                     {% endif %}
