@@ -208,9 +208,12 @@ def tv_api_power(request, tv_id):
                 new_power_state = 'on'
         
         # Trigger light sync if enabled
+        print(f"DEBUG: result.success={result.get('success')}, auto_sync={tv.get('auto_sync_enabled')}, new_state={new_power_state}, linked_lights={tv.get('linked_lights')}")
         if result.get('success') and tv.get('auto_sync_enabled') and new_power_state:
             print(f"TV power changed to {new_power_state}, syncing lights...")
             _sync_lights_with_tv(tv, new_power_state)
+        else:
+            print(f"Sync skipped: success={result.get('success')}, auto_sync_enabled={tv.get('auto_sync_enabled')}, new_power_state={new_power_state}")
         
         return JsonResponse(result)
         
