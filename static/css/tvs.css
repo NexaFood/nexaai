@@ -488,6 +488,11 @@
     height: auto !important;
 }
 
+.empty-state .btn-primary i {
+    font-size: 1rem !important;
+    color: white !important;
+}
+
 /* Modal */
 .modal {
     position: fixed;
