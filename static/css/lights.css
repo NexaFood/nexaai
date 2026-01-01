@@ -406,9 +406,9 @@
 }
 
 .light-status.on {
-    background: rgba(16, 185, 129, 0.15);
-    border: 1px solid rgba(16, 185, 129, 0.3);
-    color: #34d399;
+    background: rgba(132, 0, 255, 0.15);
+    border: 1px solid rgba(132, 0, 255, 0.3);
+    color: #c084fc;
 }
 
 .light-status.off {
