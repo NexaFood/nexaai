@@ -193,20 +193,27 @@ class LGTVService:
         Returns:
             Dict with success status
         """
+        print(f"DEBUG power_off: _connected={self._connected}, client_key={self.client_key[:20] if self.client_key else None}...")
+        
         if not self._connected or not self.system:
             # Try to connect first
+            print("DEBUG power_off: Not connected, attempting to connect...")
             connect_result = self.connect()
+            print(f"DEBUG power_off: connect result = {connect_result}")
             if not connect_result.get('success'):
                 return {
                     'success': False,
-                    'error': 'Not connected to TV'
+                    'error': f"Not connected to TV: {connect_result.get('error', 'unknown')}"
                 }
                 
         try:
+            print("DEBUG power_off: Sending power_off command...")
             self.system.power_off()
             self._connected = False
+            print("DEBUG power_off: Success!")
             return {'success': True}
         except Exception as e:
+            print(f"DEBUG power_off: Exception: {e}")
             return {
                 'success': False,
                 'error': str(e)
