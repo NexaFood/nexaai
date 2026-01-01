@@ -14,6 +14,7 @@ from . import printer_dashboard_views
 from . import cad_dashboard_views
 from . import dashboard_manager_views
 from . import ledvance_views
+from . import printer_views
 
 app_name = 'models'
 
@@ -34,14 +35,18 @@ urlpatterns = [
     path('api/dashboards/<str:dashboard_id>/save-layout/', dashboard_manager_views.api_save_dashboard_layout, name='api_save_dashboard_layout'),
     
     # Printer management
-    path('printers/', views.printers, name='printers'),
-    path('printers/add/', views.printer_add, name='printer-add'),
-    path('printers/edit/<str:printer_id>/', views.printer_edit, name='printer-edit'),
+    path('printers/', printer_views.printers_page, name='printers'),
+    path('printers/add/', printer_views.add_printer_page, name='printer-add'),
+    path('printers/edit/<str:printer_id>/', printer_views.edit_printer_page, name='printer-edit'),
     
-    # Printer API endpoints
-    path('api/printers', views.api_printers_list, name='api-printers-list'),
-    path('api/printers/<str:printer_id>/mode', views.api_printer_change_mode, name='api-printer-change-mode'),
-    path('api/printers/<str:printer_id>', views.api_printer_delete, name='api-printer-delete'),
+    # Printer API endpoints (real integration)
+    path('api/printers/', printer_views.api_get_printers, name='api-printers-list'),
+    path('api/printers/<str:printer_id>/', printer_views.api_printer_detail, name='api-printer-detail'),
+    path('api/printers/<str:printer_id>/upload/', printer_views.api_upload_file, name='api-printer-upload'),
+    path('api/printers/<str:printer_id>/pause/', printer_views.api_pause_print, name='api-printer-pause'),
+    path('api/printers/<str:printer_id>/resume/', printer_views.api_resume_print, name='api-printer-resume'),
+    path('api/printers/<str:printer_id>/cancel/', printer_views.api_cancel_print, name='api-printer-cancel'),
+    path('api/printers/<str:printer_id>/mode/', printer_views.api_set_mode, name='api-printer-mode'),
     
     # Design workflow (3-stage) - Main CAD generation interface
     path('design/projects/', design_views.design_projects, name='design-projects'),

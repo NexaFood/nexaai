@@ -1,0 +1,8 @@
+<!-- Printers Grid Partial - For HTMX loading -->
+<div class="printers-grid">
+    {% for printer in printers %}
+    {% include "partials/printer_card.html" with printer=printer %}
+    {% empty %}
+    <!-- Empty state handled by JavaScript -->
+    {% endfor %}
+</div>

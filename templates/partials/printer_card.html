@@ -1,73 +1,125 @@
-<!-- Printer Card Partial -->
-<div class="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow">
-    <!-- Header with Status -->
-    <div class="bg-gradient-to-r from-purple-500 to-blue-500 p-6 text-white">
-        <div class="flex justify-between items-start mb-2">
-            <h3 class="font-bold text-xl">{{ printer.name }}</h3>
-            <span class="px-3 py-1 rounded-full text-xs font-bold
-                {% if printer.status == 'idle' %}bg-green-500
-                {% elif printer.status == 'printing' %}bg-blue-500
-                {% elif printer.status == 'offline' %}bg-gray-500
-                {% else %}bg-red-500{% endif %}">
-                {{ printer.status_display }}
+<!-- Printer Card Partial - Modern Dark Theme -->
+<div class="printer-card" data-printer-id="{{ printer.id }}">
+    <!-- Card Header -->
+    <div class="printer-card-header">
+        <div class="printer-info">
+            <h3 class="printer-name">{{ printer.name }}</h3>
+            <p class="printer-model">{{ printer.model }}</p>
+            {% if printer.printer_type == 'snapmaker' and printer.current_mode %}
+            <span class="mode-badge">
+                {% if printer.current_mode == '3d_print' %}
+                <i class="bi bi-box"></i> 3D Print
+                {% elif printer.current_mode == 'cnc' %}
+                <i class="bi bi-tools"></i> CNC
+                {% elif printer.current_mode == 'laser' %}
+                <i class="bi bi-lightning"></i> Laser
+                {% endif %}
             </span>
+            {% endif %}
         </div>
-        <p class="text-sm opacity-90">{{ printer.model }}</p>
+        <span class="status-badge status-{{ printer.status }}">
+            {{ printer.status_display }}
+        </span>
     </div>
 
-    <!-- Details -->
-    <div class="p-6 space-y-4">
-        <!-- Printer Type & Mode -->
-        <div>
-            <p class="text-sm text-gray-500 mb-1">Type</p>
-            <p class="font-semibold">
-                {{ printer.printer_type_display }}
-                {% if printer.printer_type == 'snapmaker' and printer.current_mode %}
-                    <span class="text-sm text-purple-600">({{ printer.current_mode_display }})</span>
-                {% endif %}
-            </p>
+    <!-- Card Body -->
+    <div class="printer-card-body">
+        <!-- Printer Stats -->
+        <div class="printer-stats">
+            <div class="stat-item">
+                <span class="stat-label">Type</span>
+                <span class="stat-value">{{ printer.printer_type_display }}</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">Build Volume</span>
+                <span class="stat-value">{{ printer.build_volume_x }}×{{ printer.build_volume_y }}×{{ printer.build_volume_z }}mm</span>
+            </div>
+            {% if printer.ip_address %}
+            <div class="stat-item">
+                <span class="stat-label">IP Address</span>
+                <span class="stat-value">{{ printer.ip_address }}</span>
+            </div>
+            {% endif %}
+            {% if printer.nozzle_temp %}
+            <div class="stat-item">
+                <span class="stat-label">Nozzle</span>
+                <div class="temp-display">
+                    <span class="temp-current">{{ printer.nozzle_temp }}°C</span>
+                    {% if printer.nozzle_target > 0 %}
+                    <span class="temp-target">{{ printer.nozzle_target }}°C</span>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+            {% if printer.bed_temp %}
+            <div class="stat-item">
+                <span class="stat-label">Bed</span>
+                <div class="temp-display">
+                    <span class="temp-current">{{ printer.bed_temp }}°C</span>
+                    {% if printer.bed_target > 0 %}
+                    <span class="temp-target">{{ printer.bed_target }}°C</span>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
         </div>
 
-        <!-- Build Volume -->
-        <div>
-            <p class="text-sm text-gray-500 mb-1">Build Volume</p>
-            <p class="font-semibold">{{ printer.build_volume_x }} × {{ printer.build_volume_y }} × {{ printer.build_volume_z }} mm</p>
-        </div>
-
-        <!-- IP Address -->
-        {% if printer.ip_address %}
-        <div>
-            <p class="text-sm text-gray-500 mb-1">IP Address</p>
-            <p class="font-mono text-sm">{{ printer.ip_address }}</p>
-        </div>
-        {% endif %}
-
-        <!-- Serial Number -->
-        {% if printer.serial_number %}
-        <div>
-            <p class="text-sm text-gray-500 mb-1">Serial Number</p>
-            <p class="font-mono text-sm">{{ printer.serial_number }}</p>
+        <!-- Print Progress (if printing) -->
+        {% if printer.status == 'printing' or printer.status == 'paused' %}
+        <div class="print-progress">
+            <div class="progress-header">
+                <span class="progress-label">
+                    {% if printer.current_file %}{{ printer.current_file }}{% else %}Print Progress{% endif %}
+                </span>
+                <span class="progress-value">{{ printer.progress|default:0 }}%</span>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill" style="width: {{ printer.progress|default:0 }}%;"></div>
+            </div>
+            {% if printer.time_remaining %}
+            <div class="progress-info">
+                <span>Time elapsed: {{ printer.time_elapsed_display }}</span>
+                <span>Remaining: {{ printer.time_remaining_display }}</span>
+            </div>
+            {% endif %}
         </div>
         {% endif %}
 
         <!-- Actions -->
-        <div class="pt-4 border-t border-gray-200 flex space-x-2">
-            <a href="/printers/edit/{{ printer.id }}" class="flex-1 bg-purple-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-purple-700 transition text-center text-sm">
-                Edit
-            </a>
-            {% if printer.printer_type == 'snapmaker' %}
-            <button 
-                onclick="showModeChangeModal('{{ printer.id }}', '{{ printer.current_mode }}')"
-                class="flex-1 bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-700 transition text-sm"
-            >
-                Change Mode
+        <div class="printer-card-actions">
+            {% if printer.status == 'idle' or printer.status == 'offline' %}
+            <button onclick="openUploadModal('{{ printer.id }}')" class="cad-btn-primary">
+                <i class="bi bi-cloud-upload"></i> Upload & Print
+            </button>
+            {% elif printer.status == 'printing' %}
+            <button onclick="pausePrint('{{ printer.id }}')" class="cad-btn-secondary">
+                <i class="bi bi-pause-fill"></i> Pause
+            </button>
+            <button onclick="cancelPrint('{{ printer.id }}')" class="cad-btn-tertiary">
+                <i class="bi bi-stop-fill"></i> Stop
+            </button>
+            {% elif printer.status == 'paused' %}
+            <button onclick="resumePrint('{{ printer.id }}')" class="cad-btn-primary">
+                <i class="bi bi-play-fill"></i> Resume
+            </button>
+            <button onclick="cancelPrint('{{ printer.id }}')" class="cad-btn-tertiary">
+                <i class="bi bi-stop-fill"></i> Stop
             </button>
             {% endif %}
-            <button 
-                onclick="deletePrinter('{{ printer.id }}', '{{ printer.name }}')"
-                class="bg-red-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-red-700 transition text-sm"
-            >
-                Delete
+            
+            <button onclick="openPrinterDetail('{{ printer.id }}')" class="icon-btn" title="Details">
+                <i class="bi bi-info-lg"></i>
+            </button>
+            {% if printer.printer_type == 'snapmaker' %}
+            <button onclick="openModeModal('{{ printer.id }}', '{{ printer.current_mode }}')" class="icon-btn" title="Change Mode">
+                <i class="bi bi-gear"></i>
+            </button>
+            {% endif %}
+            <a href="/printers/edit/{{ printer.id }}" class="icon-btn" title="Edit">
+                <i class="bi bi-pencil"></i>
+            </a>
+            <button onclick="openDeleteModal('{{ printer.id }}', '{{ printer.name }}')" class="icon-btn danger" title="Delete">
+                <i class="bi bi-trash"></i>
             </button>
         </div>
     </div>

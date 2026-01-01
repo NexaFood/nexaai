@@ -1,178 +1,195 @@
 {% extends "base.html" %}
+{% load static %}
 
 {% block title %}{% if printer %}Edit{% else %}Add{% endif %} Printer - NexaAI{% endblock %}
 
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/printers.css' %}">
+<link rel="stylesheet" href="{% static 'css/cad-designer.css' %}">
+{% endblock %}
+
 {% block content %}
-<div class="max-w-3xl mx-auto">
-    <div class="mb-8">
-        <a href="/printers" class="text-purple-600 hover:text-purple-700 flex items-center space-x-2 mb-4">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
-            </svg>
-            <span>Back to Printers</span>
-        </a>
-        <h1 class="text-4xl font-bold">{% if printer %}Edit{% else %}Add{% endif %} Printer</h1>
+<div class="max-w-3xl mx-auto px-4">
+    <!-- Back Link -->
+    <a href="/printers" class="back-link">
+        <i class="bi bi-arrow-left"></i>
+        <span>Back to Printers</span>
+    </a>
+
+    <!-- Page Header -->
+    <div class="page-header mb-8">
+        <h1 class="page-title">
+            <i class="bi bi-{% if printer %}pencil{% else %}plus-lg{% endif %}"></i>
+            {% if printer %}Edit{% else %}Add{% endif %} Printer
+        </h1>
+        <p class="page-subtitle">
+            {% if printer %}Update your printer configuration{% else %}Configure a new 3D printer or CNC machine{% endif %}
+        </p>
     </div>
 
-    <div class="bg-white rounded-2xl shadow-lg p-8">
-        <form method="POST" class="space-y-6">
+    <!-- Form Card -->
+    <div class="cad-card">
+        <form method="POST" class="printer-form">
             {% csrf_token %}
             
-            <!-- Printer Name -->
-            <div>
-                <label for="name" class="block text-sm font-bold text-gray-700 mb-2">
-                    Printer Name *
-                </label>
-                <input 
-                    type="text" 
-                    id="name" 
-                    name="name" 
-                    required
-                    value="{% if printer %}{{ printer.name }}{% endif %}"
-                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                    placeholder="e.g., My Prusa MK4"
-                >
+            <!-- Basic Info Section -->
+            <div class="form-section">
+                <h3 class="form-section-title">
+                    <i class="bi bi-info-circle"></i>
+                    Basic Information
+                </h3>
+                
+                <div class="form-group">
+                    <label for="name" class="form-label">Printer Name *</label>
+                    <input 
+                        type="text" 
+                        id="name" 
+                        name="name" 
+                        required
+                        value="{% if printer %}{{ printer.name }}{% endif %}"
+                        class="form-input"
+                        placeholder="e.g., My Prusa MK4"
+                    >
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="printer_type" class="form-label">Printer Type *</label>
+                        <select 
+                            id="printer_type" 
+                            name="printer_type"
+                            required
+                            onchange="toggleSnapmakerMode(this.value)"
+                            class="form-select"
+                        >
+                            <option value="prusa" {% if printer and printer.printer_type == 'prusa' %}selected{% endif %}>Prusa (3D Print Only)</option>
+                            <option value="snapmaker" {% if printer and printer.printer_type == 'snapmaker' %}selected{% endif %}>Snapmaker (Multi-Mode)</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group" id="snapmaker_mode_field" style="display: {% if printer and printer.printer_type == 'snapmaker' %}block{% else %}none{% endif %};">
+                        <label for="current_mode" class="form-label">Current Mode *</label>
+                        <select 
+                            id="current_mode" 
+                            name="current_mode"
+                            class="form-select"
+                        >
+                            <option value="3d_print" {% if printer and printer.current_mode == '3d_print' %}selected{% endif %}>3D Printing</option>
+                            <option value="cnc" {% if printer and printer.current_mode == 'cnc' %}selected{% endif %}>CNC Milling</option>
+                            <option value="laser" {% if printer and printer.current_mode == 'laser' %}selected{% endif %}>Laser Engraving</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="model" class="form-label">Model *</label>
+                    <input 
+                        type="text" 
+                        id="model" 
+                        name="model" 
+                        required
+                        value="{% if printer %}{{ printer.model }}{% endif %}"
+                        class="form-input"
+                        placeholder="e.g., Prusa MK4, Snapmaker 2.0 A350"
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label for="serial_number" class="form-label">Serial Number</label>
+                    <input 
+                        type="text" 
+                        id="serial_number" 
+                        name="serial_number"
+                        value="{% if printer %}{{ printer.serial_number }}{% endif %}"
+                        class="form-input"
+                        placeholder="Optional"
+                    >
+                </div>
             </div>
 
-            <!-- Printer Type -->
-            <div>
-                <label for="printer_type" class="block text-sm font-bold text-gray-700 mb-2">
-                    Printer Type *
-                </label>
-                <select 
-                    id="printer_type" 
-                    name="printer_type"
-                    required
-                    onchange="toggleSnapmakerMode(this.value)"
-                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                >
-                    <option value="prusa" {% if printer and printer.printer_type == 'prusa' %}selected{% endif %}>Prusa (3D Print Only)</option>
-                    <option value="snapmaker" {% if printer and printer.printer_type == 'snapmaker' %}selected{% endif %}>Snapmaker (Multi-Mode)</option>
-                </select>
-            </div>
+            <!-- Connection Section -->
+            <div class="form-section">
+                <h3 class="form-section-title">
+                    <i class="bi bi-wifi"></i>
+                    Network Connection
+                </h3>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="ip_address" class="form-label">IP Address</label>
+                        <input 
+                            type="text" 
+                            id="ip_address" 
+                            name="ip_address"
+                            value="{% if printer %}{{ printer.ip_address }}{% endif %}"
+                            class="form-input"
+                            placeholder="e.g., 192.168.1.100"
+                            pattern="^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$"
+                        >
+                    </div>
 
-            <!-- Snapmaker Mode (only for Snapmaker) -->
-            <div id="snapmaker_mode_field" style="display: {% if printer and printer.printer_type == 'snapmaker' %}block{% else %}none{% endif %};">
-                <label for="current_mode" class="block text-sm font-bold text-gray-700 mb-2">
-                    Current Mode *
-                </label>
-                <select 
-                    id="current_mode" 
-                    name="current_mode"
-                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                >
-                    <option value="3d_print" {% if printer and printer.current_mode == '3d_print' %}selected{% endif %}>3D Printing</option>
-                    <option value="cnc" {% if printer and printer.current_mode == 'cnc' %}selected{% endif %}>CNC Milling</option>
-                    <option value="laser" {% if printer and printer.current_mode == 'laser' %}selected{% endif %}>Laser Engraving</option>
-                </select>
-            </div>
-
-            <!-- Model -->
-            <div>
-                <label for="model" class="block text-sm font-bold text-gray-700 mb-2">
-                    Model *
-                </label>
-                <input 
-                    type="text" 
-                    id="model" 
-                    name="model" 
-                    required
-                    value="{% if printer %}{{ printer.model }}{% endif %}"
-                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                    placeholder="e.g., Prusa MK4, Snapmaker 2.0 A350"
-                >
-            </div>
-
-            <!-- Serial Number -->
-            <div>
-                <label for="serial_number" class="block text-sm font-bold text-gray-700 mb-2">
-                    Serial Number
-                </label>
-                <input 
-                    type="text" 
-                    id="serial_number" 
-                    name="serial_number"
-                    value="{% if printer %}{{ printer.serial_number }}{% endif %}"
-                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                    placeholder="Optional"
-                >
-            </div>
-
-            <!-- IP Address -->
-            <div>
-                <label for="ip_address" class="block text-sm font-bold text-gray-700 mb-2">
-                    IP Address
-                </label>
-                <input 
-                    type="text" 
-                    id="ip_address" 
-                    name="ip_address"
-                    value="{% if printer %}{{ printer.ip_address }}{% endif %}"
-                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                    placeholder="e.g., 192.168.1.100"
-                    pattern="^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$"
-                >
-            </div>
-
-            <!-- API Key / Token -->
-            <div>
-                <label for="api_key" class="block text-sm font-bold text-gray-700 mb-2">
-                    API Key / Token
-                </label>
-                <input 
-                    type="text" 
-                    id="api_key" 
-                    name="api_key"
-                    value="{% if printer %}{{ printer.api_key }}{% endif %}"
-                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                    placeholder="PrusaLink API key or Snapmaker token"
-                >
-                <p class="text-xs text-gray-500 mt-1">
-                    Required for remote printing. Find in printer settings.
+                    <div class="form-group">
+                        <label for="api_key" class="form-label">API Key / Token</label>
+                        <input 
+                            type="password" 
+                            id="api_key" 
+                            name="api_key"
+                            value="{% if printer %}{{ printer.api_key }}{% endif %}"
+                            class="form-input"
+                            placeholder="PrusaLink API key or Snapmaker token"
+                        >
+                    </div>
+                </div>
+                
+                <p class="form-hint">
+                    <i class="bi bi-info-circle"></i>
+                    Required for remote printing. Find in your printer's network settings.
                 </p>
             </div>
 
-            <!-- Build Volume -->
-            <div>
-                <label class="block text-sm font-bold text-gray-700 mb-2">
-                    Build Volume (mm) *
-                </label>
-                <div class="grid grid-cols-3 gap-4">
-                    <div>
-                        <label for="build_volume_x" class="block text-xs text-gray-600 mb-1">X (Width)</label>
+            <!-- Build Volume Section -->
+            <div class="form-section">
+                <h3 class="form-section-title">
+                    <i class="bi bi-box"></i>
+                    Build Volume
+                </h3>
+                
+                <div class="form-row three-col">
+                    <div class="form-group">
+                        <label for="build_volume_x" class="form-label">X (Width) mm *</label>
                         <input 
                             type="number" 
                             id="build_volume_x" 
                             name="build_volume_x" 
                             required
                             value="{% if printer %}{{ printer.build_volume_x }}{% endif %}"
-                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                            class="form-input"
                             placeholder="250"
                             min="1"
                         >
                     </div>
-                    <div>
-                        <label for="build_volume_y" class="block text-xs text-gray-600 mb-1">Y (Depth)</label>
+                    <div class="form-group">
+                        <label for="build_volume_y" class="form-label">Y (Depth) mm *</label>
                         <input 
                             type="number" 
                             id="build_volume_y" 
                             name="build_volume_y" 
                             required
                             value="{% if printer %}{{ printer.build_volume_y }}{% endif %}"
-                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                            class="form-input"
                             placeholder="210"
                             min="1"
                         >
                     </div>
-                    <div>
-                        <label for="build_volume_z" class="block text-xs text-gray-600 mb-1">Z (Height)</label>
+                    <div class="form-group">
+                        <label for="build_volume_z" class="form-label">Z (Height) mm *</label>
                         <input 
                             type="number" 
                             id="build_volume_z" 
                             name="build_volume_z" 
                             required
                             value="{% if printer %}{{ printer.build_volume_z }}{% endif %}"
-                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                            class="form-input"
                             placeholder="210"
                             min="1"
                         >
@@ -180,42 +197,190 @@
                 </div>
             </div>
 
-            <!-- Status -->
-            <div>
-                <label for="status" class="block text-sm font-bold text-gray-700 mb-2">
-                    Status *
-                </label>
-                <select 
-                    id="status" 
-                    name="status"
-                    required
-                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                >
-                    <option value="idle" {% if printer and printer.status == 'idle' %}selected{% endif %}>Idle</option>
-                    <option value="printing" {% if printer and printer.status == 'printing' %}selected{% endif %}>Printing</option>
-                    <option value="offline" {% if printer and printer.status == 'offline' %}selected{% endif %}>Offline</option>
-                    <option value="error" {% if printer and printer.status == 'error' %}selected{% endif %}>Error</option>
-                </select>
+            <!-- Status Section -->
+            <div class="form-section">
+                <h3 class="form-section-title">
+                    <i class="bi bi-activity"></i>
+                    Status
+                </h3>
+                
+                <div class="form-group">
+                    <label for="status" class="form-label">Current Status *</label>
+                    <select 
+                        id="status" 
+                        name="status"
+                        required
+                        class="form-select"
+                    >
+                        <option value="idle" {% if printer and printer.status == 'idle' %}selected{% endif %}>Idle</option>
+                        <option value="printing" {% if printer and printer.status == 'printing' %}selected{% endif %}>Printing</option>
+                        <option value="offline" {% if printer and printer.status == 'offline' %}selected{% endif %}>Offline</option>
+                        <option value="error" {% if printer and printer.status == 'error' %}selected{% endif %}>Error</option>
+                    </select>
+                </div>
             </div>
 
-            <!-- Submit Button -->
-            <div class="flex space-x-4">
-                <button 
-                    type="submit"
-                    class="flex-1 bg-purple-600 text-white px-8 py-4 rounded-lg font-bold text-lg hover:bg-purple-700 transition"
-                >
-                    {% if printer %}Update Printer{% else %}Add Printer{% endif %}
-                </button>
-                <a 
-                    href="/printers"
-                    class="px-8 py-4 border-2 border-gray-300 rounded-lg font-bold text-lg hover:bg-gray-50 transition"
-                >
+            <!-- Form Actions -->
+            <div class="form-actions">
+                <a href="/printers" class="cad-btn-secondary">
                     Cancel
                 </a>
+                <button type="submit" class="cad-btn-primary cad-btn-lg">
+                    <i class="bi bi-{% if printer %}check-lg{% else %}plus-lg{% endif %}"></i>
+                    {% if printer %}Update Printer{% else %}Add Printer{% endif %}
+                </button>
             </div>
         </form>
     </div>
 </div>
+
+<style>
+/* Form Styles */
+.back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #c084fc;
+    font-weight: 500;
+    margin-bottom: 1.5rem;
+    transition: color 0.3s ease;
+}
+
+.back-link:hover {
+    color: #e879f9;
+}
+
+.printer-form {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+.form-section {
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid rgba(132, 0, 255, 0.15);
+}
+
+.form-section:last-of-type {
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
+.form-section-title {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: #ffffff;
+    margin-bottom: 1.25rem;
+}
+
+.form-section-title i {
+    color: #c084fc;
+}
+
+.form-group {
+    margin-bottom: 1.25rem;
+}
+
+.form-group:last-child {
+    margin-bottom: 0;
+}
+
+.form-label {
+    display: block;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #b8b4c5;
+    margin-bottom: 0.5rem;
+}
+
+.form-input,
+.form-select {
+    width: 100%;
+    padding: 0.875rem 1rem;
+    background: linear-gradient(135deg, rgba(36, 32, 48, 0.6) 0%, rgba(26, 23, 34, 0.8) 100%);
+    border: 1px solid rgba(132, 0, 255, 0.25);
+    border-radius: 0.75rem;
+    color: #ffffff;
+    font-size: 0.9375rem;
+    transition: all 0.3s ease;
+}
+
+.form-input::placeholder {
+    color: #6b6779;
+}
+
+.form-input:focus,
+.form-select:focus {
+    outline: none;
+    border-color: rgba(132, 0, 255, 0.5);
+    box-shadow: 0 0 0 3px rgba(132, 0, 255, 0.15);
+    background: linear-gradient(135deg, rgba(45, 40, 60, 0.7) 0%, rgba(30, 27, 40, 0.9) 100%);
+}
+
+.form-select {
+    cursor: pointer;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%23c084fc' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 1rem center;
+    padding-right: 2.5rem;
+}
+
+.form-select option {
+    background: #1a1722;
+    color: #ffffff;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+}
+
+.form-row.three-col {
+    grid-template-columns: repeat(3, 1fr);
+}
+
+.form-hint {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.8125rem;
+    color: #8a8694;
+    margin-top: 0.75rem;
+}
+
+.form-hint i {
+    color: #c084fc;
+}
+
+.form-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: flex-end;
+    padding-top: 1rem;
+}
+
+@media (max-width: 768px) {
+    .form-row,
+    .form-row.three-col {
+        grid-template-columns: 1fr;
+    }
+    
+    .form-actions {
+        flex-direction: column-reverse;
+    }
+    
+    .form-actions .cad-btn-secondary,
+    .form-actions .cad-btn-primary {
+        width: 100%;
+        justify-content: center;
+    }
+}
+</style>
 
 <script>
 function toggleSnapmakerMode(printerType) {
