@@ -11,36 +11,32 @@
 <div class="max-w-6xl mx-auto">
     <!-- Header -->
     <div class="mb-8">
-        <a href="/design/projects/" class="text-secondary hover:text-secondary-light flex items-center space-x-2 mb-4">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
-            </svg>
+        <a href="/design/projects/" class="inline-flex items-center gap-2 text-sm font-semibold mb-4 transition-all hover:gap-3" style="color: #9d33ff;">
+            <i class="bi bi-arrow-left"></i>
             <span>Back to Projects</span>
         </a>
 
-        <div class="flex items-center justify-between">
+        <div class="flex items-center justify-between flex-wrap gap-4">
             <div>
-                <h1 class="text-4xl font-bold mb-2">{{ project.name }}</h1>
+                <h1 class="text-4xl font-bold mb-2 flex items-center gap-3">
+                    <i class="bi bi-box" style="color: #e600a5; filter: drop-shadow(0 0 8px rgba(230, 0, 165, 0.5));"></i>
+                    <span style="background: linear-gradient(135deg, #8400ff 0%, #e600a5 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">{{ project.name }}</span>
+                </h1>
                 <p class="text-gray-400">{{ project.original_prompt }}</p>
             </div>
-            <div class="text-right">
-                <span class="inline-block px-4 py-2 rounded-full text-sm font-semibold
-                    {% if project.stage == 'concept' %}bg-blue-dark text-blue-light
-                    {% elif project.stage == 'parts' %}bg-yellow-dark text-yellow-light
-                    {% elif project.stage == 'generation' %}bg-secondary-light-bg text-secondary-light
-                    {% elif project.stage == 'completed' %}bg-green-dark text-green-light
-                    {% else %}bg-dark-card-light text-white{% endif %}">
-                    Stage: {{ project.stage|title }}
+            <div>
+                <span class="stage-badge stage-badge-{{ project.stage }}">
+                    {{ project.stage|title }}
                 </span>
             </div>
         </div>
     </div>
 
     <!-- Progress Bar -->
-    <div class="mb-8">
-        <div class="flex items-center justify-between mb-2">
-            <span class="text-sm font-semibold text-gray-300">Progress</span>
-            <span class="text-sm text-gray-400">
+    <div class="cad-card mb-8">
+        <div class="flex items-center justify-between mb-3">
+            <span class="text-sm font-semibold" style="color: #ffffff;">Progress</span>
+            <span class="text-sm" style="color: #8a8694;">
                 {% if project.stage == 'concept' %}Step 1 of 4
                 {% elif project.stage == 'overall_model' %}Step 2 of 4
                 {% elif project.stage == 'parts' %}Step 3 of 4
@@ -48,36 +44,39 @@
                 {% endif %}
             </span>
         </div>
-        <div class="w-full bg-dark-progress rounded-full h-3">
-            <div class="bg-gradient-to-r from-purple-500 to-blue-500 h-3 rounded-full transition-all duration-500"
-                style="width: {% if project.stage == 'concept' %}25%{% elif project.stage == 'overall_model' %}50%{% elif project.stage == 'parts' %}75%{% elif project.stage == 'generation' or project.stage == 'completed' %}100%{% endif %}">
+        <div class="w-full rounded-full h-2" style="background: rgba(132, 0, 255, 0.15);">
+            <div class="h-2 rounded-full transition-all duration-500"
+                style="background: linear-gradient(90deg, #8400ff 0%, #e600a5 100%); box-shadow: 0 0 12px rgba(132, 0, 255, 0.5); width: {% if project.stage == 'concept' %}25%{% elif project.stage == 'overall_model' %}50%{% elif project.stage == 'parts' %}75%{% elif project.stage == 'generation' or project.stage == 'completed' %}100%{% endif %}">
             </div>
         </div>
     </div>
 
     <!-- Stage 1: Design Concept -->
     {% if concept %}
-    <div id="concept-section" class="bg-dark-card rounded-2xl shadow-lg p-8 mb-6">
+    <div id="concept-section" class="cad-card mb-6">
         <div class="flex items-center justify-between mb-4">
-            <h2 class="text-2xl font-bold">📝 Stage 1: Design Concept</h2>
+            <h2 class="cad-section-title" style="margin-bottom: 0;">
+                <span class="workflow-icon" style="font-size: 1.5rem; margin-bottom: 0;">📝</span>
+                Stage 1: Design Concept
+            </h2>
             {% if project.stage != 'concept' %}
-            <span class="text-green-600 font-semibold">✓ Approved</span>
+            <span class="stage-badge stage-badge-complete">✓ Approved</span>
             {% endif %}
         </div>
 
         <div class="prose max-w-none">
-            <h3 class="text-lg font-semibold text-white mb-2">Overview</h3>
-            <p class="text-gray-300 whitespace-pre-wrap">{{ concept.overview }}</p>
+            <h3 class="text-lg font-semibold mb-2" style="color: #ffffff;">Overview</h3>
+            <p class="whitespace-pre-wrap" style="color: #b8b4c5;">{{ concept.overview }}</p>
 
-            <h3 class="text-lg font-semibold text-white mt-4 mb-2">Key Features</h3>
-            <ul class="list-disc list-inside text-gray-300">
+            <h3 class="text-lg font-semibold mt-4 mb-2" style="color: #ffffff;">Key Features</h3>
+            <ul class="list-disc list-inside" style="color: #b8b4c5;">
                 {% for feature in concept.key_features %}
                 <li>{{ feature }}</li>
                 {% endfor %}
             </ul>
 
-            <h3 class="text-lg font-semibold text-white mt-4 mb-2">Technical Specifications</h3>
-            <p class="text-gray-300 whitespace-pre-wrap">{{ concept.technical_specs }}</p>
+            <h3 class="text-lg font-semibold mt-4 mb-2" style="color: #ffffff;">Technical Specifications</h3>
+            <p class="whitespace-pre-wrap" style="color: #b8b4c5;">{{ concept.technical_specs }}</p>
         </div>
 
         {% if project.stage == 'concept' %}
@@ -86,27 +85,26 @@
                 hx-post="/api/design/approve-concept/{{ project.id }}/"
                 hx-target="#concept-section"
                 hx-swap="innerHTML"
-                class="flex-1 bg-green-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-green-700 transition">
+                class="cad-btn-primary flex-1" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%);">
                 ✓ Approve & Generate Overall Model
             </button>
             <button 
                 onclick="document.getElementById('refine-form-{{ project.id }}').classList.toggle('hidden')"
-                class="flex-1 bg-yellow-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-yellow-700 transition">
+                class="cad-btn-primary flex-1" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);">
                 ↻ Refine Concept
             </button>
         </div>
         
         <div id="refine-form-{{ project.id }}" class="mt-4 hidden">
             <form hx-post="/api/design/refine-concept/{{ project.id }}/" hx-target="#concept-section" hx-swap="innerHTML">
-                <label class="block text-sm font-semibold text-gray-300 mb-2">Provide feedback to refine the concept:</label>
+                <label class="block text-sm font-semibold mb-2" style="color: #b8b4c5;">Provide feedback to refine the concept:</label>
                 <textarea 
                     name="feedback" 
                     rows="3" 
                     placeholder="Example: Make it smaller, use aluminum instead of plastic, add more storage..."
-                    style="background: #1a1625; color: white; border: 1px solid rgba(132, 0, 255, 0.3);"
-                    class="w-full p-3 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    class="cad-textarea"
                     required></textarea>
-                <button type="submit" class="mt-2 px-6 py-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg hover:from-purple-700 hover:to-pink-700 transition-all">
+                <button type="submit" class="cad-btn-primary mt-2">
                     Refine Concept
                 </button>
             </form>
@@ -117,13 +115,16 @@
 
     <!-- Stage 2: Overall 3D Model -->
     {% if project.stage == 'overall_model' or project.stage == 'parts' or project.stage == 'generation' or project.stage == 'completed' %}
-    <div class="bg-dark-card rounded-2xl shadow-lg p-8 mb-6">
+    <div class="cad-card mb-6">
         <div class="flex items-center justify-between mb-4">
-            <h2 class="text-2xl font-bold">🏛️ Stage 2: Overall 3D Model</h2>
+            <h2 class="cad-section-title" style="margin-bottom: 0;">
+                <span class="workflow-icon" style="font-size: 1.5rem; margin-bottom: 0;">🏛️</span>
+                Stage 2: Overall 3D Model
+            </h2>
             {% if project.overall_model_approved_at %}
-            <span class="text-green-600 font-semibold">✓ Approved</span>
+            <span class="stage-badge stage-badge-complete">✓ Approved</span>
             {% elif project.stage == 'overall_model' %}
-            <span class="text-blue-600 font-semibold">⏳ Pending</span>
+            <span class="stage-badge stage-badge-generation">⏳ Pending</span>
             {% endif %}
         </div>
 
@@ -132,63 +133,54 @@
         {% if project.overall_model_status == 'generating' %}
         <!-- Show generating status -->
         <div id="overall-model-result" class="mt-4">
-            <div class="bg-blue-dark border border-blue-400 text-blue-700 px-4 py-3 rounded">
-                <p class="font-semibold">⏳ Generating overall model...</p>
-                <p class="text-sm mt-1">This may take 30-60 seconds. You can navigate away and come back.</p>
-                <p class="text-xs mt-2 text-blue-600">Auto-refreshing every 5 seconds...</p>
-                <button onclick="location.reload()"
-                    class="mt-3 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-semibold">
+            <div class="workflow-card" style="border-color: rgba(59, 130, 246, 0.4);">
+                <p class="font-semibold" style="color: #60a5fa;">⏳ Generating overall model...</p>
+                <p class="text-sm mt-1" style="color: #b8b4c5;">This may take 30-60 seconds. You can navigate away and come back.</p>
+                <p class="text-xs mt-2" style="color: #60a5fa;">Auto-refreshing every 5 seconds...</p>
+                <button onclick="location.reload()" class="cad-btn-primary mt-3" style="background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);">
                     🔄 Refresh Now
                 </button>
             </div>
         </div>
         <script>
-            // Auto-refresh every 5 seconds when generating
-            setTimeout(function () {
-                location.reload();
-            }, 5000);
+            setTimeout(function () { location.reload(); }, 5000);
         </script>
 
         {% elif project.overall_model_status == 'failed' %}
         <!-- Show failed status with retry -->
         <div id="overall-model-result" class="mt-4">
-            <div class="bg-red-dark border border-red-400 text-red-light px-4 py-3 rounded">
-                <p class="font-semibold">✗ Overall model generation failed</p>
-                <p class="text-sm mt-1">{{ project.overall_model_error|default:"Unknown error" }}</p>
+            <div class="workflow-card" style="border-color: rgba(239, 68, 68, 0.4);">
+                <p class="font-semibold" style="color: #f87171;">✗ Overall model generation failed</p>
+                <p class="text-sm mt-1" style="color: #f87171;">{{ project.overall_model_error|default:"Unknown error" }}</p>
                 <button hx-post="/api/design/generate-overall-model/{{ project.id }}/" hx-target="#overall-model-result"
-                    hx-swap="innerHTML"
-                    class="mt-3 px-4 py-2 bg-secondary text-white rounded-lg hover:bg-secondary-dark text-sm font-semibold">
+                    hx-swap="innerHTML" class="cad-btn-primary mt-3">
                     🔄 Retry Generation
                 </button>
             </div>
 
             <!-- Allow correction even on failure -->
-            <div class="mt-4 border-t pt-4">
+            <div class="mt-4 pt-4" style="border-top: 1px solid rgba(132, 0, 255, 0.2);">
                 <details>
-                    <summary class="cursor-pointer text-sm text-blue-600 hover:text-blue-700 font-semibold">✏️ I fixed
-                        the code (click to submit correction)</summary>
-                    <div class="mt-3 p-3 bg-blue-50 rounded-lg">
-                        <p class="text-xs text-gray-400 mb-2">Your corrections help train the AI! Paste the corrected
-                            code below:</p>
+                    <summary class="cursor-pointer text-sm font-semibold" style="color: #60a5fa;">✏️ I fixed the code (click to submit correction)</summary>
+                    <div class="mt-3 p-3 rounded-lg" style="background: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.2);">
+                        <p class="text-xs mb-2" style="color: #8a8694;">Your corrections help train the AI! Paste the corrected code below:</p>
                         <textarea id="correction-overall_model-{{ project.id }}"
-                            class="w-full h-40 p-2 border rounded font-mono text-xs"
+                            class="cad-textarea font-mono text-xs"
+                            style="height: 10rem;"
                             placeholder="import cadquery as cq\n\nresult = ...">{{ project.overall_model_ai_code }}</textarea>
-                        <button onclick="submitCorrection('{{ project.id }}', 'overall_model')"
-                            class="mt-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-semibold">
+                        <button onclick="submitCorrection('{{ project.id }}', 'overall_model')" class="cad-btn-primary mt-2" style="background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);">
                             Submit Correction
                         </button>
                     </div>
                 </details>
             </div>
-
         </div>
 
         {% else %}
         <!-- Generate button -->
-        <p class="text-gray-400 mb-4">Generate a complete 3D model of your design before breaking it into parts.</p>
+        <p class="mb-4" style="color: #8a8694;">Generate a complete 3D model of your design before breaking it into parts.</p>
         <button hx-post="/api/design/generate-overall-model/{{ project.id }}/" hx-target="#overall-model-result"
-            hx-swap="innerHTML"
-            class="bg-secondary text-white px-8 py-4 rounded-lg font-bold text-lg hover:bg-secondary-dark transition">
+            hx-swap="innerHTML" class="cad-btn-primary cad-btn-lg">
             Generate Overall Model →
         </button>
         <div id="overall-model-result" class="mt-4"></div>
@@ -197,8 +189,8 @@
         {% elif project.overall_model_status == 'completed' %}
         <!-- Show generated model -->
         <div id="overall-model-result">
-            <div class="bg-green-50 border border-green-200 rounded-lg p-6">
-                <p class="text-green-light font-semibold mb-2">✓ Overall model generated!</p>
+            <div class="workflow-card" style="border-color: rgba(16, 185, 129, 0.4);">
+                <p class="font-semibold mb-2" style="color: #34d399;">✓ Overall model generated!</p>
 
                 <!-- 3D Viewer -->
                 {% if project.overall_model_stl_url %}
@@ -207,57 +199,51 @@
                 </div>
                 {% endif %}
 
-                <div class="flex gap-2 mb-4">
+                <div class="flex gap-2 mb-4 flex-wrap">
                     {% if project.overall_model_step_url %}
-                    <a href="{{ project.overall_model_step_url }}" download
-                        class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-semibold">
+                    <a href="{{ project.overall_model_step_url }}" download class="cad-btn-primary" style="background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);">
                         📥 Download STEP
                     </a>
                     {% endif %}
                     {% if project.overall_model_stl_url %}
-                    <a href="{{ project.overall_model_stl_url }}" download
-                        class="px-4 py-2 bg-secondary text-white rounded-lg hover:bg-secondary-dark text-sm font-semibold">
+                    <a href="{{ project.overall_model_stl_url }}" download class="cad-btn-primary">
                         📥 Download STL
                     </a>
                     {% endif %}
                 </div>
 
                 <details class="mb-4">
-                    <summary class="cursor-pointer text-gray-400 hover:text-white font-semibold text-sm">View
-                        Generated Code</summary>
-                    <pre
-                        class="mt-2 bg-gray-800 text-green-400 p-3 rounded overflow-x-auto text-xs">{{ project.overall_model_ai_code }}</pre>
+                    <summary class="cursor-pointer font-semibold text-sm" style="color: #8a8694;">View Generated Code</summary>
+                    <pre class="mt-2 p-3 rounded overflow-x-auto text-xs" style="background: rgba(0, 0, 0, 0.3); color: #34d399;">{{ project.overall_model_ai_code }}</pre>
                 </details>
 
                 <!-- Feedback Section -->
-                <div class="mb-4 border-t pt-4">
-                    <p class="text-sm font-semibold text-gray-300 mb-2">📊 Help improve the AI:</p>
-                    <div class="flex gap-2 mb-3">
+                <div class="mb-4 pt-4" style="border-top: 1px solid rgba(132, 0, 255, 0.2);">
+                    <p class="text-sm font-semibold mb-2" style="color: #b8b4c5;">📊 Help improve the AI:</p>
+                    <div class="flex gap-2 mb-3 flex-wrap">
                         <button onclick="submitFeedback('{{ project.id }}', 'overall_model', 'good')"
-                            class="flex-1 px-4 py-2 bg-green-dark text-green-700 rounded-lg hover:bg-green-200 transition text-sm font-semibold">
+                            class="cad-btn-primary flex-1" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%);">
                             ✅ Perfect!
                         </button>
                         <button onclick="submitFeedback('{{ project.id }}', 'overall_model', 'ok')"
-                            class="flex-1 px-4 py-2 bg-yellow-dark text-yellow-700 rounded-lg hover:bg-yellow-200 transition text-sm font-semibold">
+                            class="cad-btn-primary flex-1" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);">
                             ⚠️ Needs Work
                         </button>
                         <button onclick="submitFeedback('{{ project.id }}', 'overall_model', 'bad')"
-                            class="flex-1 px-4 py-2 bg-red-dark text-red-light rounded-lg hover:bg-red-200 transition text-sm font-semibold">
+                            class="cad-btn-primary flex-1" style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);">
                             ❌ Failed
                         </button>
                     </div>
 
                     <details>
-                        <summary class="cursor-pointer text-sm text-blue-600 hover:text-blue-700 font-semibold">✏️ I
-                            fixed the code (click to submit correction)</summary>
-                        <div class="mt-3 p-3 bg-blue-50 rounded-lg">
-                            <p class="text-xs text-gray-400 mb-2">Your corrections help train the AI! Paste the
-                                corrected code below:</p>
+                        <summary class="cursor-pointer text-sm font-semibold" style="color: #60a5fa;">✏️ I fixed the code (click to submit correction)</summary>
+                        <div class="mt-3 p-3 rounded-lg" style="background: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.2);">
+                            <p class="text-xs mb-2" style="color: #8a8694;">Your corrections help train the AI! Paste the corrected code below:</p>
                             <textarea id="correction-overall_model-{{ project.id }}"
-                                class="w-full h-40 p-2 border rounded font-mono text-xs"
+                                class="cad-textarea font-mono text-xs"
+                                style="height: 10rem;"
                                 placeholder="import cadquery as cq\n\nresult = ...">{{ project.overall_model_ai_code }}</textarea>
-                            <button onclick="submitCorrection('{{ project.id }}', 'overall_model')"
-                                class="mt-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-semibold">
+                            <button onclick="submitCorrection('{{ project.id }}', 'overall_model')" class="cad-btn-primary mt-2" style="background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);">
                                 Submit Correction
                             </button>
                         </div>
@@ -268,12 +254,12 @@
                 <div class="flex gap-2">
                     <button hx-post="/api/design/approve-overall-model/{{ project.id }}/"
                         hx-target="#overall-model-result" hx-swap="innerHTML"
-                        class="flex-1 bg-green-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-green-700 transition">
+                        class="cad-btn-primary flex-1" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%);">
                         ✓ Approve & Break Into Parts
                     </button>
                     <button hx-post="/api/design/generate-overall-model/{{ project.id }}/"
                         hx-target="#overall-model-result" hx-swap="innerHTML"
-                        class="bg-yellow-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-yellow-700 transition">
+                        class="cad-btn-primary" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);">
                         🔄 Regenerate
                     </button>
                 </div>
@@ -285,567 +271,503 @@
     {% endif %}
 
     <!-- Stage 3: Part Breakdown -->
-        {% if breakdown %}
-        <div class="bg-dark-card rounded-2xl shadow-lg p-8 mb-6">
-            <div class="flex items-center justify-between mb-4">
-                <h2 class="text-2xl font-bold">🔧 Stage 3: Part Breakdown</h2>
-                <span class="text-green-600 font-semibold">✓ Approved</span>
-            </div>
+    {% if breakdown %}
+    <div class="cad-card mb-6">
+        <div class="flex items-center justify-between mb-4">
+            <h2 class="cad-section-title" style="margin-bottom: 0;">
+                <span class="workflow-icon" style="font-size: 1.5rem; margin-bottom: 0;">🔧</span>
+                Stage 3: Part Breakdown
+            </h2>
+            <span class="stage-badge stage-badge-complete">✓ Approved</span>
+        </div>
 
-            <p class="text-gray-400 mb-4">{{ breakdown.parts|length }} parts identified</p>
+        <p class="mb-4" style="color: #8a8694;">{{ breakdown.parts|length }} parts identified</p>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {% for part in breakdown.parts %}
-                <div class="border border-dark-border rounded-lg p-4">
-                    <div class="flex items-start justify-between mb-2">
-                        <h3 class="font-bold text-white">Part {{ part.part_number }}</h3>
-                        <span class="text-xs px-2 py-1 rounded
-                        {% if part.status == 'completed' %}bg-green-dark text-green-light
-                        {% elif part.status == 'generating' %}bg-blue-dark text-blue-light
-                        {% elif part.status == 'failed' %}bg-red-dark text-red-800
-                        {% else %}bg-dark-card-light text-white{% endif %}">
-                            {{ part.status|default:"pending" }}
-                        </span>
-                    </div>
-                    <p class="text-sm font-semibold text-gray-300 mb-2">{{ part.name }}</p>
-                    <p class="text-xs text-gray-400 mb-2">{{ part.description }}</p>
-                    <div class="text-xs text-gray-500">
-                        <span class="font-semibold">Method:</span> {{ part.manufacturing_method }}
-                    </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {% for part in breakdown.parts %}
+            <div class="workflow-card">
+                <div class="flex items-start justify-between mb-2">
+                    <h3 class="font-bold" style="color: #ffffff;">Part {{ part.part_number }}</h3>
+                    <span class="stage-badge {% if part.status == 'completed' %}stage-badge-complete{% elif part.status == 'generating' %}stage-badge-generation{% elif part.status == 'failed' %}stage-badge-concept{% else %}stage-badge-parts{% endif %}" style="font-size: 0.65rem; padding: 0.25rem 0.5rem;">
+                        {{ part.status|default:"pending" }}
+                    </span>
                 </div>
-                {% endfor %}
+                <p class="text-sm font-semibold mb-2" style="color: #b8b4c5;">{{ part.name }}</p>
+                <p class="text-xs mb-2" style="color: #8a8694;">{{ part.description }}</p>
+                <div class="text-xs" style="color: #8a8694;">
+                    <span class="font-semibold">Method:</span> {{ part.manufacturing_method }}
+                </div>
             </div>
+            {% endfor %}
+        </div>
 
-            <!-- Generate All Button -->
-            {% if project.stage == 'parts' %}
-            <div class="mt-6 text-center">
-                <form hx-post="/api/design/approve-parts/{{ project.id }}/" hx-target="#generation-status"
-                    hx-swap="innerHTML" class="inline-block">
-                    {% csrf_token %}
-                    <button type="submit"
-                        class="bg-secondary text-white px-8 py-4 rounded-lg font-bold text-lg hover:bg-secondary-dark transition">
-                        Start CAD Generation →
+        <!-- Generate All Button -->
+        {% if project.stage == 'parts' %}
+        <div class="mt-6 text-center">
+            <form hx-post="/api/design/approve-parts/{{ project.id }}/" hx-target="#generation-status"
+                hx-swap="innerHTML" class="inline-block">
+                {% csrf_token %}
+                <button type="submit" class="cad-btn-primary cad-btn-lg">
+                    Start CAD Generation →
+                </button>
+            </form>
+            <div id="generation-status" class="mt-4"></div>
+        </div>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    <!-- Stage 4: CAD Generation -->
+    {% if project.stage == 'generation' or project.stage == 'completed' %}
+    <div class="cad-card mb-6">
+        <div class="flex items-center justify-between mb-4">
+            <h2 class="cad-section-title" style="margin-bottom: 0;">
+                <span class="workflow-icon" style="font-size: 1.5rem; margin-bottom: 0;">⚙️</span>
+                Stage 4: CAD Generation
+            </h2>
+            {% if project.stage == 'completed' %}
+            <span class="stage-badge stage-badge-complete">✓ Complete</span>
+            {% else %}
+            <span class="stage-badge stage-badge-generation">In Progress...</span>
+            {% endif %}
+        </div>
+
+        <p class="mb-6" style="color: #8a8694;">
+            Progress: {{ project.generated_parts|default:0 }} / {{ breakdown.parts|length }} parts generated
+        </p>
+
+        <!-- Part Generation Cards -->
+        <div class="space-y-4">
+            {% for part in breakdown.parts %}
+            <div class="workflow-card">
+                <div class="flex items-center justify-between mb-2">
+                    <h3 class="font-bold" style="color: #ffffff;">Part {{ part.part_number }}: {{ part.name }}</h3>
+                    {% if part.status == 'completed' %}
+                    <span class="stage-badge stage-badge-complete">✓ Generated</span>
+                    {% elif part.status == 'generating' %}
+                    <span class="stage-badge stage-badge-generation">⏳ Generating...</span>
+                    {% elif part.status == 'failed' %}
+                    <span class="stage-badge stage-badge-concept" style="background: linear-gradient(135deg, rgba(239, 68, 68, 0.2) 0%, rgba(239, 68, 68, 0.1) 100%); border-color: rgba(239, 68, 68, 0.4); color: #f87171;">✗ Failed</span>
+                    {% else %}
+                    <button hx-post="/api/design/generate/{{ project.id }}/{{ part.part_number }}/"
+                        hx-target="#part-{{ part.part_number }}-result" hx-swap="innerHTML"
+                        class="cad-btn-primary">
+                        Generate CAD Model
                     </button>
-                </form>
-                <div id="generation-status" class="mt-4"></div>
+                    {% endif %}
+                </div>
+
+                <div id="part-{{ part.part_number }}-result">
+                    {% if part.status == 'completed' %}
+                    <div class="mt-2 p-4 rounded-lg" style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.2);">
+                        <p class="font-semibold mb-2" style="color: #34d399;">✓ Part {{ part.part_number }} generated successfully!</p>
+
+                        <div class="flex gap-2 mb-3 flex-wrap">
+                            {% if part.step_url %}
+                            <a href="{{ part.step_url }}" download class="cad-btn-primary" style="background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); padding: 0.5rem 1rem; font-size: 0.875rem;">
+                                📥 Download STEP
+                            </a>
+                            {% endif %}
+                            {% if part.stl_url %}
+                            <a href="{{ part.stl_url }}" download class="cad-btn-primary" style="padding: 0.5rem 1rem; font-size: 0.875rem;">
+                                📥 Download STL
+                            </a>
+                            {% endif %}
+                            <button onclick="showPrinterSelector('{{ project.id }}', {{ part.part_number }}, '{{ part.name }}')"
+                                class="cad-btn-primary" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); padding: 0.5rem 1rem; font-size: 0.875rem;">
+                                🖨️ Send to Printer
+                            </button>
+                        </div>
+
+                        {% if part.cadquery_code %}
+                        <details class="text-sm">
+                            <summary class="cursor-pointer font-semibold" style="color: #8a8694;">View Generated Code</summary>
+                            <pre class="mt-2 p-3 rounded overflow-x-auto text-xs" style="background: rgba(0, 0, 0, 0.3); color: #34d399;">{{ part.cadquery_code }}</pre>
+                        </details>
+                        {% endif %}
+                    </div>
+                    {% elif part.status == 'failed' %}
+                    <div class="mt-2 p-4 rounded-lg" style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.2);">
+                        <p class="font-semibold mb-2" style="color: #f87171;">✗ Generation failed</p>
+                        {% if part.generation_error %}
+                        <p class="text-sm mb-3" style="color: #f87171;">{{ part.generation_error }}</p>
+                        {% endif %}
+                        <button hx-post="/api/design/generate/{{ project.id }}/{{ part.part_number }}/"
+                            hx-target="#part-{{ part.part_number }}-result" hx-swap="innerHTML"
+                            class="cad-btn-primary">
+                            🔄 Retry Generation
+                        </button>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Project Info -->
+    <div class="workflow-card">
+        <h3 class="font-bold mb-4" style="color: #ffffff;">Project Information</h3>
+        <div class="grid grid-cols-2 gap-4 text-sm">
+            <div>
+                <span style="color: #8a8694;">Created:</span>
+                <span class="font-semibold" style="color: #ffffff;">{{ project.created_at|date:"M d, Y H:i" }}</span>
+            </div>
+            <div>
+                <span style="color: #8a8694;">Last Updated:</span>
+                <span class="font-semibold" style="color: #ffffff;">{{ project.updated_at|date:"M d, Y H:i" }}</span>
+            </div>
+            <div>
+                <span style="color: #8a8694;">Status:</span>
+                <span class="font-semibold" style="color: #ffffff;">{{ project.status|title }}</span>
+            </div>
+            {% if project.completed_at %}
+            <div>
+                <span style="color: #8a8694;">Completed:</span>
+                <span class="font-semibold" style="color: #ffffff;">{{ project.completed_at|date:"M d, Y H:i" }}</span>
             </div>
             {% endif %}
         </div>
-        {% endif %}
+    </div>
+</div>
 
-        <!-- Stage 4: CAD Generation -->
-        {% if project.stage == 'generation' or project.stage == 'completed' %}
-        <div class="bg-dark-card rounded-2xl shadow-lg p-8 mb-6">
-            <div class="flex items-center justify-between mb-4">
-                <h2 class="text-2xl font-bold">⚙️ Stage 4: CAD Generation</h2>
-                {% if project.stage == 'completed' %}
-                <span class="text-green-600 font-semibold">✓ Complete</span>
-                {% else %}
-                <span class="text-blue-600 font-semibold">In Progress...</span>
-                {% endif %}
-            </div>
+<!-- Printer Selector Modal -->
+<div id="printerModal" class="fixed inset-0 hidden flex items-center justify-center z-50" style="background: rgba(19, 17, 26, 0.95); backdrop-filter: blur(12px);">
+    <div class="cad-card" style="max-width: 28rem; width: 100%; margin: 1rem;">
+        <h3 class="text-xl font-bold mb-4" style="color: #ffffff;">Send to Printer</h3>
+        <p class="text-sm mb-4" style="color: #b8b4c5;">Part: <span id="modalPartName"></span></p>
 
-            <p class="text-gray-400 mb-6">
-                Progress: {{ project.generated_parts|default:0 }} / {{ breakdown.parts|length }} parts generated
-            </p>
-
-            <!-- Part Generation Cards -->
-            <div class="space-y-4">
-                {% for part in breakdown.parts %}
-                <div class="border border-dark-border rounded-lg p-4">
-                    <div class="flex items-center justify-between mb-2">
-                        <h3 class="font-bold text-white">Part {{ part.part_number }}: {{ part.name }}</h3>
-                        {% if part.status == 'completed' %}
-                        <span class="text-green-600 font-semibold">✓ Generated</span>
-                        {% elif part.status == 'generating' %}
-                        <span class="text-blue-600 font-semibold">⏳ Generating...</span>
-                        {% elif part.status == 'failed' %}
-                        <span class="text-red-600 font-semibold">✗ Failed</span>
-                        {% else %}
-                        <button hx-post="/api/design/generate/{{ project.id }}/{{ part.part_number }}/"
-                            hx-target="#part-{{ part.part_number }}-result" hx-swap="innerHTML"
-                            class="bg-secondary text-white px-4 py-2 rounded-lg font-semibold hover:bg-secondary-dark transition text-sm">
-                            Generate CAD Model
-                        </button>
-                        {% endif %}
-                    </div>
-
-                    <div id="part-{{ part.part_number }}-result">
-                        {% if part.status == 'completed' %}
-                        <div class="bg-green-50 border border-green-200 rounded-lg p-4 mt-2">
-                            <p class="text-green-light font-semibold mb-2">✓ Part {{ part.part_number }} generated
-                                successfully!</p>
-
-                            <div class="flex gap-2 mb-3">
-                                {% if part.step_url %}
-                                <a href="{{ part.step_url }}" download
-                                    class="px-3 py-1 bg-blue-600 text-white text-sm rounded hover:bg-blue-700">
-                                    📥 Download STEP
-                                </a>
-                                {% endif %}
-                                {% if part.stl_url %}
-                                <a href="{{ part.stl_url }}" download
-                                    class="px-3 py-1 bg-secondary text-white text-sm rounded hover:bg-secondary-dark">
-                                    📥 Download STL
-                                </a>
-                                {% endif %}
-                                <button
-                                    onclick="showPrinterSelector('{{ project.id }}', {{ part.part_number }}, '{{ part.name }}')"
-                                    class="px-3 py-1 bg-green-600 text-white text-sm rounded hover:bg-green-700">
-                                    🖨️ Send to Printer
-                                </button>
-                            </div>
-
-                            {% if part.cadquery_code %}
-                            <details class="text-sm">
-                                <summary class="cursor-pointer text-gray-400 hover:text-white font-semibold">View
-                                    Generated Code</summary>
-                                <pre
-                                    class="mt-2 bg-gray-800 text-green-400 p-3 rounded overflow-x-auto text-xs">{{ part.cadquery_code }}</pre>
-                            </details>
-                            {% endif %}
-                        </div>
-                        {% elif part.status == 'failed' %}
-                        <div class="bg-red-50 border border-red-200 rounded-lg p-4 mt-2">
-                            <p class="text-red-800 font-semibold mb-2">✗ Generation failed</p>
-                            {% if part.generation_error %}
-                            <p class="text-sm text-red-600 mb-3">{{ part.generation_error }}</p>
-                            {% endif %}
-                            <button hx-post="/api/design/generate/{{ project.id }}/{{ part.part_number }}/"
-                                hx-target="#part-{{ part.part_number }}-result" hx-swap="innerHTML"
-                                class="bg-secondary text-white px-4 py-2 rounded-lg font-semibold hover:bg-secondary-dark transition text-sm">
-                                🔄 Retry Generation
-                            </button>
-                        </div>
-                        {% endif %}
-                    </div>
-                </div>
-                {% endfor %}
-            </div>
+        <div id="printerList" class="space-y-2 mb-4">
+            <!-- Printers will be loaded here -->
         </div>
-        {% endif %}
 
-        <!-- Project Info -->
-        <div class="bg-dark-card-light rounded-lg p-6">
-            <h3 class="font-bold text-white mb-4">Project Information</h3>
-            <div class="grid grid-cols-2 gap-4 text-sm">
-                <div>
-                    <span class="text-gray-400">Created:</span>
-                    <span class="font-semibold">{{ project.created_at|date:"M d, Y H:i" }}</span>
-                </div>
-                <div>
-                    <span class="text-gray-400">Last Updated:</span>
-                    <span class="font-semibold">{{ project.updated_at|date:"M d, Y H:i" }}</span>
-                </div>
-                <div>
-                    <span class="text-gray-400">Status:</span>
-                    <span class="font-semibold">{{ project.status|title }}</span>
-                </div>
-                {% if project.completed_at %}
-                <div>
-                    <span class="text-gray-400">Completed:</span>
-                    <span class="font-semibold">{{ project.completed_at|date:"M d, Y H:i" }}</span>
-                </div>
-                {% endif %}
-            </div>
+        <div id="sendResult" class="mb-4"></div>
+
+        <div class="flex gap-2">
+            <button onclick="closePrinterModal()" class="flex-1 px-4 py-2 rounded-lg transition" style="border: 1px solid rgba(132, 0, 255, 0.3); color: #ffffff; background: rgba(255, 255, 255, 0.05);">
+                Cancel
+            </button>
         </div>
     </div>
+</div>
 
-    <!-- Printer Selector Modal (reuse from design_projects.html) -->
-    <div id="printerModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50">
-        <div class="bg-dark-card rounded-lg p-6 max-w-md w-full mx-4">
-            <h3 class="text-xl font-bold mb-4">Send to Printer</h3>
-            <p class="text-sm text-gray-400 mb-4">Part: <span id="modalPartName"></span></p>
+<script src="https://unpkg.com/htmx.org@1.9.10"></script>
+<script>
+    // Configure HTMX
+    document.body.addEventListener('htmx:configRequest', (event) => {
+        event.detail.headers['X-CSRFToken'] = '{{ csrf_token }}';
+    });
 
-            <div id="printerList" class="space-y-2 mb-4">
-                <!-- Printers will be loaded here -->
-            </div>
+    let currentProjectId = null;
+    let currentPartNumber = null;
 
-            <div id="sendResult" class="mb-4"></div>
+    function showPrinterSelector(projectId, partNumber, partName) {
+        currentProjectId = projectId;
+        currentPartNumber = partNumber;
 
-            <div class="flex gap-2">
-                <button onclick="closePrinterModal()"
-                    class="flex-1 px-4 py-2 border border-dark-border rounded-lg hover:bg-dark-card-light">
-                    Cancel
-                </button>
-            </div>
-        </div>
-    </div>
+        document.getElementById('modalPartName').textContent = partName;
+        document.getElementById('printerModal').classList.remove('hidden');
+        document.getElementById('sendResult').innerHTML = '';
 
-    <script>
-        // Configure HTMX
-        document.body.addEventListener('htmx:configRequest', (event) => {
-            event.detail.headers['X-CSRFToken'] = '{{ csrf_token }}';
-        });
+        // Load available printers
+        fetch('/api/printers')
+            .then(response => response.text())
+            .then(html => {
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(html, 'text/html');
+                const printerCards = doc.querySelectorAll('[href*="/printers/edit/"]');
+                const printerList = document.getElementById('printerList');
 
-        let currentProjectId = null;
-        let currentPartNumber = null;
+                if (printerCards.length === 0) {
+                    printerList.innerHTML = '<p class="text-sm" style="color: #8a8694;">No printers configured. <a href="/printers/add" style="color: #8400ff;">Add a printer</a></p>';
+                    return;
+                }
 
-        function showPrinterSelector(projectId, partNumber, partName) {
-            currentProjectId = projectId;
-            currentPartNumber = partNumber;
+                let buttons = '';
+                printerCards.forEach(card => {
+                    const href = card.getAttribute('href');
+                    const printerId = href.split('/').pop();
+                    const printerName = card.closest('.cad-card, .workflow-card, [style*="background"]').querySelector('h3').textContent;
 
-            document.getElementById('modalPartName').textContent = partName;
-            document.getElementById('printerModal').classList.remove('hidden');
-            document.getElementById('sendResult').innerHTML = '';
-
-            // Load available printers
-            fetch('/api/printers')
-                .then(response => response.text())
-                .then(html => {
-                    const parser = new DOMParser();
-                    const doc = parser.parseFromString(html, 'text/html');
-                    const printerCards = doc.querySelectorAll('[href*="/printers/edit/"]');
-                    const printerList = document.getElementById('printerList');
-
-                    if (printerCards.length === 0) {
-                        printerList.innerHTML = '<p class="text-gray-500 text-sm">No printers configured. <a href="/printers/add" class="text-secondary hover:underline">Add a printer</a></p>';
-                        return;
-                    }
-
-                    let buttons = '';
-                    printerCards.forEach(card => {
-                        const href = card.getAttribute('href');
-                        const printerId = href.split('/').pop();
-                        const printerName = card.closest('.bg-dark-card').querySelector('h3').textContent;
-
-                        buttons += `
+                    buttons += `
                         <button 
                             onclick="sendToPrinter('${printerId}', '${printerName}')"
-                            class="w-full px-4 py-3 bg-secondary text-white rounded-lg hover:bg-secondary-dark text-left"
+                            class="cad-btn-primary cad-btn-full"
                         >
                             🖨️ ${printerName}
                         </button>
                     `;
-                    });
-
-                    printerList.innerHTML = buttons;
-                })
-                .catch(error => {
-                    document.getElementById('printerList').innerHTML = '<p class="text-red-500 text-sm">Failed to load printers</p>';
                 });
-        }
 
-        function sendToPrinter(printerId, printerName) {
-            const resultDiv = document.getElementById('sendResult');
-            resultDiv.innerHTML = '<p class="text-gray-500 text-sm">Sending to ' + printerName + '...</p>';
-
-            fetch(`/api/design/send-to-printer/${currentProjectId}/${currentPartNumber}/`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                    'X-CSRFToken': '{{ csrf_token }}'
-                },
-                body: `printer_id=${printerId}`
+                printerList.innerHTML = buttons;
             })
-                .then(response => response.text())
-                .then(html => {
-                    resultDiv.innerHTML = html;
-                })
-                .catch(error => {
-                    resultDiv.innerHTML = '<div class="bg-red-dark border border-red-400 text-red-light px-4 py-3 rounded">Error: ' + error + '</div>';
-                });
-        }
-
-        function closePrinterModal() {
-            document.getElementById('printerModal').classList.add('hidden');
-        }
-
-        // 3D Model Viewer using Three.js
-        function init3DViewer(containerId, modelUrl) {
-            const container = document.getElementById(containerId);
-            if (!container || !modelUrl) return;
-
-            // Scene setup
-            const scene = new THREE.Scene();
-            scene.background = new THREE.Color(0x13111a); // Dark theme background
-            scene.fog = new THREE.Fog(0x13111a, 10000, 100000); // Fog for very large models
-
-            // Camera
-            const camera = new THREE.PerspectiveCamera(
-                45,
-                container.clientWidth / container.clientHeight,
-                0.01,    // Very close near plane
-                500000   // Very far plane to prevent clipping
-            );
-            camera.position.set(200, 200, 200);
-
-            // Modern renderer with shadows and tone mapping
-            const renderer = new THREE.WebGLRenderer({ 
-                antialias: true,
-                alpha: true,
-                preserveDrawingBuffer: true
+            .catch(error => {
+                document.getElementById('printerList').innerHTML = '<p class="text-sm" style="color: #ef4444;">Failed to load printers</p>';
             });
-            renderer.setSize(container.clientWidth, container.clientHeight);
-            renderer.setPixelRatio(window.devicePixelRatio);
-            renderer.shadowMap.enabled = true;
-            renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-            renderer.toneMapping = THREE.ACESFilmicToneMapping;
-            renderer.toneMappingExposure = 1.0;
-            renderer.outputEncoding = THREE.sRGBEncoding;
-            container.appendChild(renderer.domElement);
+    }
 
-            // Modern lighting setup
-            const ambientLight = new THREE.AmbientLight(0xffffff, 0.4);
-            scene.add(ambientLight);
+    function sendToPrinter(printerId, printerName) {
+        const resultDiv = document.getElementById('sendResult');
+        resultDiv.innerHTML = '<p class="text-sm" style="color: #8a8694;">Sending to ' + printerName + '...</p>';
 
-            // Key light (main)
-            const keyLight = new THREE.DirectionalLight(0xffffff, 1.0);
-            keyLight.position.set(5, 10, 7.5);
-            keyLight.castShadow = true;
-            keyLight.shadow.mapSize.width = 2048;
-            keyLight.shadow.mapSize.height = 2048;
-            scene.add(keyLight);
+        fetch(`/api/design/send-to-printer/${currentProjectId}/${currentPartNumber}/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: `printer_id=${printerId}`
+        })
+            .then(response => response.text())
+            .then(html => {
+                resultDiv.innerHTML = html;
+            })
+            .catch(error => {
+                resultDiv.innerHTML = '<div class="p-3 rounded" style="background: rgba(239, 68, 68, 0.2); border: 1px solid rgba(239, 68, 68, 0.4); color: #ef4444;">Error: ' + error + '</div>';
+            });
+    }
 
-            // Fill light (soften shadows)
-            const fillLight = new THREE.DirectionalLight(0xffffff, 0.5);
-            fillLight.position.set(-5, 0, -5);
-            scene.add(fillLight);
+    function closePrinterModal() {
+        document.getElementById('printerModal').classList.add('hidden');
+    }
 
-            // Rim light (edge highlight)
-            const rimLight = new THREE.DirectionalLight(0xffffff, 0.3);
-            rimLight.position.set(0, -10, -5);
-            scene.add(rimLight);
+    // 3D Model Viewer using Three.js
+    function init3DViewer(containerId, modelUrl) {
+        const container = document.getElementById(containerId);
+        if (!container || !modelUrl) return;
 
-            // Hemisphere light for natural ambient
-            const hemiLight = new THREE.HemisphereLight(0xffffff, 0x444444, 0.3);
-            scene.add(hemiLight);
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x13111a);
+        scene.fog = new THREE.Fog(0x13111a, 10000, 100000);
 
-            // Modern grid and axes (will be scaled after model loads)
-            const gridHelper = new THREE.GridHelper(10000, 100, 0x8400ff, 0x3d1f5c);
-            gridHelper.material.opacity = 0.15;
-            gridHelper.material.transparent = true;
-            scene.add(gridHelper);
+        const camera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 0.01, 500000);
+        camera.position.set(200, 200, 200);
 
-            // Axes helper for orientation
-            const axesHelper = new THREE.AxesHelper(1000);
-            axesHelper.material.linewidth = 2;
-            scene.add(axesHelper);
+        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer: true });
+        renderer.setSize(container.clientWidth, container.clientHeight);
+        renderer.setPixelRatio(window.devicePixelRatio);
+        renderer.shadowMap.enabled = true;
+        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+        renderer.toneMapping = THREE.ACESFilmicToneMapping;
+        renderer.toneMappingExposure = 1.0;
+        renderer.outputEncoding = THREE.sRGBEncoding;
+        container.appendChild(renderer.domElement);
 
-            // Load STL
-            const loader = new THREE.STLLoader();
-            loader.load(modelUrl, function (geometry) {
-                // Modern PBR material for realistic rendering (dark theme colors)
-                const material = new THREE.MeshStandardMaterial({
-                    color: 0x8400ff,      // Purple from theme
-                    metalness: 0.4,
-                    roughness: 0.3,
-                    envMapIntensity: 1.0,
-                    flatShading: false
-                });
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.4);
+        scene.add(ambientLight);
 
-                // Add subtle edge glow (pink accent)
-                const edgeMaterial = new THREE.LineBasicMaterial({ 
-                    color: 0xe600a5,      // Pink from theme
-                    linewidth: 1,
-                    opacity: 0.6,
-                    transparent: true
-                });
-                const edges = new THREE.EdgesGeometry(geometry, 15);
-                const edgeLines = new THREE.LineSegments(edges, edgeMaterial);
+        const keyLight = new THREE.DirectionalLight(0xffffff, 1.0);
+        keyLight.position.set(5, 10, 7.5);
+        keyLight.castShadow = true;
+        keyLight.shadow.mapSize.width = 2048;
+        keyLight.shadow.mapSize.height = 2048;
+        scene.add(keyLight);
 
-                const mesh = new THREE.Mesh(geometry, material);
+        const fillLight = new THREE.DirectionalLight(0xffffff, 0.5);
+        fillLight.position.set(-5, 0, -5);
+        scene.add(fillLight);
 
-                // Center the model
-                geometry.computeBoundingBox();
-                const center = new THREE.Vector3();
-                geometry.boundingBox.getCenter(center);
-                mesh.position.sub(center);
+        const rimLight = new THREE.DirectionalLight(0xffffff, 0.3);
+        rimLight.position.set(0, -10, -5);
+        scene.add(rimLight);
 
-                mesh.castShadow = true;
-                mesh.receiveShadow = true;
-                scene.add(mesh);
-                scene.add(edgeLines);
-                edgeLines.position.copy(mesh.position);
+        const hemiLight = new THREE.HemisphereLight(0xffffff, 0x444444, 0.3);
+        scene.add(hemiLight);
 
-                // Adjust camera to fit model
-                const size = new THREE.Vector3();
-                geometry.boundingBox.getSize(size);
-                const maxDim = Math.max(size.x, size.y, size.z);
-                const fov = camera.fov * (Math.PI / 180);
-                let cameraZ = Math.abs(maxDim / 2 / Math.tan(fov / 2));
-                cameraZ *= 2.5; // More padding for better initial view
-                camera.position.set(cameraZ, cameraZ * 0.7, cameraZ);
-                camera.lookAt(0, 0, 0);
-                
-                // Update controls based on model size
-                controls.minDistance = maxDim * 0.1;
-                controls.maxDistance = maxDim * 20;
-                
-                console.log('Model size:', size, 'Max dimension:', maxDim, 'Camera distance:', cameraZ);
+        const gridHelper = new THREE.GridHelper(10000, 100, 0x8400ff, 0x3d1f5c);
+        gridHelper.material.opacity = 0.15;
+        gridHelper.material.transparent = true;
+        scene.add(gridHelper);
+
+        const axesHelper = new THREE.AxesHelper(1000);
+        axesHelper.material.linewidth = 2;
+        scene.add(axesHelper);
+
+        const loader = new THREE.STLLoader();
+        loader.load(modelUrl, function (geometry) {
+            const material = new THREE.MeshStandardMaterial({
+                color: 0x8400ff,
+                metalness: 0.4,
+                roughness: 0.3,
+                envMapIntensity: 1.0,
+                flatShading: false
             });
 
-            // Smooth modern controls
-            const controls = new THREE.OrbitControls(camera, renderer.domElement);
-            controls.enableDamping = true;
-            controls.dampingFactor = 0.08;
-            controls.rotateSpeed = 0.5;
-            controls.zoomSpeed = 0.8;
-            controls.panSpeed = 0.5;
-            controls.minDistance = 1;
-            controls.maxDistance = 50000;  // Much larger for big models
-            controls.enablePan = true;
-            controls.screenSpacePanning = true;
+            const edgeMaterial = new THREE.LineBasicMaterial({ color: 0xe600a5, linewidth: 1, opacity: 0.6, transparent: true });
+            const edges = new THREE.EdgesGeometry(geometry, 15);
+            const edgeLines = new THREE.LineSegments(edges, edgeMaterial);
 
-            // Animation loop
-            function animate() {
-                requestAnimationFrame(animate);
-                controls.update();
-                renderer.render(scene, camera);
-            }
-            animate();
+            const mesh = new THREE.Mesh(geometry, material);
 
-            // Handle window resize
-            window.addEventListener('resize', function () {
-                camera.aspect = container.clientWidth / container.clientHeight;
-                camera.updateProjectionMatrix();
-                renderer.setSize(container.clientWidth, container.clientHeight);
-            });
-        }
+            geometry.computeBoundingBox();
+            const center = new THREE.Vector3();
+            geometry.boundingBox.getCenter(center);
+            mesh.position.sub(center);
 
-        // Initialize viewer when page loads
-        document.addEventListener('DOMContentLoaded', function () {
-            {% if project.overall_model_stl_url %}
-            init3DViewer('model-viewer-overall', '{{ project.overall_model_stl_url }}');
-            {% endif %}
+            mesh.castShadow = true;
+            mesh.receiveShadow = true;
+            scene.add(mesh);
+            scene.add(edgeLines);
+            edgeLines.position.copy(mesh.position);
+
+            const size = new THREE.Vector3();
+            geometry.boundingBox.getSize(size);
+            const maxDim = Math.max(size.x, size.y, size.z);
+            const fov = camera.fov * (Math.PI / 180);
+            let cameraZ = Math.abs(maxDim / 2 / Math.tan(fov / 2));
+            cameraZ *= 2.5;
+            camera.position.set(cameraZ, cameraZ * 0.7, cameraZ);
+            camera.lookAt(0, 0, 0);
+            
+            controls.minDistance = maxDim * 0.1;
+            controls.maxDistance = maxDim * 20;
         });
 
-        // Feedback submission
-        function submitFeedback(projectId, modelType, rating) {
-            fetch(`/api/design/feedback/${projectId}/`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': '{{ csrf_token }}'
-                },
-                body: JSON.stringify({
-                    model_type: modelType,
-                    rating: rating
-                })
+        const controls = new THREE.OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        controls.dampingFactor = 0.08;
+        controls.rotateSpeed = 0.5;
+        controls.zoomSpeed = 0.8;
+        controls.panSpeed = 0.5;
+        controls.minDistance = 1;
+        controls.maxDistance = 50000;
+        controls.enablePan = true;
+        controls.screenSpacePanning = true;
+
+        function animate() {
+            requestAnimationFrame(animate);
+            controls.update();
+            renderer.render(scene, camera);
+        }
+        animate();
+
+        window.addEventListener('resize', function () {
+            camera.aspect = container.clientWidth / container.clientHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(container.clientWidth, container.clientHeight);
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        {% if project.overall_model_stl_url %}
+        init3DViewer('model-viewer-overall', '{{ project.overall_model_stl_url }}');
+        {% endif %}
+    });
+
+    function submitFeedback(projectId, modelType, rating) {
+        fetch(`/api/design/feedback/${projectId}/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify({ model_type: modelType, rating: rating })
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('✅ Thank you for your feedback! This helps improve the AI.');
+                }
             })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        alert('✅ Thank you for your feedback! This helps improve the AI.');
-                    }
-                })
-                .catch(error => {
-                    console.error('Feedback error:', error);
-                });
+            .catch(error => console.error('Feedback error:', error));
+    }
+
+    function submitCorrection(projectId, modelType) {
+        const textarea = document.getElementById(`correction-${modelType}-${projectId}`);
+        if (!textarea) {
+            alert('❌ Error: Could not find correction textarea.');
+            return;
         }
-
-        function submitCorrection(projectId, modelType) {
-            const textarea = document.getElementById(`correction-${modelType}-${projectId}`);
-
-            if (!textarea) {
-                console.error(`Textarea not found: correction-${modelType}-${projectId}`);
-                alert('❌ Error: Could not find correction textarea.');
-                return;
-            }
-
-            const correctedCode = textarea.value;
-
-            if (!correctedCode.trim()) {
-                alert('Please enter the corrected code.');
-                return;
-            }
-
-            // Show modal to choose correction type
-            showCorrectionTypeDialog(projectId, modelType, correctedCode);
+        const correctedCode = textarea.value;
+        if (!correctedCode.trim()) {
+            alert('Please enter the corrected code.');
+            return;
         }
+        showCorrectionTypeDialog(projectId, modelType, correctedCode);
+    }
 
-        function showCorrectionTypeDialog(projectId, modelType, correctedCode) {
-            // Create modal overlay
-            const modal = document.createElement('div');
-            modal.style.cssText = 'position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 9999;';
-
-            // Create modal content
-            modal.innerHTML = `
-            <div style="background: white; border-radius: 12px; padding: 24px; max-width: 500px; box-shadow: 0 20px 60px rgba(0,0,0,0.3);">
-                <h3 style="margin: 0 0 16px 0; font-size: 20px; font-weight: 600; color: #1f2937;">
+    function showCorrectionTypeDialog(projectId, modelType, correctedCode) {
+        const modal = document.createElement('div');
+        modal.style.cssText = 'position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(19, 17, 26, 0.95); backdrop-filter: blur(12px); display: flex; align-items: center; justify-content: center; z-index: 9999;';
+        modal.innerHTML = `
+            <div class="cad-card" style="max-width: 500px;">
+                <h3 style="margin: 0 0 16px 0; font-size: 20px; font-weight: 600; color: #ffffff;">
                     🎯 What type of correction is this?
                 </h3>
                 
-                <div style="margin-bottom: 20px; padding: 16px; background: #f3f4f6; border-radius: 8px;">
+                <div style="margin-bottom: 20px;">
                     <button onclick="submitWithType('${projectId}', '${modelType}', 'code_fix')" 
-                            style="width: 100%; padding: 16px; margin-bottom: 12px; background: #3b82f6; color: white; border: none; border-radius: 8px; font-size: 15px; font-weight: 600; cursor: pointer; text-align: left;">
+                            class="cad-btn-primary cad-btn-full" style="margin-bottom: 12px; text-align: left; background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);">
                         <div style="font-size: 18px; margin-bottom: 4px;">🔧 Code Fix</div>
-                        <div style="font-size: 13px; opacity: 0.9;">I fixed syntax errors or made it executable (but don't know if the model is good)</div>
+                        <div style="font-size: 13px; opacity: 0.9;">I fixed syntax errors or made it executable</div>
                     </button>
                     
                     <button onclick="submitWithType('${projectId}', '${modelType}', 'model_improvement')" 
-                            style="width: 100%; padding: 16px; background: #10b981; color: white; border: none; border-radius: 8px; font-size: 15px; font-weight: 600; cursor: pointer; text-align: left;">
+                            class="cad-btn-primary cad-btn-full" style="text-align: left; background: linear-gradient(135deg, #10b981 0%, #059669 100%);">
                         <div style="font-size: 18px; margin-bottom: 4px;">⭐ Model Improvement</div>
-                        <div style="font-size: 13px; opacity: 0.9;">I improved the design quality (code works AND model is better)</div>
+                        <div style="font-size: 13px; opacity: 0.9;">I improved the design quality</div>
                     </button>
                 </div>
                 
                 <button onclick="closeCorrectionDialog()" 
-                        style="width: 100%; padding: 12px; background: #6b7280; color: white; border: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer;">
+                        style="width: 100%; padding: 12px; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(132, 0, 255, 0.3); color: white; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer;">
                     Cancel
                 </button>
             </div>
         `;
+        modal.id = 'correction-type-modal';
+        modal.onclick = (e) => { if (e.target === modal) closeCorrectionDialog(); };
+        document.body.appendChild(modal);
+        window.currentCorrectedCode = correctedCode;
+    }
 
-            modal.id = 'correction-type-modal';
-            modal.onclick = (e) => { if (e.target === modal) closeCorrectionDialog(); };
-            document.body.appendChild(modal);
+    function closeCorrectionDialog() {
+        const modal = document.getElementById('correction-type-modal');
+        if (modal) modal.remove();
+        window.currentCorrectedCode = null;
+    }
 
-            // Store corrected code for later
-            window.currentCorrectedCode = correctedCode;
+    function submitWithType(projectId, modelType, correctionType) {
+        const correctedCode = window.currentCorrectedCode;
+        if (!correctedCode) {
+            alert('❌ Error: Corrected code not found.');
+            return;
         }
-
-        function closeCorrectionDialog() {
-            const modal = document.getElementById('correction-type-modal');
-            if (modal) modal.remove();
-            window.currentCorrectedCode = null;
-        }
-
-        function submitWithType(projectId, modelType, correctionType) {
-            const correctedCode = window.currentCorrectedCode;
-
-            if (!correctedCode) {
-                alert('❌ Error: Corrected code not found.');
-                return;
-            }
-
-            // Close dialog
-            closeCorrectionDialog();
-
-            // Submit feedback
-            fetch(`/api/design/feedback/${projectId}/`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': '{{ csrf_token }}'
-                },
-                body: JSON.stringify({
-                    model_type: modelType,
-                    rating: 'corrected',
-                    corrected_code: correctedCode,
-                    correction_type: correctionType
-                })
+        closeCorrectionDialog();
+        fetch(`/api/design/feedback/${projectId}/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify({
+                model_type: modelType,
+                rating: 'corrected',
+                corrected_code: correctedCode,
+                correction_type: correctionType
             })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    const textarea = document.getElementById(`correction-${modelType}-${projectId}`);
+                    if (textarea) textarea.value = '';
+                    alert('✅ Correction submitted! Thank you for helping improve the AI.');
+                } else {
+                    alert('❌ Error: ' + (data.error || 'Unknown error'));
+                }
+            })
+            .catch(error => {
+                console.error('Correction error:', error);
+                alert('❌ Error submitting correction. Please try again.');
+            });
+    }
+</script>
 
-                        const textarea = document.getElementById(`correction-${modelType}-${projectId}`);
-                        if (textarea) textarea.value = '';
-                    } else {
-                        alert('❌ Error: ' + (data.error || 'Unknown error'));
-                    }
-                })
-                .catch(error => {
-                    console.error('Correction error:', error);
-                    alert('❌ Error submitting correction. Please try again.');
-                });
-        }
-    </script>
+<!-- Three.js Library -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/STLLoader.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
 
-    <!-- Three.js Library -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/STLLoader.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
-
-    {% endblock %}
+{% endblock %}
