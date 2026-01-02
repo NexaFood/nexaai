@@ -79,8 +79,8 @@ def clean_file(filepath):
         print("  File is clean. No changes made.")
 
 def main():
-    clean_file("training/data/final_dataset/train.jsonl")
-    clean_file("training/data/final_dataset/validation.jsonl")
+    clean_file("train_v17.jsonl")
+    clean_file("validation_v17.jsonl")
 
 if __name__ == "__main__":
     main()

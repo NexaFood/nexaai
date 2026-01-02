@@ -4,7 +4,8 @@ import random
 import math
 from pathlib import Path
 
-TRAIN_FILE = Path("training/data/final_dataset/train.jsonl")
+TRAIN_FILE = Path("train.jsonl")
+VALIDATION_FILE = Path("validation.jsonl")
 
 def generate_curved_screen_lesson(idx):
     """
@@ -67,6 +68,28 @@ result = (
 )"""
     return {"prompt": prompt, "code": code}
 
+def generate_radial_selection_lesson(idx):
+    """
+    Lesson 4: Radial Edge Selection.
+    teaches: Selecting circular edges on Cylinder/Cone using .faces(">Z").edges()
+    instead of .edges("Z") or .edges("|Z") which selects the seam.
+    """
+    r = random.randint(20, 60)
+    h = random.randint(50, 100)
+    chamfer = random.randint(2, 5)
+    
+    prompt = f"Create a vertical cylinder r={r} h={h} with {chamfer}mm chamfers on the top and bottom."
+    
+    code = f"""import cadquery as cq
+result = (
+    cq.Workplane("XY")
+    .circle({r}).extrude({h})
+    # GEOMETRY LESSON: Use radial selection for cylinder caps. |Z is invalid (it's the seam).
+    .faces(">Z or <Z").edges()
+    .chamfer({chamfer})
+)"""
+    return {"prompt": prompt, "code": code}
+
 def main():
     examples = []
     
@@ -77,6 +100,7 @@ def main():
     for i in range(1000):
         train_examples.append(generate_curved_screen_lesson(i))
         train_examples.append(generate_safe_fillet_lesson(i))
+        train_examples.append(generate_radial_selection_lesson(i))
     
     with open(TRAIN_FILE, 'a') as f:
         for ex in train_examples:
@@ -87,12 +111,12 @@ def main():
             }
             f.write(json.dumps(entry) + "\n")
             
-    # Generate 50 of each for Validation (Total 100)
-    VALIDATION_FILE = Path("training/data/final_dataset/validation.jsonl")
+    # Generate 50 of each for Validation (Total 150)
     val_examples = []
     for i in range(50):
         val_examples.append(generate_curved_screen_lesson(i + 10000)) # Offset ID
         val_examples.append(generate_safe_fillet_lesson(i + 10000))
+        val_examples.append(generate_radial_selection_lesson(i + 10000))
         
     with open(VALIDATION_FILE, 'a') as f:
         for ex in val_examples:
