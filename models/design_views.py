@@ -138,45 +138,45 @@ def api_create_design_project(request):
             }}
         )
         
-        # Return HTMX response with concept card
+        # Return HTMX response with concept card (dark theme)
         return HttpResponse(f'''
-            <div class="bg-white rounded-lg shadow-lg p-6 mb-6" id="concept-{project_id}">
+            <div class="cad-card mb-6" id="concept-{project_id}">
                 <div class="flex items-center justify-between mb-4">
-                    <h3 class="text-2xl font-bold text-gray-800">Design Concept</h3>
-                    <span class="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-semibold">
+                    <h3 class="text-2xl font-bold" style="color: #ffffff;">Design Concept</h3>
+                    <span class="stage-badge stage-badge-concept">
                         Stage 1: Concept
                     </span>
                 </div>
                 
                 <div class="mb-4">
-                    <p class="text-sm text-gray-500 mb-2">Original Prompt:</p>
-                    <p class="text-gray-700 italic">"{original_prompt}"</p>
+                    <p class="text-sm mb-2" style="color: #8a8694;">Original Prompt:</p>
+                    <p class="italic" style="color: #c084fc;">"{original_prompt}"</p>
                 </div>
                 
                 <div class="mb-4">
-                    <p class="text-sm font-semibold text-gray-700 mb-2">AI-Generated Design Concept:</p>
-                    <p class="text-gray-800 leading-relaxed">{concept_data['refined_description']}</p>
+                    <p class="text-sm font-semibold mb-2" style="color: #b8b4c5;">AI-Generated Design Concept:</p>
+                    <p class="leading-relaxed" style="color: #e0dce8;">{concept_data['refined_description']}</p>
                 </div>
                 
                 <div class="grid grid-cols-2 gap-4 mb-4">
                     <div>
-                        <p class="text-sm text-gray-500">Design Type:</p>
-                        <p class="font-semibold text-gray-800">{concept_data['design_type'].title()}</p>
+                        <p class="text-sm" style="color: #8a8694;">Design Type:</p>
+                        <p class="font-semibold" style="color: #ffffff;">{concept_data['design_type'].title()}</p>
                     </div>
                     <div>
-                        <p class="text-sm text-gray-500">Estimated Complexity:</p>
-                        <p class="font-semibold text-gray-800">{concept_data['estimated_complexity'].title()}</p>
+                        <p class="text-sm" style="color: #8a8694;">Estimated Complexity:</p>
+                        <p class="font-semibold" style="color: #ffffff;">{concept_data['estimated_complexity'].title()}</p>
                     </div>
                     <div>
-                        <p class="text-sm text-gray-500">Estimated Parts:</p>
-                        <p class="font-semibold text-gray-800">{concept_data['estimated_parts_count']} parts</p>
+                        <p class="text-sm" style="color: #8a8694;">Estimated Parts:</p>
+                        <p class="font-semibold" style="color: #ffffff;">{concept_data['estimated_parts_count']} parts</p>
                     </div>
                 </div>
                 
                 <div class="mb-6">
-                    <p class="text-sm font-semibold text-gray-700 mb-2">Key Features:</p>
+                    <p class="text-sm font-semibold mb-2" style="color: #b8b4c5;">Key Features:</p>
                     <ul class="list-disc list-inside space-y-1">
-                        {''.join([f'<li class="text-gray-700">{feature}</li>' for feature in concept_data['key_features']])}
+                        {''.join([f'<li style="color: #e0dce8;">{feature}</li>' for feature in concept_data['key_features']])}
                     </ul>
                 </div>
                 
@@ -185,27 +185,26 @@ def api_create_design_project(request):
                         hx-post="/api/design/approve-concept/{project_id}/"
                         hx-target="#concept-{project_id}"
                         hx-swap="outerHTML"
-                        class="flex-1 bg-green-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-green-700 transition">
+                        class="cad-btn-primary flex-1">
                         ✓ Approve & Generate Overall Model
                     </button>
                     <button 
                         onclick="document.getElementById('refine-form-{project_id}').classList.toggle('hidden')"
-                        class="flex-1 bg-yellow-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-yellow-700 transition">
+                        class="cad-btn-secondary flex-1">
                         ↻ Refine Concept
                     </button>
                 </div>
                 
                 <div id="refine-form-{project_id}" class="mt-4 hidden">
                     <form hx-post="/api/design/refine-concept/{project_id}/" hx-target="#concept-{project_id}" hx-swap="outerHTML">
-                        <label class="block text-sm font-semibold text-gray-700 mb-2">Provide feedback to refine the concept:</label>
+                        <label class="block text-sm font-semibold mb-2" style="color: #b8b4c5;">Provide feedback to refine the concept:</label>
                         <textarea 
                             name="feedback" 
                             rows="3" 
                             placeholder="Example: Make it smaller, use aluminum instead of plastic, add more storage..."
-                            style="background: #1a1625; color: white; border: 1px solid rgba(132, 0, 255, 0.3);"
-                            class="w-full p-3 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                            class="cad-textarea"
                             required></textarea>
-                        <button type="submit" class="mt-2 px-6 py-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg hover:from-purple-700 hover:to-pink-700 transition-all">
+                        <button type="submit" class="cad-btn-primary mt-2">
                             Refine Concept
                         </button>
                     </form>
@@ -449,17 +448,17 @@ def api_approve_parts(request, project_id):
         )
         
         return HttpResponse(f'''
-            <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
+            <div class="cad-card mb-6">
                 <div class="flex items-center justify-between mb-4">
-                    <h3 class="text-2xl font-bold text-gray-800">3D Generation Started</h3>
-                    <span class="px-3 py-1 bg-purple-100 text-purple-800 rounded-full text-sm font-semibold">
+                    <h3 class="text-2xl font-bold" style="color: #ffffff;">3D Generation Started</h3>
+                    <span class="stage-badge stage-badge-generation">
                         Stage 3: Generation
                     </span>
                 </div>
                 
-                <div class="bg-green-50 border border-green-200 rounded-lg p-4 mb-4">
-                    <p class="text-green-800 font-semibold">✓ Generation started for {generated_count} parts!</p>
-                    <p class="text-green-700 text-sm mt-2">
+                <div style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 0.75rem; padding: 1rem; margin-bottom: 1rem;">
+                    <p style="color: #34d399; font-weight: 600;">✓ Generation started for {generated_count} parts!</p>
+                    <p style="color: #6ee7b7; font-size: 0.875rem; margin-top: 0.5rem;">
                         Using Meshy-6 (latest model) for best quality. Each part will go through:
                         <br>1. Preview generation (5-10 min)
                         <br>2. Automatic refine with textures (10-15 min)
@@ -468,13 +467,13 @@ def api_approve_parts(request, project_id):
                 </div>
                 
                 <div class="mb-4">
-                    <p class="text-gray-700">
+                    <p style="color: #e0dce8;">
                         Your parts are being generated in the background. You can check progress in the 
-                        <a href="/history/" class="text-purple-600 hover:underline font-semibold">History</a> page.
+                        <a href="/history/" style="color: #c084fc; text-decoration: underline;">History</a> page.
                     </p>
                 </div>
                 
-                <a href="/design/projects/{project_id}/" class="inline-block bg-purple-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-purple-700 transition">
+                <a href="/design/projects/{project_id}/" class="cad-btn-primary">
                     View Project Details
                 </a>
             </div>
