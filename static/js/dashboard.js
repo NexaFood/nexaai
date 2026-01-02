@@ -846,7 +846,10 @@ class DashboardManager {
         }
     }
     
-    showDashboardSwitcher() {
+    async showDashboardSwitcher() {
+        // Always load fresh data before showing the modal
+        await this.loadDashboards();
+        
         const modal = document.getElementById('dashboard-switcher-modal');
         const listContainer = document.getElementById('dashboard-list');
         
