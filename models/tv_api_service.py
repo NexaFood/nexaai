@@ -9,12 +9,18 @@ import threading
 from typing import Optional, Dict, Any, Callable
 
 # Try to import aiowebostv - more stable than pywebostv
+WEBOS_AVAILABLE = False
+WEBOS_IMPORT_ERROR = None
 try:
     from aiowebostv import WebOsClient
     WEBOS_AVAILABLE = True
-except ImportError:
-    WEBOS_AVAILABLE = False
-    print("Warning: aiowebostv not installed. Install with: pip install aiowebostv")
+    print("aiowebostv imported successfully")
+except ImportError as e:
+    WEBOS_IMPORT_ERROR = str(e)
+    print(f"Warning: aiowebostv import failed: {e}")
+except Exception as e:
+    WEBOS_IMPORT_ERROR = str(e)
+    print(f"Warning: aiowebostv import error: {e}")
 
 
 def run_async(coro):
@@ -56,11 +62,11 @@ class LGTVService:
         
     async def _connect_async(self, timeout: int = 10) -> Dict[str, Any]:
         """Async connect to the TV"""
-        print(f"DEBUG _connect_async: WEBOS_AVAILABLE={WEBOS_AVAILABLE}")
+        print(f"DEBUG _connect_async: WEBOS_AVAILABLE={WEBOS_AVAILABLE}, WEBOS_IMPORT_ERROR={WEBOS_IMPORT_ERROR}")
         if not WEBOS_AVAILABLE:
             return {
                 'success': False,
-                'error': 'aiowebostv library not installed. Run: pip install aiowebostv'
+                'error': f'aiowebostv library not available: {WEBOS_IMPORT_ERROR}. Run: pip install aiowebostv'
             }
             
         try:
