@@ -88,7 +88,8 @@ def train():
     })
     
     def format_row(example):
-        example["text"] = f"### Prompt: {example['prompt']}\n### Code:\n{example['code']}{tokenizer.eos_token}"
+        # Map 'instruction' -> Prompt, 'output' -> Code to match inference format
+        example["text"] = f"### Prompt: {example['instruction']}\n### Code:\n{example['output']}{tokenizer.eos_token}"
         return example
     
     print("📊 Stripping dataset of all columns except 'text' for maximum stability...")
