@@ -199,7 +199,7 @@ function startPairing() {
     status.className = 'pair-status waiting';
     statusText.textContent = 'Connecting to TV... Please accept the prompt on your TV screen.';
     
-    fetch('{% url 'models:tv_pair' tv.id %}', {
+    fetch('{% url 'models:api_tv_pair' tv.id %}', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
