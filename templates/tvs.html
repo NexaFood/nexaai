@@ -160,6 +160,11 @@
 let currentTVId = null;
 
 function toggleTVPower(tvId) {
+    const card = document.querySelector(`.tv-card[data-tv-id="${tvId}"]`);
+    const btn = card.querySelector('.btn-power');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="bi bi-hourglass-split"></i> Working...';
+    
     fetch(`/api/tv/${tvId}/power/`, {
         method: 'POST',
         headers: {
@@ -171,15 +176,53 @@ function toggleTVPower(tvId) {
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            // Reload page to show updated state
-            setTimeout(() => location.reload(), 2000);
+            // Wait a moment then update the UI
+            setTimeout(() => updateTVState(tvId), 1500);
         } else {
             alert('Error: ' + (data.error || 'Failed to control TV'));
+            btn.disabled = false;
+            updateTVState(tvId);
         }
     })
     .catch(error => {
         console.error('Error:', error);
         alert('Failed to control TV');
+        btn.disabled = false;
+    });
+}
+
+function updateTVState(tvId) {
+    const card = document.querySelector(`.tv-card[data-tv-id="${tvId}"]`);
+    if (!card) return;
+    
+    fetch(`/api/tv/${tvId}/state/`)
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            const state = data.state;
+            const power = state.power || 'off';
+            
+            // Update status indicator
+            const statusEl = card.querySelector('.tv-status');
+            statusEl.className = `tv-status ${power}`;
+            statusEl.innerHTML = `<span class="status-dot"></span> ${power.charAt(0).toUpperCase() + power.slice(1)}`;
+            
+            // Update power button
+            const btn = card.querySelector('.btn-power');
+            btn.disabled = false;
+            btn.className = `btn-power ${power}`;
+            btn.innerHTML = `<i class="bi bi-power"></i> ${power === 'on' ? 'Turn Off' : 'Turn On'}`;
+            
+            // Update volume display if exists
+            const volumeValue = card.querySelector('.volume-value');
+            if (volumeValue && state.volume !== null) {
+                volumeValue.textContent = `${state.volume}%`;
+            }
+            const volumeSlider = card.querySelector('.volume-slider');
+            if (volumeSlider && state.volume !== null) {
+                volumeSlider.value = state.volume;
+            }
+        }
     });
 }
 
@@ -282,21 +325,20 @@ function deleteTV(tvId) {
     }
 }
 
-// Refresh TV states periodically
+// Refresh TV states periodically (every 5 seconds)
 setInterval(() => {
     document.querySelectorAll('.tv-card').forEach(card => {
         const tvId = card.dataset.tvId;
-        fetch(`/api/tv/${tvId}/state/`)
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                const statusEl = card.querySelector('.tv-status');
-                const power = data.state.power;
-                statusEl.className = `tv-status ${power}`;
-                statusEl.innerHTML = `<span class="status-dot"></span> ${power.charAt(0).toUpperCase() + power.slice(1)}`;
-            }
-        });
+        updateTVState(tvId);
     });
-}, 10000);
+}, 5000);
+
+// Initial state update on page load
+document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('.tv-card').forEach(card => {
+        const tvId = card.dataset.tvId;
+        updateTVState(tvId);
+    });
+});
 </script>
 {% endblock %}
